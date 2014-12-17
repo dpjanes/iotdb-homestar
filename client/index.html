@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>IOTDB Home</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/flat-ui.min.css">
+    <link rel="stylesheet" href="css.css">
+</head>
+
+<body>
+    <div class="container" style="margin-top: 20px">
+        {% for cds in cdsd %}
+        <ul class="list-group">
+            <li class="list-group-item active">
+                <span class="action-group">{{ loop.key }}</span>
+            </li>
+            {% for cd in cds %}
+                {% if cd.values %}
+            <li class="list-group-item" data-id="{{ cd._id }}" onclick="">
+                <span class="action-name text-primary">{{ cd.name }}</span>
+                <span class="action-subcommands">
+                    <div class="btn-group btn-group-sm">
+                    {% for value in cd.values %}
+                        <button type="button" class="btn btn-default action-item" data-id="{{ cd._id}}" data-value="{{ value }}">{{ value }}</button>
+                    {% endfor %}
+                    </div>
+                </span>
+                <span class="action-message text-warning"></span>
+            </li>
+                {% else %}
+            <li class="list-group-item action-item" data-id="{{ cd._id }}" onclick="">
+                <span class="action-name text-primary">{{ cd.name }}</span>
+                <span class="action-message text-warning"></span>
+            </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+        {% endfor %}
+    </div>
+    <script>var settingsd = {{ settingsd|json(2)|safe }};</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="js/flat-ui.min.js"></script>
+    <script src="mqttws31.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+.action-subcommands {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    display: block;
+}
+.action-message {
+    display: block;
+}
+li.action-item {
+    -webkit-user-select: none;
+}
+li.action-item .action-name {
+}
+
+body.desktop li.action-item:hover {
+    background: #EEE;
+}
+body.desktop li.action-item:active,
+body.mobile li.action-item.touched {
+    background: #DDD;
+}
+
+body.mobile li.action-item.running,
+body.desktop li.action-item.running {
+    background: #fcf8e3;
+}
+
