@@ -26,10 +26,16 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var swig = require('swig');
-var os = require('os');
 var express = require('express');
-var bodyParser = require('body-parser');
+var express_session = require('express-session')
+var express_cookie_parser = require('cookie-parser')
+var express_body_parser = require('body-parser')
+var swig = require('swig');
+
+var passport = require('passport')
+var passport_twitter = require('passport-twitter').Strategy;
+
+var os = require('os');
 var open = require('open');
 var path = require('path');
 var util = require('util');
@@ -54,28 +60,48 @@ var settingsd = {
         port: 1883,
         websocket: 8000
     },
-    webserverd: {
+    twitter: {
+        key: null,
+        secret: null,
+    },
+    webserver: {
+        secret: null,
+        scheme: "http",
         host: null,
         port: 3000
     },
     open_browser: true
 };
+var serverd = {
+    webserver: {
+        scheme: "http",
+        host: null,
+        port: 3001
+    },
+}
 
 /**
  */
-var settings_main = function() {
+var setup_settings = function() {
     var iot = iotdb.iot();
-    var d = iot.cfg_get("nameless");
+    var d = iot.cfg_get("homestar/client");
     if (d) {
         _.smart_extend(settingsd, d);
     }
 
+    if (!settingsd.webserver.secret) {
+        logger.fatal({
+            method: "setup_settings",
+            cause: "please $ run iotdb set homestar/client/webserver/secret 0 --uuid"
+        }, "no secret for cookies");
+        process.exit(0);
+    }
+
     if (!settingsd.mqttd.prefix) {
         var username = iot.username;
-        console.log("HERE:AAAA", username);
         if (username === "nobody") {
             logger.fatal({
-                method: "settings_main",
+                method: "setup_settings",
                 cause: "please run $ iotdb oauth-iotdb",
             }, "no 'username' - this may cause MQTT conflicts");
             process.exit(0);
@@ -84,7 +110,7 @@ var settings_main = function() {
         var machine_id = iot.cfg_get('machine_id');
         if (!machine_id) {
             logger.fatal({
-                method: "settings_main",
+                method: "setup_settings",
                 cause: "please run $ iotdb machine-id",
             }, "no 'machine_id' - this may cause MQTT conflicts");
             process.exit(0);
@@ -93,9 +119,33 @@ var settings_main = function() {
         settingsd.mqttd.prefix = util.format("/u/%s/%s/", username, machine_id);
     };
 
+    var d = iot.cfg_get("homestar/server");
+    if (d) {
+        _.smart_extend(serverd, d);
+    }
+
     var ipv4 = _.ipv4();
     if (ipv4) {
         settingsd.ip = ipv4;
+    }
+
+    if (!settingsd.webserver.host) {
+        settingsd.webserver.host = settingsd.ip;
+    }
+    if (!serverd.webserver.host) {
+        serverd.webserver.host = settingsd.ip;
+    }
+
+    if (!settingsd.webserver.url) {
+        settingsd.webserver.url = util.format("%s://%s:%s", 
+            settingsd.webserver.scheme, settingsd.webserver.host, settingsd.webserver.port
+        );
+    }
+
+    if (!serverd.webserver.url) {
+        serverd.webserver.url = util.format("%s://%s:%s", 
+            serverd.webserver.scheme, serverd.webserver.host, serverd.webserver.port
+        );
     }
 }
 
@@ -104,7 +154,8 @@ var settings_main = function() {
  */
 var webserver_home = function(request, result) {
     logger.info({
-        method: "webserver_thing_home",
+        method: "webserver_home",
+        user: request.user,
     }, "called");
 
     /*
@@ -113,7 +164,8 @@ var webserver_home = function(request, result) {
     var home_template = path.join(__dirname, '..', 'client', 'index.html')
     var home_page = swig.renderFile(home_template, {
         cdsd: action.group_actions(),
-        settingsd: settingsd
+        settingsd: settingsd,
+        user: request.user,
     })
 
     // console.log(home_page)
@@ -194,26 +246,95 @@ var webserver_action = function(request, result) {
     }
 }
 
+exports.app = null;
+
 /**
  *  Set up the web server
  */
-var webserver_express = function() {
-    var wsd = settingsd.webserverd
+var setup_webserver = function() {
+    var wsd = settingsd.webserver
     if (wsd.host == null) {
         wsd.host = settingsd.ip
     }
 
     var app = express();
+    exports.app = app;
 
-    app.use(bodyParser.json()); 
+    app.use(express_body_parser.json()); 
+    app.use(express_cookie_parser());
+    app.use(express_body_parser());
+    app.use(express_session({
+        secret: settingsd.webserver.secret,
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+            secure: false
+        }
+    }))
+    app.use(passport.initialize());
+    app.use(passport.session());
 
     app.get('/', webserver_home);
     app.use('/', express.static(path.join(__dirname, '..', 'client')));
     app.use('/', express.static(path.join(__dirname, '..', 'client', 'flat-ui')));
     app.put('/api/actions/:action_id', webserver_action);
 
+    app.get('/auth/logout', function(request, response) {
+        request.logout();
+        response.redirect('/');
+    });
+    app.get('/auth/homestar', passport.authenticate('twitter'));
+    app.get('/auth/homestar/callback', 
+        passport.authenticate('twitter', {
+            successRedirect: '/',
+            failureRedirect: '/login' }
+        )
+    );
+
     app.listen(wsd.port);
 };
+
+/**
+ */
+var userd = {};
+var setup_passport = function() {
+    var iot = iotdb.iot();
+
+    var server_url = serverd.webserver.url;
+    var client_url = settingsd.webserver.url;
+    passport.use(
+        new passport_twitter({
+            consumerKey: settingsd.twitter.api_key,
+            consumerSecret: settingsd.twitter.api_secret,
+            callbackURL: client_url + "/auth/homestar/callback", 
+            requestTokenURL: server_url + '/oauth/request_token',
+            accessTokenURL: server_url + '/oauth/access_token',
+            userAuthorizationURL: server_url + '/oauth/authenticate',
+            userProfileURL: server_url + '/oauth/show.json'
+        },
+        function(token, tokenSecret, profile, done) {
+            console.log("HERE:XXX", token, tokenSecret, profile);
+            var user = {
+                id: profile.id,
+                username: profile.username,
+                service: "twitter"
+            };
+            done(null, user);
+        })
+    );
+
+    passport.serializeUser(function(user, done) {
+        console.log("SERIALIZE", user);
+        userd[user.id] = user;
+        done(null, user.id);
+    });
+
+    passport.deserializeUser(function(user_id, done) {
+        var user = userd[user_id];
+        console.log("DESERIALIZE", user);
+        done(null, user);
+    });
+}
 
 /*
  *  Start IOTDB
@@ -234,20 +355,20 @@ action.load_actions();
 /**
  *  Setup the web server
  */
-settings_main();
-webserver_express();
+setup_settings();
+setup_passport();
+setup_webserver();
 
 /*
  *  Run the web server
  */
-var url = "http://" + settingsd.webserverd.host + ":" + settingsd.webserverd.port;
 logger.info({
     method: "main",
-    url: url,
+    url: settingsd.webserver.scheme,
 }, "listening for connect");
 
 if (settingsd.open_browser) {
-    open(url);
+    open(settingsd.webserver.scheme);
 }
 
 /*
@@ -260,7 +381,7 @@ if (settingsd.mqttd.local) {
     }, "setting up MQTT server");
 
     if (settingsd.mqttd.host) {
-        settingsd.mqttd.host = settingsd.webserverd.host;
+        settingsd.mqttd.host = settingsd.webserver.host;
     }
 
     mqtt.create_server(settingsd.mqttd);
@@ -274,3 +395,4 @@ if (settingsd.mqttd.local) {
         }
     });
 }
+
