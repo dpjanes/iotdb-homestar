@@ -60,9 +60,9 @@ var settingsd = {
         port: 1883,
         websocket: 8000
     },
-    twitter: {
-        key: null,
-        secret: null,
+    homestar: {
+        api_key: null,
+        api_secret: null,
     },
     webserver: {
         secret: null,
@@ -168,7 +168,6 @@ var webserver_home = function(request, result) {
         user: request.user,
     })
 
-    // console.log(home_page)
     result.set('Content-Type', 'text/html');
     result.send(home_page)
 }
@@ -295,6 +294,8 @@ var setup_webserver = function() {
 };
 
 /**
+ *  We use 'twitter' auth but it's actually HomeStar
+ *  talking the same protocol
  */
 var userd = {};
 var setup_passport = function() {
@@ -304,34 +305,38 @@ var setup_passport = function() {
     var client_url = settingsd.webserver.url;
     passport.use(
         new passport_twitter({
-            consumerKey: settingsd.twitter.api_key,
-            consumerSecret: settingsd.twitter.api_secret,
+            consumerKey: settingsd.homestar.api_key,
+            consumerSecret: settingsd.homestar.api_secret,
             callbackURL: client_url + "/auth/homestar/callback", 
             requestTokenURL: server_url + '/oauth/request_token',
             accessTokenURL: server_url + '/oauth/access_token',
             userAuthorizationURL: server_url + '/oauth/authenticate',
-            userProfileURL: server_url + '/oauth/show.json'
+            userProfileURL: server_url + '/api/1.0/profile'
         },
         function(token, tokenSecret, profile, done) {
-            console.log("HERE:XXX", token, tokenSecret, profile);
             var user = {
                 id: profile.id,
                 username: profile.username,
-                service: "twitter"
+                service: "homestar"
             };
             done(null, user);
         })
     );
 
     passport.serializeUser(function(user, done) {
-        console.log("SERIALIZE", user);
+        logger.info({
+            user: user,
+        }, "passport/serialize")
         userd[user.id] = user;
         done(null, user.id);
     });
 
     passport.deserializeUser(function(user_id, done) {
         var user = userd[user_id];
-        console.log("DESERIALIZE", user);
+        logger.info({
+            user: user,
+            user_id: user_id,
+        }, "passport/deserialize")
         done(null, user);
     });
 }
