@@ -39,7 +39,7 @@ var logger = bunyan.createLogger({
  *  The "Context" is basically does the work of
  *  managing a running Action.
  */
-var Context = function(id, actiond) {
+var Context = function (id, actiond) {
     var self = this;
 
     self.running = false;
@@ -51,34 +51,34 @@ var Context = function(id, actiond) {
 
 util.inherits(Context, events.EventEmitter);
 
-Context.prototype.message = function() {
+Context.prototype.message = function () {
     var self = this;
 
     self.running = true;
 
-    self.emit("message", self.id, self.actiond, 
+    self.emit("message", self.id, self.actiond,
         util.format.apply(util.apply, Array.prototype.slice.call(arguments)));
 };
 
-Context.prototype.done = function(timeout) {
+Context.prototype.done = function (timeout) {
     var self = this;
 
     if (timeout === undefined) {
         timeout = 0.8;
     }
 
-    setTimeout(function() {
+    setTimeout(function () {
         self.running = false;
-        self.emit("running", self.id, self.actiond)
+        self.emit("running", self.id, self.actiond);
     }, timeout * 1000);
 
 };
 
-Context.prototype.run = function(value) {
+Context.prototype.run = function (value) {
     var self = this;
 
     self.running = false;
-    self.actiond.run(self, value)
+    self.actiond.run(self, value);
 };
 
 /**
@@ -109,7 +109,7 @@ var load_actions = function (initd) {
             }
             return;
         }
-        
+
         logger.debug({
             method: "_load_actions",
             filename: paramd.filename
@@ -120,7 +120,7 @@ var load_actions = function (initd) {
 /**
  *  Use this for the standard ordering of Actions
  */
-var order_action = function(a, b) {
+var order_action = function (a, b) {
     if (a.group < b.group) {
         return -1;
     } else if (a.group > b.group) {
@@ -139,14 +139,15 @@ var order_action = function(a, b) {
 /**
  *  Make a unique ID for an Action
  */
-var action_to_id = function(actiond) {
+var action_to_id = function (actiond) {
     return _.md5_hash("2014-12-13T06:34:00", actiond.group, actiond.name);
-}
+};
 
 /**
  *  Find an Action by ID
  */
-var action_by_id = function(id) {
+var action_by_id = function (id) {
+    var iot = iotdb.iot();
     var cds = iot.data("action");
     if (!cds || !cds.length) {
         return null;
@@ -165,7 +166,7 @@ var action_by_id = function(id) {
 /**
  *  Group actions by their group,
  *  then sort by name. The
- *  returned datastructure looks 
+ *  returned datastructure looks
  *  something like:
  *  <pre>
  *  {
@@ -182,7 +183,7 @@ var action_by_id = function(id) {
  *  }
  *  </pre>
  */
-var group_actions = function() {
+var group_actions = function () {
     var iot = iotdb.iot();
     var cds = iot.data("action");
     if (!cds || !cds.length) {

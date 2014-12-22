@@ -27,12 +27,12 @@ var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
 var express = require('express');
-var express_session = require('express-session')
-var express_cookie_parser = require('cookie-parser')
-var express_body_parser = require('body-parser')
+var express_session = require('express-session');
+var express_cookie_parser = require('cookie-parser');
+var express_body_parser = require('body-parser');
 var swig = require('swig');
 
-var passport = require('passport')
+var passport = require('passport');
 var passport_twitter = require('passport-twitter').Strategy;
 
 var os = require('os');
@@ -78,11 +78,11 @@ var serverd = {
         host: "homestar.io",
         port: 443
     },
-}
+};
 
 /**
  */
-var setup_settings = function() {
+var setup_settings = function () {
     var iot = iotdb.iot();
     var d = iot.cfg_get("homestar/client");
     if (d) {
@@ -117,9 +117,9 @@ var setup_settings = function() {
         }
 
         settingsd.mqttd.prefix = util.format("/u/%s/%s/", username, machine_id);
-    };
+    }
 
-    var d = iot.cfg_get("homestar/server");
+    d = iot.cfg_get("homestar/server");
     if (d) {
         _.smart_extend(serverd, d);
     }
@@ -139,11 +139,11 @@ var setup_settings = function() {
     if (!settingsd.webserver.url) {
         if (((settingsd.webserver.scheme === "https") && (settingsd.webserver.port === 443)) ||
             ((settingsd.webserver.scheme === "http") && (settingsd.webserver.port === 80))) {
-            settingsd.webserver.url = util.format("%s://%s", 
+            settingsd.webserver.url = util.format("%s://%s",
                 settingsd.webserver.scheme, settingsd.webserver.host
             );
         } else {
-            settingsd.webserver.url = util.format("%s://%s:%s", 
+            settingsd.webserver.url = util.format("%s://%s:%s",
                 settingsd.webserver.scheme, settingsd.webserver.host, settingsd.webserver.port
             );
         }
@@ -152,21 +152,21 @@ var setup_settings = function() {
     if (!serverd.webserver.url) {
         if (((serverd.webserver.scheme === "https") && (serverd.webserver.port === 443)) ||
             ((serverd.webserver.scheme === "http") && (serverd.webserver.port === 80))) {
-            serverd.webserver.url = util.format("%s://%s", 
+            serverd.webserver.url = util.format("%s://%s",
                 serverd.webserver.scheme, serverd.webserver.host
             );
         } else {
-            serverd.webserver.url = util.format("%s://%s:%s", 
+            serverd.webserver.url = util.format("%s://%s:%s",
                 serverd.webserver.scheme, serverd.webserver.host, serverd.webserver.port
             );
         }
     }
-}
+};
 
 /**
  *  Serve the home page - dynamically created
  */
-var webserver_home = function(request, result) {
+var webserver_home = function (request, result) {
     logger.info({
         method: "webserver_home",
         user: request.user,
@@ -175,28 +175,28 @@ var webserver_home = function(request, result) {
     /*
      *  Render
      */
-    var home_template = path.join(__dirname, '..', 'client', 'index.html')
+    var home_template = path.join(__dirname, '..', 'client', 'index.html');
     var home_page = swig.renderFile(home_template, {
         cdsd: action.group_actions(),
         settingsd: settingsd,
         user: request.user,
-    })
+    });
 
     result.set('Content-Type', 'text/html');
-    result.send(home_page)
-}
+    result.send(home_page);
+};
 
 /**
  *  Run a particular action. This is always
  *  the result of a PUT
  */
-var webserver_action = function(request, result) {
+var webserver_action = function (request, result) {
     logger.info({
         method: "webserver_action",
         action_id: request.params.action_id
     }, "called");
 
-    var actiond = action.action_by_id(request.params.action_id)
+    var actiond = action.action_by_id(request.params.action_id);
     if (!actiond) {
         logger.error({
             method: "webserver_action",
@@ -207,7 +207,7 @@ var webserver_action = function(request, result) {
         result.status(404).send(JSON.stringify({
             error: "action not found",
             action_id: request.params.action_id
-        }, null, 2))
+        }, null, 2));
         return;
     }
 
@@ -222,12 +222,12 @@ var webserver_action = function(request, result) {
         result.status(409).send(JSON.stringify({
             error: "action is still running",
             action_id: request.params.action_id
-        }, null, 2))
+        }, null, 2));
         return;
     }
 
     var context = new action.Context(request.params.action_id, actiond);
-    context.on("message", function(id, actiond, message) {
+    context.on("message", function (id, actiond, message) {
         var topic = settingsd.mqttd.prefix + "api/actions/" + id;
         var payload = {
             message: message
@@ -235,7 +235,7 @@ var webserver_action = function(request, result) {
 
         mqtt.publish(settingsd.mqttd, topic, payload);
     });
-    context.on("running", function(id, actiond) {
+    context.on("running", function (id, actiond) {
         var topic = settingsd.mqttd.prefix + "api/actions/" + id;
         var payload = {
             running: context.running
@@ -252,28 +252,28 @@ var webserver_action = function(request, result) {
     result.set('Content-Type', 'application/json');
     result.send(JSON.stringify({
         running: context.running
-    }, null, 2))
+    }, null, 2));
 
     if (context.running) {
         actiond._context = context;
     }
-}
+};
 
 exports.app = null;
 
 /**
  *  Set up the web server
  */
-var setup_webserver = function() {
-    var wsd = settingsd.webserver
+var setup_webserver = function () {
+    var wsd = settingsd.webserver;
     if (wsd.host == null) {
-        wsd.host = settingsd.ip
+        wsd.host = settingsd.ip;
     }
 
     var app = express();
     exports.app = app;
 
-    app.use(express_body_parser.json()); 
+    app.use(express_body_parser.json());
     app.use(express_cookie_parser());
     app.use(express_body_parser());
     app.use(express_session({
@@ -283,7 +283,7 @@ var setup_webserver = function() {
         cookie: {
             secure: false
         }
-    }))
+    }));
     app.use(passport.initialize());
     app.use(passport.session());
 
@@ -292,16 +292,16 @@ var setup_webserver = function() {
     app.use('/', express.static(path.join(__dirname, '..', 'client', 'flat-ui')));
     app.put('/api/actions/:action_id', webserver_action);
 
-    app.get('/auth/logout', function(request, response) {
+    app.get('/auth/logout', function (request, response) {
         request.logout();
         response.redirect('/');
     });
     app.get('/auth/homestar', passport.authenticate('twitter'));
-    app.get('/auth/homestar/callback', 
+    app.get('/auth/homestar/callback',
         passport.authenticate('twitter', {
             successRedirect: '/',
-            failureRedirect: '/login' }
-        )
+            failureRedirect: '/login'
+        })
     );
 
     app.listen(wsd.port);
@@ -312,54 +312,54 @@ var setup_webserver = function() {
  *  talking the same protocol
  */
 var userd = {};
-var setup_passport = function() {
+var setup_passport = function () {
     var iot = iotdb.iot();
 
     var server_url = serverd.webserver.url;
     var client_url = settingsd.webserver.url;
     passport.use(
         new passport_twitter({
-            consumerKey: settingsd.homestar.api_key,
-            consumerSecret: settingsd.homestar.api_secret,
-            callbackURL: client_url + "/auth/homestar/callback", 
-            requestTokenURL: server_url + '/oauth/request_token',
-            accessTokenURL: server_url + '/oauth/access_token',
-            userAuthorizationURL: server_url + '/oauth/authenticate',
-            userProfileURL: server_url + '/api/1.0/profile'
-        },
-        function(token, tokenSecret, profile, done) {
-            var user = {
-                id: profile.id,
-                username: profile.username,
-                service: "homestar"
-            };
-            done(null, user);
-        })
+                consumerKey: settingsd.homestar.api_key,
+                consumerSecret: settingsd.homestar.api_secret,
+                callbackURL: client_url + "/auth/homestar/callback",
+                requestTokenURL: server_url + '/oauth/request_token',
+                accessTokenURL: server_url + '/oauth/access_token',
+                userAuthorizationURL: server_url + '/oauth/authenticate',
+                userProfileURL: server_url + '/api/1.0/profile'
+            },
+            function (token, tokenSecret, profile, done) {
+                var user = {
+                    id: profile.id,
+                    username: profile.username,
+                    service: "homestar"
+                };
+                done(null, user);
+            })
     );
 
-    passport.serializeUser(function(user, done) {
+    passport.serializeUser(function (user, done) {
         logger.info({
             user: user,
-        }, "passport/serialize")
+        }, "passport/serialize");
         userd[user.id] = user;
         done(null, user.id);
     });
 
-    passport.deserializeUser(function(user_id, done) {
+    passport.deserializeUser(function (user_id, done) {
         var user = userd[user_id];
         logger.info({
             user: user,
             user_id: user_id,
-        }, "passport/deserialize")
+        }, "passport/deserialize");
         done(null, user);
     });
-}
+};
 
 /*
  *  Start IOTDB
  */
 var iot = iotdb.iot();
-iot.on_thing(function(thing) {
+iot.on_thing(function (thing) {
     logger.info({
         thing: thing.thing_id(),
         meta: thing.meta().state(),
@@ -414,4 +414,3 @@ if (settingsd.mqttd.local) {
         }
     });
 }
-

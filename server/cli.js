@@ -38,10 +38,10 @@ var logger = bunyan.createLogger({
 
 var iot = iotdb.iot();
 
-var runner = new runner.Runner()
+var runner = new runner.Runner();
 runner._load_actions();
 
-var sorter = function(a, b) {
+var sorter = function (a, b) {
     if (a.group < b.group) {
         return -1;
     } else if (a.group > b.group) {
@@ -57,14 +57,14 @@ var sorter = function(a, b) {
     return 0;
 };
 
-var prompt_the_user = function() {
+var prompt_the_user = function () {
     var commands = iot.data("command");
     if (!commands || !commands.length) {
         logger.error({
             method: "_load_actions",
             cause: "xxx"
         }, "nothing to prompt for");
-        
+
     }
 
     commands.sort(sorter);
@@ -86,30 +86,28 @@ var prompt_the_user = function() {
     process.stdout.write(p);
     process.stdout.write("\n");
 
-    prompt.get([ 'command' ], function(error, result) {
+    prompt.get(['command'], function (error, result) {
         if (error) {
             logger.error({
                 method: "prompt the user",
                 error: error,
             });
             return;
-        } 
+        }
 
-        if (result.command === '') {
-        } else {
+        if (result.command === '') {} else {
             var cindex = parseInt(result.command);
             for (var ci in commands) {
                 var actiond = commands[ci];
                 if (actiond._index === cindex) {
-                    actiond.run()
+                    actiond.run();
                     break;
                 }
             }
         }
 
-        prompt_the_user()
+        prompt_the_user();
     });
 };
 
 prompt_the_user();
-

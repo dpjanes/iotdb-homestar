@@ -58,9 +58,9 @@ IOT.prototype.data = function (key, d) {
                     datads.splice(di, 1, d);
                     found = true;
                     break;
-                } 
+                }
             }
-        } 
+        }
 
         if (!found) {
             datads.push(d);
@@ -70,5 +70,4 @@ IOT.prototype.data = function (key, d) {
     } else {
         throw new Error("IOT.data: the value must always be an object");
     }
-}
-
+};
