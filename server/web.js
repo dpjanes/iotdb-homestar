@@ -74,9 +74,9 @@ var settingsd = {
 };
 var serverd = {
     webserver: {
-        scheme: "http",
-        host: null,
-        port: 3001
+        scheme: "https",
+        host: "homestar.io",
+        port: 443
     },
 }
 
@@ -137,15 +137,29 @@ var setup_settings = function() {
     }
 
     if (!settingsd.webserver.url) {
-        settingsd.webserver.url = util.format("%s://%s:%s", 
-            settingsd.webserver.scheme, settingsd.webserver.host, settingsd.webserver.port
-        );
+        if (((settingsd.webserver.scheme === "https") && (settingsd.webserver.port === 443)) ||
+            ((settingsd.webserver.scheme === "http") && (settingsd.webserver.port === 80))) {
+            settingsd.webserver.url = util.format("%s://%s", 
+                settingsd.webserver.scheme, settingsd.webserver.host
+            );
+        } else {
+            settingsd.webserver.url = util.format("%s://%s:%s", 
+                settingsd.webserver.scheme, settingsd.webserver.host, settingsd.webserver.port
+            );
+        }
     }
 
     if (!serverd.webserver.url) {
-        serverd.webserver.url = util.format("%s://%s:%s", 
-            serverd.webserver.scheme, serverd.webserver.host, serverd.webserver.port
-        );
+        if (((serverd.webserver.scheme === "https") && (serverd.webserver.port === 443)) ||
+            ((serverd.webserver.scheme === "http") && (serverd.webserver.port === 80))) {
+            serverd.webserver.url = util.format("%s://%s", 
+                serverd.webserver.scheme, serverd.webserver.host
+            );
+        } else {
+            serverd.webserver.url = util.format("%s://%s:%s", 
+                serverd.webserver.scheme, serverd.webserver.host, serverd.webserver.port
+            );
+        }
     }
 }
 
