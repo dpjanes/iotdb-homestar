@@ -48,116 +48,13 @@ var fs = require('fs');
 var mqtt = require('./mqtt');
 var action = require('./action');
 var data = require('./data');
+var settings = require('./settings');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
     name: 'iotdb-runner',
     module: 'web',
 });
-
-var settings = {
-    d: {
-        ip: "127.0.0.1",
-        folders: {
-            sessions: ".sessions",
-            users: ".users",
-        },
-        mqttd: {
-            local: false,
-            verbose: true,
-            prefix: null,
-            host: 'mqtt.iotdb.org',
-            port: 1883,
-            websocket: 8000
-        },
-        homestar: {
-            url: "https://homestar.io",
-            ping: true,
-            key: null,
-            secret: null,
-            bearer: null,
-        },
-        webserver: {
-            secret: null,
-            scheme: "http",
-            host: null,
-            port: 3000
-        },
-        open_browser: true
-    }
-};
-
-/**
- */
-var setup_settings = function () {
-    var iot = iotdb.iot();
-    var d = iot.cfg_get("homestar/runner");
-    if (d) {
-        _.smart_extend(settings.d, d);
-    }
-
-    if (!settings.d.webserver.secret) {
-        logger.fatal({
-            method: "setup_settings",
-            cause: "please $ run iotdb set homestar/runner/webserver/secret 0 --uuid"
-        }, "no secret for cookies");
-        process.exit(0);
-    }
-
-    if (!settings.d.mqttd.prefix) {
-        var username = iot.username;
-        if (username === "nobody") {
-            logger.fatal({
-                method: "setup_settings",
-                cause: "please run $ iotdb oauth-iotdb",
-            }, "no 'username' - this may cause MQTT conflicts");
-            process.exit(0);
-        }
-
-        var machine_id = iot.cfg_get('machine_id');
-        if (!machine_id) {
-            logger.fatal({
-                method: "setup_settings",
-                cause: "please run $ iotdb machine-id",
-            }, "no 'machine_id' - this may cause MQTT conflicts");
-            process.exit(0);
-        }
-
-        settings.d.mqttd.prefix = util.format("/u/%s/%s/", username, machine_id);
-    }
-
-    var ipv4 = _.ipv4();
-    if (ipv4) {
-        settings.d.ip = ipv4;
-    }
-
-    if (!settings.d.webserver.host) {
-        settings.d.webserver.host = settings.d.ip;
-    }
-
-    if (!settings.d.webserver.url) {
-        if (((settings.d.webserver.scheme === "https") && (settings.d.webserver.port === 443)) ||
-            ((settings.d.webserver.scheme === "http") && (settings.d.webserver.port === 80))) {
-            settings.d.webserver.url = util.format("%s://%s",
-                settings.d.webserver.scheme, settings.d.webserver.host
-            );
-        } else {
-            settings.d.webserver.url = util.format("%s://%s:%s",
-                settings.d.webserver.scheme, settings.d.webserver.host, settings.d.webserver.port
-            );
-        }
-    }
-
-    /* make folders - should be changed to make recursive */
-    for (var key in settings.d.folders) {
-        var folder = settings.d.folders[key];
-
-        try {
-            fs.mkdirSync(folder);
-        } catch (x) {
-        }
-    }
-};
 
 /**
  *  Serve the home page - dynamically created
@@ -396,7 +293,7 @@ action.load_actions();
 /**
  *  Setup the web server
  */
-setup_settings();
+settings.setup();
 setup_passport();
 setup_webserver();
 
