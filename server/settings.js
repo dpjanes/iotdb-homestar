@@ -46,10 +46,10 @@ var settings = {
             users: ".users",
         },
         mqttd: {
-            local: false,
+            local: true,
             verbose: true,
             prefix: null,
-            host: 'mqtt.iotdb.org',
+            host: null,
             port: 1883,
             websocket: 8000
         },
