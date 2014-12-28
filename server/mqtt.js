@@ -33,7 +33,7 @@ var server_client = function (client) {
     var self = serverd;
 
     logger.info({
-        method: "create_server/createServer",
+        method: "server_client",
     }, "called");
 
     if (!self.clients) {
@@ -42,7 +42,11 @@ var server_client = function (client) {
 
     client.on('connect', function (packet) {
         if (settings.d.mqttd.verbose) {
-            console.log('- create_server.connect');
+            logger.info({
+                method: "server_client/on(connect)",
+                topic: packet.topic,
+                payload: packet.payload,
+            }, "called");
         }
         client.connack({
             returnCode: 0
@@ -53,7 +57,7 @@ var server_client = function (client) {
 
     client.on('publish', function (packet) {
         logger.info({
-            method: "create_server/createServer/on(publish)",
+            method: "server_client/on(publish)",
             topic: packet.topic,
             payload: packet.payload,
         }, "called");
@@ -67,7 +71,10 @@ var server_client = function (client) {
 
     client.on('subscribe', function (packet) {
         if (settings.d.mqttd.verbose) {
-            console.log('- create_server.subscribe');
+            logger.info({
+                method: "server_client/on(subscribe)",
+                topic: packet.topic,
+            }, "called");
         }
         var granted = [];
         for (var i = 0; i < packet.subscriptions.length; i++) {
@@ -82,31 +89,40 @@ var server_client = function (client) {
 
     client.on('pingreq', function (packet) {
         if (settings.d.mqttd.verbose) {
-            console.log('- create_server.pingreq');
+            logger.info({
+                method: "server_client/on(pingreq)",
+            }, "called");
         }
         client.pingresp();
     });
 
     client.on('disconnect', function (packet) {
         if (settings.d.mqttd.verbose) {
-            console.log('- create_server.disconnect');
+            logger.info({
+                method: "server_client/on(disconnect)",
+            }, "called");
         }
         client.stream.end();
     });
 
     client.on('close', function (err) {
         if (settings.d.mqttd.verbose) {
-            console.log('- create_server.close');
+            logger.info({
+                method: "server_client/on(close)",
+            }, "called");
         }
         delete self.clients[client.id];
     });
 
     client.on('error', function (err) {
         if (settings.d.mqttd.verbose) {
-            console.log('- create_server.error');
+            logger.error({
+                method: "server_client/on(error)",
+                error: error,
+                cause: "like something disconnected or network error",
+            }, "error");
         }
         client.stream.end();
-        console.log('# create_server.error', err);
     });
 };
 
@@ -142,12 +158,12 @@ var client = null;
  */
 exports.publish = function (mqttd, topic, data) {
     if (client == null) {
-        console.log("- mqtt_home.publish", "connecting", mqttd.port, mqttd.host);
         logger.info({
             method: "publish",
             port: mqttd.port,
             host: mqttd.host
         }, "connecting to MQTT");
+
         client = mqtt.createClient(mqttd.port, mqttd.host);
         client.on('error', function () {
             logger.info({
@@ -170,7 +186,6 @@ exports.publish = function (mqttd, topic, data) {
     }
 
 
-    // console.log("- home_mqtt.publish", topic, data)
     logger.info({
         method: "publish",
         topic: topic,
