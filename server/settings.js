@@ -67,6 +67,7 @@ var settings = {
             port: 3000
         },
         secrets: {
+            host: null,     // not really a secret, as published on MQTT
             session: null,
         },
         debug: {
@@ -85,26 +86,22 @@ var setup = function () {
         _.smart_extend(settings.d, d);
     }
 
+    /* all secrets must be set */
+    var sd = settings.d.secrets;
+    for (var key in sd) {
+        var value = sd[key];
+        if (!value) {
+            logger.error({
+                method: "setup",
+                cause: "admin hasn't completed setup",
+            }, "missing secret: do $ iotdb set homestar/runner/secrets/" + key + " 0 --uuid");
+            process.exit(1);
+        }
+    }
+
+    /* MQTT */
     if (!settings.d.mqttd.prefix) {
-        var username = iot.username;
-        if (username === "nobody") {
-            logger.fatal({
-                method: "setup_settings",
-                cause: "please run $ iotdb oauth-iotdb",
-            }, "no 'username' - this may cause MQTT conflicts");
-            process.exit(0);
-        }
-
-        var machine_id = iot.cfg_get('machine_id');
-        if (!machine_id) {
-            logger.fatal({
-                method: "setup_settings",
-                cause: "please run $ iotdb machine-id",
-            }, "no 'machine_id' - this may cause MQTT conflicts");
-            process.exit(0);
-        }
-
-        settings.d.mqttd.prefix = util.format("/u/%s/%s/", username, machine_id);
+        settings.d.mqttd.prefix = util.format("/runners/%s/", settings.d.host);
     }
 
     var ipv4 = _.ipv4();
@@ -140,19 +137,6 @@ var setup = function () {
         try {
             fs.mkdirSync(folder);
         } catch (x) {}
-    }
-
-    /* all secrets must be set */
-    var sd = settings.d.secrets;
-    for (var key in sd) {
-        var value = sd[key];
-        if (!value) {
-            logger.error({
-                method: "setup",
-                cause: "admin hasn't completed setup",
-            }, "missing secret: do $ iotdb set homestar/runner/secrets/" + key + " 0 --uuid");
-            process.exit(1);
-        }
     }
 };
 
