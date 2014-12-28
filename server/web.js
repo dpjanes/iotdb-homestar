@@ -153,23 +153,12 @@ var webserver_action = function (request, result) {
 
 exports.app = null;
 
-/**
- *  Set up the web server
- */
-var setup_webserver = function () {
-    var wsd = settings.d.webserver;
-    if (wsd.host == null) {
-        wsd.host = settings.d.ip;
-    }
-
-    var app = express();
-    exports.app = app;
-
+var setup_express = function (app) {
     app.use(express_body_parser.json());
     app.use(express_cookie_parser());
     app.use(express_body_parser());
     app.use(express_session({
-        secret: settings.d.webserver.secret,
+        secret: settings.d.secrets.session,
         resave: false,
         saveUninitialized: true,
         store: new express_session_file_store({
@@ -180,6 +169,30 @@ var setup_webserver = function () {
     app.use(passport.initialize());
     app.use(passport.session());
 
+    if (settings.d.debug.requests) {
+        app.use(function (request, response, next) {
+            logger.info({
+                request: {
+                    url: request.url,
+                    method: request.method,
+                    params: request.params,
+                    query: request.query,
+                    headers: request.headers,
+                },
+            }, "----------------");
+            next();
+        });
+    } else if (settings.d.debug.urls) {
+        app.use(function (request, response, next) {
+            logger.info({
+                url: request.url,
+            }, request.method);
+            next();
+        });
+    }
+};
+
+var setup_pages = function (app) {
     app.get('/', webserver_home);
     app.use('/', express.static(path.join(__dirname, '..', 'client')));
     app.use('/', express.static(path.join(__dirname, '..', 'client', 'flat-ui')));
@@ -196,8 +209,6 @@ var setup_webserver = function () {
             failureRedirect: '/'
         })
     );
-
-    app.listen(wsd.port, wsd.host);
 };
 
 /**
@@ -288,11 +299,19 @@ action.load_actions();
  */
 settings.setup();
 setup_passport();
-setup_webserver();
+
+var app = express();
+exports.app = app;
+
+setup_express(app);
+setup_pages(app);
 
 /*
  *  Run the web server
  */
+var wsd = settings.d.webserver;
+app.listen(wsd.port, wsd.host);
+
 logger.info({
     method: "main",
     url: settings.d.webserver.url,

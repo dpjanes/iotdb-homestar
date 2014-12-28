@@ -66,6 +66,13 @@ var settings = {
             host: null,
             port: 3000
         },
+        secrets: {
+            session: null,
+        },
+        debug: {
+            requests: null,
+            urls: null,
+        },
         open_browser: true,
         name: null
     }
@@ -76,14 +83,6 @@ var setup = function () {
     var d = iot.cfg_get("homestar/runner");
     if (d) {
         _.smart_extend(settings.d, d);
-    }
-
-    if (!settings.d.webserver.secret) {
-        logger.fatal({
-            method: "setup_settings",
-            cause: "please $ run iotdb set homestar/runner/webserver/secret 0 --uuid"
-        }, "no secret for cookies");
-        process.exit(0);
     }
 
     if (!settings.d.mqttd.prefix) {
@@ -141,6 +140,19 @@ var setup = function () {
         try {
             fs.mkdirSync(folder);
         } catch (x) {}
+    }
+
+    /* all secrets must be set */
+    var sd = settings.d.secrets;
+    for (var key in sd) {
+        var value = sd[key];
+        if (!value) {
+            logger.error({
+                method: "setup",
+                cause: "admin hasn't completed setup",
+            }, "missing secret: do $ iotdb set homestar/runner/secrets/" + key + " 0 --uuid");
+            process.exit(1);
+        }
     }
 };
 
