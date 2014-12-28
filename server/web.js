@@ -49,6 +49,7 @@ var mqtt = require('./mqtt');
 var action = require('./action');
 var data = require('./data');
 var settings = require('./settings');
+var ping = require('./ping');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -334,39 +335,4 @@ if (settings.d.mqttd.local) {
     });
 }
 
-/*
- *  Ping HomeStar
- */
-if (settings.d.homestar.ping && settings.d.homestar.bearer) {
-    var bearer = 'Bearer ' + settings.d.homestar.bearer;
-    var server_url = settings.d.homestar.url + '/api/1.0/consumers/' + settings.d.homestar.key;
-
-    var ping = function() {
-        unirest
-            .put(server_url)
-            .headers({
-                'Accept': 'application/json',
-                'Authorization': bearer,
-            })
-            .json({
-                'name': "David's Computer (pi)",
-                'url': settings.d.webserver.url,
-            })
-            .type('json')
-            .end(function (result) {
-                if (result.body) {
-                    logger.info({
-                        url: server_url,
-                    }, "pinged");
-                } else {
-                    logger.error({
-                        status: result.statusCode,
-                        url: server_url,
-                    }, "ping failed");
-                }
-            });
-    }
-
-    setInterval(ping, 5 * 60 * 1000);
-    ping();
-}
+ping.setup();

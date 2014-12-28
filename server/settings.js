@@ -26,33 +26,16 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var unirest = require('unirest');
-
-var express = require('express');
-var express_session = require('express-session');
-var express_cookie_parser = require('cookie-parser');
-var express_body_parser = require('body-parser');
-var express_session_file_store = require('session-file-store')(express_session);
-
-var swig = require('swig');
-
-var passport = require('passport');
-var passport_twitter = require('passport-twitter').Strategy;
-
 var os = require('os');
 var open = require('open');
 var path = require('path');
 var util = require('util');
 var fs = require('fs');
 
-var mqtt = require('./mqtt');
-var action = require('./action');
-var data = require('./data');
-
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
     name: 'iotdb-runner',
-    module: 'web',
+    module: 'settings',
 });
 
 var settings = {
@@ -86,9 +69,8 @@ var settings = {
         open_browser: true
     }
 };
-exports.d = settings.d;
 
-exports.setup = function () {
+var setup = function () {
     var iot = iotdb.iot();
     var d = iot.cfg_get("homestar/runner");
     if (d) {
@@ -157,3 +139,9 @@ exports.setup = function () {
         }
     }
 };
+
+/*
+ *  API
+ */
+exports.setup = setup;
+exports.d = settings.d;
