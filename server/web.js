@@ -240,7 +240,7 @@ var setup_passport = function () {
 
         /* rehash ID just in case */
         var id_hash = _.md5_hash(user.id);
-        var user_path = path.join(settings.d.folders.users, id_hash + ".json")
+        var user_path = path.join(settings.d.folders.users, id_hash + ".json");
 
         fs.writeFileSync(user_path, JSON.stringify(user, null, 2) + "\n");
 
@@ -249,7 +249,7 @@ var setup_passport = function () {
 
     passport.deserializeUser(function (user_id, done) {
         var id_hash = _.md5_hash(user_id);
-        var user_path = path.join(settings.d.folders.users, id_hash + ".json")
+        var user_path = path.join(settings.d.folders.users, id_hash + ".json");
 
         try {
             var user = JSON.parse(fs.readFileSync(user_path));

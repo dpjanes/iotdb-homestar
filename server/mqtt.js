@@ -20,10 +20,6 @@ var _ = iotdb.helpers;
 var mqtt = require('mqtt');
 var mows = require('mows');
 
-var util = require('util');
-var url = require('url');
-var mqtt_ws = require('mqtt-ws');
-
 var settings = require('./settings');
 
 var bunyan = require('bunyan');
@@ -33,7 +29,7 @@ var logger = bunyan.createLogger({
 });
 
 var serverd = {};
-var server_client = function(client) {
+var server_client = function (client) {
     var self = serverd;
 
     logger.info({
@@ -117,8 +113,7 @@ var server_client = function(client) {
 var create_server = function () {
     mqtt
         .createServer(server_client)
-        .listen(settings.d.mqttd.port, settings.d.mqttd.host)
-        ;
+        .listen(settings.d.mqttd.port, settings.d.mqttd.host);
 
     logger.info({
         method: "create_server",
@@ -131,8 +126,7 @@ var create_server = function () {
 var create_bridge = function () {
     mows
         .createServer(server_client)
-        .listen(settings.d.mqttd.websocket, settings.d.host)
-        ;
+        .listen(settings.d.mqttd.websocket, settings.d.host);
 
     logger.info({
         method: "create_server",

@@ -140,8 +140,7 @@ var setup = function () {
 
         try {
             fs.mkdirSync(folder);
-        } catch (x) {
-        }
+        } catch (x) {}
     }
 };
 

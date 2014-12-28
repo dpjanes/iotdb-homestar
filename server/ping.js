@@ -39,7 +39,7 @@ var logger = bunyan.createLogger({
 var bearer;
 var server_url;
 
-var ping = function() {
+var ping = function () {
     unirest
         .put(server_url)
         .headers({
@@ -65,7 +65,7 @@ var ping = function() {
         });
 };
 
-var setup = function() {
+var setup = function () {
     if (!settings.d.homestar.ping) {
         logger.error({
             method: "setup",
