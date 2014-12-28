@@ -26,8 +26,6 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var unirest = require('unirest');
-
 var express = require('express');
 var express_session = require('express-session');
 var express_cookie_parser = require('cookie-parser');
@@ -270,12 +268,6 @@ var setup_passport = function () {
 };
 
 /*
- *  Ping HomeStar 
- */
-var homestar_ping = function() {
-};
-
-/*
  *  Start IOTDB
  */
 var iot = iotdb.iot();
@@ -311,28 +303,7 @@ if (settings.d.open_browser) {
 }
 
 /*
- *  Run the MQTT server (not working yet)
+ *  Other servers
  */
-if (settings.d.mqttd.local) {
-    logger.info({
-        method: "main",
-        paramd: settings.d.mqttd,
-    }, "setting up MQTT server");
-
-    if (settings.d.mqttd.host) {
-        settings.d.mqttd.host = settings.d.webserver.host;
-    }
-
-    mqtt.create_server(settings.d.mqttd);
-    mqtt.create_bridge({
-        mqtt: {
-            host: settings.d.mqttd.host,
-            port: settings.d.mqttd.port
-        },
-        websocket: {
-            port: settings.d.mqttd.websocket
-        }
-    });
-}
-
+mqtt.setup();
 ping.setup();

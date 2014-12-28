@@ -22,6 +22,8 @@ var util = require('util');
 var url = require('url');
 var mqtt_ws = require('mqtt-ws');
 
+var settings = require('./settings');
+
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
     name: 'iotdb-home',
@@ -232,3 +234,32 @@ exports.publish = function (mqttd, topic, data) {
         data: data
     }, "published");
 };
+
+var setup = function () {
+    if (settings.d.mqttd.local) {
+        logger.info({
+            method: "main",
+            paramd: settings.d.mqttd,
+        }, "setting up MQTT server");
+
+        if (settings.d.mqttd.host) {
+            settings.d.mqttd.host = settings.d.webserver.host;
+        }
+
+        mqtt.create_server(settings.d.mqttd);
+        mqtt.create_bridge({
+            mqtt: {
+                host: settings.d.mqttd.host,
+                port: settings.d.mqttd.port
+            },
+            websocket: {
+                port: settings.d.mqttd.websocket
+            }
+        });
+    }
+};
+
+/*
+ *  API
+ */
+exports.setup = setup;
