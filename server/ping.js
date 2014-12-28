@@ -47,7 +47,7 @@ var ping = function() {
             'Authorization': bearer,
         })
         .json({
-            'name': "David's Computer (pi)",
+            'name': settings.d.name,
             'url': settings.d.webserver.url,
         })
         .type('json')

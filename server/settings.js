@@ -66,7 +66,8 @@ var settings = {
             host: null,
             port: 3000
         },
-        open_browser: true
+        open_browser: true,
+        name: null
     }
 };
 
@@ -127,6 +128,10 @@ var setup = function () {
                 settings.d.webserver.scheme, settings.d.webserver.host, settings.d.webserver.port
             );
         }
+    }
+
+    if (!settings.d.name) {
+        settings.d.name = os.hostname();
     }
 
     /* make folders - should be changed to make recursive */
