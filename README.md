@@ -1,30 +1,37 @@
-iotdb-homestar
+Home☆Star Runner
 ==============
 
-IOTDB Script Runner / Web Interface
+# Installation
 
-### Settings
+## Package
 
-<code>.iotdb/keystore</code should look something like this 
+    $ npm install -g homestar
 
-    {
-      "homestar": {
-        "client": {
-          "open_browser": false,
-          "webserver": {
-            "secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          },
-          "homestar": {
-            "api_key": "XXXXXXXXXXXXXXXXXXXXXX",
-            "api_secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-          }
-        }
-      }
-    }
+## Configuration (1)
 
-This can be set up with the following commands
+    $ homestar setup
 
-    $ iotdb set homestar/client/webserver/secret 0 --uuid
-    $ iotdb set homestar/client/homestar/api_key "the key"
-    $ iotdb set homestar/client/homestar/api_secret "the secret"
+## Integrate with HomeStar.io
 
+* go to: https://homestar.io
+* sign in / create an account
+* go to: https://homestar.io/runners/add
+* follow the instructions (basically, copy and paste some commands)
+
+# Running
+
+    $ homestar runner
+
+The home page will be brought up in your browser. If you don't wa
+
+# Getting new recipies
+
+# Important Settings
+
+## Don't open webpage 
+
+    homestart set homestar/runner/open_browser 0 --boolean
+
+## Change http port
+
+    homestart set homestar/runner/webserver/port 4567 --integer
