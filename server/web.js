@@ -47,7 +47,7 @@ var mqtt = require('./mqtt');
 var action = require('./action');
 var data = require('./data');
 var settings = require('./settings');
-var ping = require('./ping');
+var homestar = require('./homestar');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -325,4 +325,4 @@ if (settings.d.open_browser) {
  *  Other servers
  */
 mqtt.setup();
-ping.setup();
+homestar.setup();

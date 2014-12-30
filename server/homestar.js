@@ -1,9 +1,11 @@
 /*
- *  ping.js
+ *  homestar.js
  *
  *  David Janes
  *  IOTDB.org
  *  2014-12-28
+ *
+ *  Manage communications with HomeStar.io
  *
  *  Copyright [2013-2014] [David P. Janes]
  *
@@ -37,11 +39,15 @@ var logger = bunyan.createLogger({
 });
 
 var bearer;
-var server_url;
+var URL_CONSUMER;
+var URL_PROFILE;
 
+/**
+ *  Ping the server that I'm alive
+ */
 var ping = function () {
     unirest
-        .put(server_url)
+        .put(URL_CONSUMER)
         .headers({
             'Accept': 'application/json',
             'Authorization': bearer,
@@ -54,26 +60,43 @@ var ping = function () {
         .end(function (result) {
             if (result.body) {
                 logger.info({
-                    url: server_url,
+                    url: URL_CONSUMER,
                 }, "pinged");
             } else {
                 logger.error({
                     status: result.statusCode,
-                    url: server_url,
+                    url: URL_CONSUMER,
                 }, "ping failed");
             }
         });
 };
 
-var setup = function () {
-    if (!settings.d.homestar.ping) {
-        logger.error({
-            method: "setup",
-            cause: "disabled in settings",
-        }, "no HomeStar ping service");
-        return;
-    }
+/*
+ *  Fetch owner's profile, as determined by Bearer token
+ */
+var profile = function () {
+    unirest
+        .get(URL_PROFILE)
+        .headers({
+            'Accept': 'application/json',
+            'Authorization': bearer,
+        })
+        .type('json')
+        .end(function (result) {
+            if (result.body) {
+                logger.info({
+                    body: result.body,
+                }, "profile");
+            } else {
+                logger.error({
+                    status: result.statusCode,
+                    url: URL_CONSUMER,
+                }, "profile failed");
+            }
+        });
+};
 
+var setup = function () {
     if (!settings.d.homestar.bearer) {
         logger.error({
             method: "setup",
@@ -84,11 +107,22 @@ var setup = function () {
 
     /* setup variables */
     bearer = 'Bearer ' + settings.d.homestar.bearer;
-    server_url = settings.d.homestar.url + '/api/1.0/consumers/' + settings.d.homestar.key;
+    URL_CONSUMER = settings.d.homestar.url + '/api/1.0/consumers/' + settings.d.homestar.key;
+    URL_PROFILE = settings.d.homestar.url + '/api/1.0/profile';
 
     /* ping now and forever */
-    ping();
-    setInterval(ping, 5 * 60 * 1000);
+    if (settings.d.homestar.ping) {
+        ping();
+        setInterval(ping, 5 * 60 * 1000);
+    } else {
+        logger.error({
+            method: "setup",
+            cause: "disabled in settings",
+        }, "no HomeStar ping service");
+    } 
+
+    /* fetch my profile */
+    profile();
 };
 
 /*

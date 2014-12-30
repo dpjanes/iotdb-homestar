@@ -56,6 +56,7 @@ var settings = {
         homestar: {
             url: "https://homestar.io",
             ping: true,
+            profile: true,
             key: null,
             secret: null,
             bearer: null,
