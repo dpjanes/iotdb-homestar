@@ -3,11 +3,11 @@
     "bugs": {
         "url": "https://github.com/dpjanes/iotdb-homestar/issues"
     }, 
-    "description": "Home☆star Client", 
+    "description": "Home☆star Client Runner", 
     "homepage": "https://homestar.io", 
     "license": "Apache-2.0", 
     "main": "web.js", 
-    "name": "iotdb-homestar", 
+    "name": "homestar-runner", 
     "private": false, 
     "repository": {
         "type": "git", 

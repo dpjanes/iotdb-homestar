@@ -44,7 +44,7 @@ var util = require('util');
 var fs = require('fs');
 
 var mqtt = require('./mqtt');
-var action = require('./action');
+var recipe = require('./recipe');
 var data = require('./data');
 var settings = require('./settings');
 var homestar = require('./homestar');
@@ -69,7 +69,7 @@ var webserver_home = function (request, result) {
      */
     var home_template = path.join(__dirname, '..', 'client', 'index.html');
     var home_page = swig.renderFile(home_template, {
-        cdsd: action.group_actions(),
+        cdsd: recipe.group_recipes(),
         settings: settings.d,
         user: request.user,
     });
@@ -79,56 +79,56 @@ var webserver_home = function (request, result) {
 };
 
 /**
- *  Run a particular action. This is always
+ *  Run a particular recipe. This is always
  *  the result of a PUT
  */
-var webserver_action = function (request, result) {
+var webserver_recipe = function (request, result) {
     logger.info({
-        method: "webserver_action",
-        action_id: request.params.action_id
+        method: "webserver_recipe",
+        recipe_id: request.params.recipe_id
     }, "called");
 
-    var actiond = action.action_by_id(request.params.action_id);
-    if (!actiond) {
+    var reciped = recipe.recipe_by_id(request.params.recipe_id);
+    if (!reciped) {
         logger.error({
-            method: "webserver_action",
-            action_id: request.params.action_id
-        }, "action not found");
+            method: "webserver_recipe",
+            recipe_id: request.params.recipe_id
+        }, "recipe not found");
 
         result.set('Content-Type', 'application/json');
         result.status(404).send(JSON.stringify({
-            error: "action not found",
-            action_id: request.params.action_id
+            error: "recipe not found",
+            recipe_id: request.params.recipe_id
         }, null, 2));
         return;
     }
 
-    if (actiond._context) {
+    if (reciped._context) {
         logger.error({
-            method: "webserver_action",
-            action_id: request.params.action_id,
+            method: "webserver_recipe",
+            recipe_id: request.params.recipe_id,
             cause: "user sent the request before a previous version finished",
-        }, "action is still running");
+        }, "recipe is still running");
 
         result.set('Content-Type', 'application/json');
         result.status(409).send(JSON.stringify({
-            error: "action is still running",
-            action_id: request.params.action_id
+            error: "recipe is still running",
+            recipe_id: request.params.recipe_id
         }, null, 2));
         return;
     }
 
-    var context = new action.Context(request.params.action_id, actiond);
-    context.on("message", function (id, actiond, message) {
-        var topic = settings.d.mqttd.prefix + "api/actions/" + id;
+    var context = new recipe.Context(request.params.recipe_id, reciped);
+    context.on("message", function (id, reciped, message) {
+        var topic = settings.d.mqttd.prefix + "api/recipes/" + id;
         var payload = {
             message: message
         };
 
         mqtt.publish(settings.d.mqttd, topic, payload);
     });
-    context.on("running", function (id, actiond) {
-        var topic = settings.d.mqttd.prefix + "api/actions/" + id;
+    context.on("running", function (id, reciped) {
+        var topic = settings.d.mqttd.prefix + "api/recipes/" + id;
         var payload = {
             running: context.running
         };
@@ -136,7 +136,7 @@ var webserver_action = function (request, result) {
         mqtt.publish(settings.d.mqttd, topic, payload);
 
         if (!context.running) {
-            actiond._context = undefined;
+            reciped._context = undefined;
         }
     });
     context.run(request.body.value);
@@ -147,7 +147,7 @@ var webserver_action = function (request, result) {
     }, null, 2));
 
     if (context.running) {
-        actiond._context = context;
+        reciped._context = context;
     }
 };
 
@@ -196,7 +196,7 @@ var setup_pages = function (app) {
     app.get('/', webserver_home);
     app.use('/', express.static(path.join(__dirname, '..', 'client')));
     app.use('/', express.static(path.join(__dirname, '..', 'client', 'flat-ui')));
-    app.put('/api/actions/:action_id', webserver_action);
+    app.put('/api/recipes/:recipe_id', webserver_recipe);
 
     app.get('/auth/logout', function (request, response) {
         request.logout();
@@ -292,7 +292,7 @@ iot.on_thing(function (thing) {
 /*
  *  Load Actions
  */
-action.load_actions();
+recipe.load_recipes();
 
 /**
  *  Setup the web server

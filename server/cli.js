@@ -39,7 +39,7 @@ var logger = bunyan.createLogger({
 var iot = iotdb.iot();
 
 var runner = new runner.Runner();
-runner._load_actions();
+runner._load_recipes();
 
 var sorter = function (a, b) {
     if (a.group < b.group) {
@@ -61,7 +61,7 @@ var prompt_the_user = function () {
     var commands = iot.data("command");
     if (!commands || !commands.length) {
         logger.error({
-            method: "_load_actions",
+            method: "_load_recipes",
             cause: "xxx"
         }, "nothing to prompt for");
 
@@ -71,14 +71,14 @@ var prompt_the_user = function () {
 
     var ps = [];
     for (var ci in commands) {
-        var actiond = commands[ci];
-        actiond._index = parseInt(ci) + 1;
+        var reciped = commands[ci];
+        reciped._index = parseInt(ci) + 1;
 
-        if ((actiond._index === 1) && (actiond.group !== undefined)) {
-            ps.push(util.format("--- %s", actiond.group));
+        if ((reciped._index === 1) && (reciped.group !== undefined)) {
+            ps.push(util.format("--- %s", reciped.group));
         }
 
-        ps.push(util.format("[%d] %s", actiond._index, actiond.name));
+        ps.push(util.format("[%d] %s", reciped._index, reciped.name));
     }
 
     var p = ps.join("\n");
@@ -98,9 +98,9 @@ var prompt_the_user = function () {
         if (result.command === '') {} else {
             var cindex = parseInt(result.command);
             for (var ci in commands) {
-                var actiond = commands[ci];
-                if (actiond._index === cindex) {
-                    actiond.run();
+                var reciped = commands[ci];
+                if (reciped._index === cindex) {
+                    reciped.run();
                     break;
                 }
             }
