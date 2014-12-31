@@ -21,3 +21,24 @@
  */
 
 "use strict";
+
+var iotdb = require('iotdb');
+var data = require('./server/data');
+
+var iot = function(initd) {
+    return iotdb.iot(initd);
+};
+
+var recipe = function(initd) {
+    iot().data("recipe", initd);
+};
+
+/*
+ *  API
+ */
+exports.iotdb = iotdb;
+exports.iot = iot;
+exports.recipe = recipe;
+
+exports.cfg = iotdb.cfg;
+exports._ = iotdb.helpers;
