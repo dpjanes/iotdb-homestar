@@ -8,14 +8,20 @@ You'll need to have Node-JS installed on your computer,
 
 ## Package
 
+Run:
+
     $ sudo npm install -g homestar
     $ npm link homestar
 
-## Configuration (1)
+## Configuration
+
+Run:
 
     $ homestar setup
 
 ## Integrate with HomeStar.io
+
+Then:
 
 * go to: https://homestar.io
 * sign in / create an account
@@ -44,3 +50,13 @@ The home page will be brought up in your browser.
 ## Change http port
 
     homestart set homestar/runner/webserver/port 4567 --integer
+
+## Change latitude / longitude
+
+Your latitude and longitude are used to determine solar events,
+such as sunrise and sunset. Read more about this [here](https://github.com/dpjanes/iotdb-timers).
+
+    homestart set homestar/runner/location/latitude 43.7387 --number
+    homestart set homestar/runner/location/longitude -79.4337 --number
+
+Note that <code>homestar setup</code> automatically sets pretty good values for these.
