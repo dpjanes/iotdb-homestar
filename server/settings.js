@@ -23,6 +23,7 @@
 "use strict";
 
 var iotdb = require('iotdb');
+var timers = require('iotdb-timers');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
@@ -75,6 +76,15 @@ var settings = {
             requests: null,
             urls: null,
         },
+        location: {
+            latitude: null,
+            longitude: null,
+            locality: null,
+            country: null,
+            region: null,
+            timezone: null,
+            postal_code: null,
+        },
         open_browser: true,
         name: null
     }
@@ -114,6 +124,11 @@ var setup = function () {
     /* MQTT */
     if (!settings.d.mqttd.prefix) {
         settings.d.mqttd.prefix = util.format("/runners/%s/", settings.d.secrets.host);
+    }
+
+    /* Location for Timers */
+    if ((settings.d.location.latitude !== null) && (settings.d.location.longitude !== null)) {
+        timers.setLocation(settings.d.location.latitude, settings.d.location.longitude);
     }
 
     var ipv4 = _.ipv4();

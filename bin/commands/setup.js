@@ -31,6 +31,7 @@ var cfg = iotdb.cfg;
 
 var fs = require('fs');
 var uuid = require('uuid');
+var unirest = require("unirest")
 
 exports.command = "setup";
 exports.summary = "setup your local Home☆Star Runner";
@@ -43,6 +44,10 @@ exports.help = function () {
 };
 
 var _set = function(d, key, value) {
+    if (value === undefined) {
+        return;
+    }
+
     var subkeys = key.split('/');
     var lastkey = subkeys[subkeys.length - 1];
 
@@ -59,6 +64,7 @@ var _set = function(d, key, value) {
 
     if (d[lastkey] === undefined) {
         d[lastkey] = value;
+        console.log("change: %s → %s", lastkey, value);
         return true;
     }
 };
@@ -84,9 +90,24 @@ exports.run = function (ad) {
     is_changed |= _set(keystored, "homestar/secrets/host", uuid.v4());
     is_changed |= _set(keystored, "homestar/secrets/session", uuid.v4());
 
-    if (is_changed) {
-        fs.writeFile(filename, JSON.stringify(keystored, null, 2));
-    }
+    unirest
+        .get("http://ip-api.com/json")
+        .end(function (result) {
+            if (result.body && (result.body.status === "success")) {
+                is_changed |= _set(keystored, "homestar/location/latitude", result.body.lat);
+                is_changed |= _set(keystored, "homestar/location/longitude", result.body.lon);
+                is_changed |= _set(keystored, "homestar/location/locality", result.body.city);
+                is_changed |= _set(keystored, "homestar/location/country", result.body.countryCode || result.body.county);
+                is_changed |= _set(keystored, "homestar/location/region", result.body.region || result.body.regionName);
+                is_changed |= _set(keystored, "homestar/location/timezone", result.body.timezone);
+                is_changed |= _set(keystored, "homestar/location/postal_code", result.body.zip);
+            }
 
-    console.log("homestar: setup complete -- make sure to add API keys: https://homestar.io/runners");
+            if (is_changed) {
+                fs.writeFile(filename, JSON.stringify(keystored, null, 2));
+            }
+
+            console.log("homestar: setup complete -- make sure to add API keys: https://homestar.io/runners");
+        });
+
 };

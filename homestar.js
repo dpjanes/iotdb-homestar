@@ -23,6 +23,7 @@
 "use strict";
 
 var iotdb = require('iotdb');
+var timers = require('iotdb-timers');
 var data = require('./server/data');
 
 var iot = function(initd) {
@@ -37,6 +38,7 @@ var recipe = function(initd) {
  *  API
  */
 exports.iotdb = iotdb;
+exports.timers = timers;
 exports.iot = iot;
 exports.recipe = recipe;
 
