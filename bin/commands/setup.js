@@ -30,6 +30,7 @@ var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
 var fs = require('fs');
+var uuid = require('uuid');
 
 exports.command = "setup";
 exports.summary = "setup your local Home☆Star Runner";
@@ -41,6 +42,27 @@ exports.help = function () {
     console.log("Run this only once!");
 };
 
+var _set = function(d, key, value) {
+    var subkeys = key.split('/');
+    var lastkey = subkeys[subkeys.length - 1];
+
+    for (var ski = 0; ski < subkeys.length - 1; ski++) {
+        var subkey = subkeys[ski];
+        var subd = d[subkey];
+        if (!_.isObject(subd)) {
+            subd = {};
+            d[subkey] = subd;
+        }
+
+        d = subd;
+    }
+
+    if (d[lastkey] === undefined) {
+        d[lastkey] = value;
+        return true;
+    }
+};
+
 exports.run = function (ad) {
     /*
     iotdb.iot({
@@ -49,4 +71,22 @@ exports.run = function (ad) {
         },
     });
     */
+    var keystored = {};
+    var filename = ".iotdb/keystore.json";
+
+    cfg.cfg_load_json([ filename ], function(paramd) {
+        for (var key in paramd.doc) {
+            keystored[key] = paramd.doc[key];
+        }
+    });
+
+    var is_changed = false;
+    is_changed |= _set(keystored, "homestar/secrets/host", uuid.v4());
+    is_changed |= _set(keystored, "homestar/secrets/session", uuid.v4());
+
+    if (is_changed) {
+        fs.writeFile(filename, JSON.stringify(keystored, null, 2));
+    }
+
+    console.log("homestar: setup complete -- make sure to add API keys: https://homestar.io/runners");
 };

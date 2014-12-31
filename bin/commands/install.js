@@ -1,11 +1,11 @@
 /*
- *  bin/commands/add.js
+ *  bin/commands/install.js
  *
  *  David Janes
  *  IOTDB.org
  *  2014-12-30
  *
- *  HomeStar command line control: "homestar add"
+ *  HomeStar command line control: "homestar install"
  *  Add a recipe from the web to your HomeStar installation
  *
  *  Copyright [2013-2015] [David P. Janes]
@@ -31,11 +31,11 @@ var cfg = iotdb.cfg;
 
 var fs = require('fs');
 
-exports.command = "add";
-exports.summary = "add a recipe to your Runner";
+exports.command = "install";
+exports.summary = "install a recipe to your Runner";
 
 exports.help = function () {
-    console.log("usage: homestar add [<url>|<recipie_name>]");
+    console.log("usage: homestar install [<url>|<recipe_name>]");
     console.log("");
     console.log("Add a recipe to your Home☆Star Runner");
 };
