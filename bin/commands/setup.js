@@ -70,13 +70,18 @@ var _set = function(d, key, value) {
 };
 
 exports.run = function (ad) {
-    /*
-    iotdb.iot({
-        envd: {
-            IOTDB_PROJECT: process.cwd()
-        },
-    });
-    */
+    /* required folders */
+    try {
+        fs.mkdirSync(".iotdb");
+    } catch (err) {
+
+    }
+    try {
+        fs.mkdirSync("cookbook");
+    } catch (err) {
+    }
+
+    /* load keystore */
     var keystored = {};
     var filename = ".iotdb/keystore.json";
 
@@ -86,10 +91,12 @@ exports.run = function (ad) {
         }
     });
 
+    /* secrets */
     var is_changed = false;
     is_changed |= _set(keystored, "homestar/secrets/host", uuid.v4());
     is_changed |= _set(keystored, "homestar/secrets/session", uuid.v4());
 
+    /* location */
     unirest
         .get("http://ip-api.com/json")
         .end(function (result) {

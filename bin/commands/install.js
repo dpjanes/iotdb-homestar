@@ -29,7 +29,11 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var fs = require('fs');
+var node_fs = require('fs');
+var node_url = require('url');
+var node_path = require('path');
+
+var unirest = require('unirest');
 
 exports.command = "install";
 exports.summary = "install a recipe to your Runner";
@@ -37,10 +41,65 @@ exports.summary = "install a recipe to your Runner";
 exports.help = function () {
     console.log("usage: homestar install [<url>|<recipe_name>]");
     console.log("");
-    console.log("Add a recipe to your Home☆Star Runner");
+    console.log("Add a recipe to your Home☆Star Runner. These are");
+    console.log("copied into folder 'cookbook'. Please edit to make");
+    console.log("sure they do what you want");
+    console.log("");
+    console.log("Recipes can be found here:");
+    console.log("https://github.com/dpjanes/homestar-cookbook");
 };
 
 exports.run = function (ad) {
+    if (ad._.length != 2) {
+        console.log("homestar install takes a single argument");
+        console.log("");
+        exports.help();
+        process.exit(1);
+    }
+
+    // normalize the URL, depending on github
+    var url = ad._[1];
+    var urlp = node_url.parse(url);
+    if (urlp.host === null) {
+        url = "https://raw.githubusercontent.com/dpjanes/homestar-cookbook/master/" + urlp.path;
+    } else if (urlp.host == "github.com")  {
+        var prefix = "/dpjanes/homestar-cookbook/blob/master/";
+        if (urlp.path.indexOf(prefix) === 0) {
+            url = "https://raw.githubusercontent.com/dpjanes/homestar-cookbook/master/" + urlp.path.substring(prefix.length);
+        }
+    }
+
+    // make the local filename and make sure it doesn't exist
+    var urlp = node_url.parse(url);
+    var basename = node_path.basename(urlp.path);
+    var path = node_path.join("cookbook", basename);
+    if (node_fs.existsSync(path)) {
+        console.log("error: %s exists - delete it or move it away first", path);
+        process.exit(1)
+    }
+
+    // download
+    unirest
+        .get(url)
+        .end(function (result) {
+            if (result.error) {
+                console.log("error: %s", result.error);
+                process.exit(1);
+            }
+
+            node_fs.writeFile(path, result.body);
+            
+            console.log("done!");
+            console.log("* read %s", url);
+            console.log("* wrote %s", path);
+        });
+
+    /*
+var unirest = require("unirest")
+
+    console.log(basename);
+    */
+
     /*
     iotdb.iot({
         envd: {

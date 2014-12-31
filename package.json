@@ -14,6 +14,7 @@
         "express": "~4.10.6", 
         "express-session": "~1.9.3", 
         "iotdb": "~0.3.12", 
+        "iotdb-timers": "~0.0.6", 
         "minimist": "~1.1.0", 
         "mows": "~0.0.6", 
         "mqtt": "~0.3.13", 
@@ -50,5 +51,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.0.22"
+    "version": "0.0.24"
 }

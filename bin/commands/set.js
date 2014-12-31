@@ -54,7 +54,7 @@ exports.run = function (ad) {
     } else if (!ad.list && ad._.length > 3) {
         console.log("too many arguments -- make sure to use '--list' if you want to set multiple items");
         console.log("");
-        help("set");
+        exports.help();
         process.exit(1);
     }
 
