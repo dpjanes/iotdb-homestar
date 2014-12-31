@@ -3,9 +3,13 @@ Home☆Star Runner
 
 # Installation
 
+You'll need to have Node-JS installed on your computer,
+[in whatever the usual way for you is](http://nodejs.org/download/).
+
 ## Package
 
-    $ npm install -g homestar
+    $ sudo npm install -g homestar
+    $ npm link homestar
 
 ## Configuration (1)
 

@@ -1,7 +1,7 @@
 {
     "author": "David P. Janes <davidjanes@iotdb.org> (https://iotdb.org)", 
     "bin": {
-        "homestar": "./bin/homestar", 
+        "homestar": "./bin/homestar"
     }, 
     "bugs": {
         "url": "https://github.com/dpjanes/iotdb-homestar/issues"
@@ -46,5 +46,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.0.5"
+    "version": "0.0.6"
 }

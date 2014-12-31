@@ -1,12 +1,12 @@
 /*
- *  bin/commands/runner.js
+ *  bin/commands/setup.js
  *
  *  David Janes
  *  IOTDB.org
  *  2014-12-30
  *
- *  HomeStar command line control: "homestar runner"
- *  Start your local instance
+ *  HomeStar command line control: "homestar setup"
+ *  Do initial 1-itme setup of your Home☆Star installation.
  *
  *  Copyright [2013-2015] [David P. Janes]
  *  
@@ -31,13 +31,14 @@ var cfg = iotdb.cfg;
 
 var fs = require('fs');
 
-exports.command = "runner";
-exports.summary = "start your local Home☆Star Runner";
+exports.command = "setup";
+exports.summary = "setup your local Home☆Star Runner";
 
 exports.help = function () {
-    console.log("usage: homestar runner");
+    console.log("usage: homestar setup");
     console.log("");
-    console.log("Start your local Home☆Star Runner");
+    console.log("Setup your local Home☆Star Runner");
+    console.log("Run this only once!");
 };
 
 exports.run = function (ad) {
@@ -46,6 +47,4 @@ exports.run = function (ad) {
             IOTDB_PROJECT: process.cwd()
         },
     });
-
-    require("../../server/web");
 };

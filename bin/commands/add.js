@@ -1,12 +1,12 @@
 /*
- *  bin/commands/runner.js
+ *  bin/commands/add.js
  *
  *  David Janes
  *  IOTDB.org
  *  2014-12-30
  *
- *  HomeStar command line control: "homestar runner"
- *  Start your local instance
+ *  HomeStar command line control: "homestar add"
+ *  Add a recipe from the web to your HomeStar installation
  *
  *  Copyright [2013-2015] [David P. Janes]
  *  
@@ -31,13 +31,13 @@ var cfg = iotdb.cfg;
 
 var fs = require('fs');
 
-exports.command = "runner";
-exports.summary = "start your local Home☆Star Runner";
+exports.command = "add";
+exports.summary = "add a recipe to your Runner";
 
 exports.help = function () {
-    console.log("usage: homestar runner");
+    console.log("usage: homestar add [<url>|<recipie_name>]");
     console.log("");
-    console.log("Start your local Home☆Star Runner");
+    console.log("Add a recipe to your Home☆Star Runner");
 };
 
 exports.run = function (ad) {
@@ -46,6 +46,4 @@ exports.run = function (ad) {
             IOTDB_PROJECT: process.cwd()
         },
     });
-
-    require("../../server/web");
 };

@@ -1,5 +1,5 @@
 /*
- *  bin/cmds/set.js
+ *  bin/commands/set.js
  *
  *  David Janes
  *  IOTDB.org
@@ -7,7 +7,7 @@
  *
  *  HomeStar command line control: "set" command
  *
- *  Copyright [2013-2014] [David P. Janes]
+ *  Copyright [2013-2015] [David P. Janes]
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
