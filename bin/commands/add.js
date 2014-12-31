@@ -41,9 +41,11 @@ exports.help = function () {
 };
 
 exports.run = function (ad) {
+    /*
     iotdb.iot({
         envd: {
             IOTDB_PROJECT: process.cwd()
         },
     });
+    */
 };
