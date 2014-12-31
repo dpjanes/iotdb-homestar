@@ -120,7 +120,7 @@ var webserver_recipe = function (request, result) {
 
     var context = new recipe.Context(request.params.recipe_id, reciped);
     context.on("message", function (id, reciped, message) {
-        var topic = settings.d.mqttd.prefix + "api/recipes/" + id;
+        var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
         var payload = {
             message: message
         };
@@ -128,7 +128,7 @@ var webserver_recipe = function (request, result) {
         mqtt.publish(settings.d.mqttd, topic, payload);
     });
     context.on("running", function (id, reciped) {
-        var topic = settings.d.mqttd.prefix + "api/recipes/" + id;
+        var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
         var payload = {
             running: context.running
         };
@@ -196,7 +196,7 @@ var setup_pages = function (app) {
     app.get('/', webserver_home);
     app.use('/', express.static(path.join(__dirname, '..', 'client')));
     app.use('/', express.static(path.join(__dirname, '..', 'client', 'flat-ui')));
-    app.put('/api/recipes/:recipe_id', webserver_recipe);
+    app.put('/api/cookbook/:recipe_id', webserver_recipe);
 
     app.get('/auth/logout', function (request, response) {
         request.logout();

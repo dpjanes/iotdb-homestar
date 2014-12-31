@@ -95,14 +95,25 @@ var setup = function () {
             logger.error({
                 method: "setup",
                 cause: "admin hasn't completed setup",
-            }, "missing secret: do $ iotdb set homestar/runner/secrets/" + key + " 0 --uuid");
+                fix: "$ homestar set homestar/runner/secrets/" + key + " 0 --uuid",
+            }, "missing secret");
             process.exit(1);
         }
     }
 
+    /* Homestar.io */
+    if (!settings.d.homestar.key || !settings.d.homestar.secret || !settings.d.homestar.bearer) {
+        logger.error({
+            method: "setup",
+            cause: "HomeStar.io API keys not added",
+            fix: "get a keys from https://homestar.io/runners/",
+        }, "HomeStar.io API keys not added");
+        process.exit(1);
+    }
+
     /* MQTT */
     if (!settings.d.mqttd.prefix) {
-        settings.d.mqttd.prefix = util.format("/runners/%s/", settings.d.host);
+        settings.d.mqttd.prefix = util.format("/runners/%s/", settings.d.secrets.host);
     }
 
     var ipv4 = _.ipv4();

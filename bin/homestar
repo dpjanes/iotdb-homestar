@@ -38,7 +38,7 @@ var path = require('path');
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
     name: 'homestar',
-    module: 'homstar',
+    module: 'homestar',
 });
 
 /* for minimist */

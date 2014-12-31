@@ -29,6 +29,7 @@ var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
 var fs = require('fs');
+var uuid = require('uuid');
 
 exports.command = "set";
 exports.boolean = [ "list", "boolean", "number", "integer", "uuid" ];

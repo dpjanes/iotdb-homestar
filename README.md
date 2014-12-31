@@ -24,13 +24,18 @@ You'll need to have Node-JS installed on your computer,
 
 # Running
 
-    $ homestar runner
+    $ homestar runner | homestar pretty
 
-The home page will be brought up in your browser. If you don't wa
+The home page will be brought up in your browser. 
+<code>homestar pretty</code> makes the output more readable.
 
 # Getting new recipies
 
 # Important Settings
+
+## Change the name of my server as it appears on HomeStar.io
+
+    homestart set homestar/runner/name "StrongBad"
 
 ## Don't open webpage 
 

@@ -94,7 +94,7 @@ var js = {
                 "local=", topic_local
             );
 
-            var parts = topic_local.match(/\/api\/actions\/([0-9a-f]+)/);
+            var parts = topic_local.match(/\/api\/cookbook\/([0-9a-f]+)/);
             if (parts) {
                 js.actions.on_message(parts[1], JSON.parse(message.payloadString));
                 return;
@@ -133,7 +133,7 @@ var js = {
 
             var paramd = {
                 type : 'PUT',
-                url : '/api/actions/' + id,
+                url : '/api/cookbook/' + id,
                 data: JSON.stringify(requestd),
                 contentType: "application/json",
                 dataType : 'json',
