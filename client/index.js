@@ -10,6 +10,15 @@ var js = {
         }
         js.actions.on_load();
         js.mqtt.on_load();
+
+        for (var rdi in recipedd) {
+            var rd = recipedd[rdi];
+            js.actions.on_message(rd.id, {
+                running: rd.running,
+                message: rd.message,
+                state: rd.state
+            });
+        }
     },
 
     mqtt: {
@@ -173,6 +182,10 @@ var js = {
                     e_li.find(".action-message").text("");
                 }
             } 
+
+            if (d.state !== undefined) {
+                e_li.find(".action-state").text(d.state.message || "");
+            }
         },
 
         end: 0

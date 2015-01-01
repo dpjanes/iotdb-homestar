@@ -37,20 +37,39 @@ var logger = bunyan.createLogger({
 
 /**
  *  The "Context" is basically does the work of
- *  managing a running Action.
+ *  managing a running Recipe. You make them
+ *  using the 'context' function below.
+ *  <p>
+ *  Might be horrible idea. Stop judging me.
  */
-var Context = function (id, reciped) {
+var Context = function (reciped) {
     var self = this;
 
     self.running = false;
     self.reciped = reciped;
-    self.id = id;
+    self.id = recipe_to_id(reciped);
+
+    self.reciped._context = self;
 
     events.EventEmitter.call(self);
 };
 
 util.inherits(Context, events.EventEmitter);
 
+/*
+ *  This is how you get Context objects
+ */
+var context = function (reciped) {
+    if (reciped._context) {
+        return reciped._context;
+    } else {
+        return new Context(reciped);
+    }
+};
+
+/*
+ *  Format and emit a message (this will be picked up by MQTT elsewhere)
+ */
 Context.prototype.message = function () {
     var self = this;
 
@@ -58,6 +77,75 @@ Context.prototype.message = function () {
 
     self.emit("message", self.id, self.reciped,
         util.format.apply(util.apply, Array.prototype.slice.call(arguments)));
+};
+
+/*
+ *  Emit the state of this recipe
+ */
+Context.prototype.state = function (state) {
+    var self = this;
+
+    if ((state === undefined) || (state === null)) {
+        self.reciped._state = {
+        };
+    } else if (_.isString(state)) {
+        self.reciped._state = {
+            type: "iot-js:string",
+            message: state
+        };
+    } else if ((state === undefined) || (state === undefined)) {
+        self.reciped._state = {
+            type: "iot-js:null"
+        };
+    } else if (_.isBoolean(state)) {
+        self.reciped._state = {
+            type: "iot-js:boolean",
+            message: state
+        };
+    } else if (_.isNumber(state)) {
+        self.reciped._state = {
+            type: "iot-js:number",
+            message: state
+        };
+    } else if (!_.isObject(state)) {
+        self.reciped._logger.error({
+            method: "state",
+        }, "don't know what to do with this state");
+        return;
+    } else if (state.type === undefined) {
+        self.reciped._logger.error({
+            method: "state",
+            state: state,
+        }, "state.type is needed");
+        return;
+    } else {
+        self.reciped._state = state;
+    }
+
+    self.emit("state", self.id, self.reciped._state);
+};
+
+/*
+ *  Call the validate function. This also
+ *  returns a function that can call itself!
+ *  Why? to simplify recipes:
+ *
+    oninit: function(context) {
+        tv.on_thing(context.validate());
+        denon.on_thing(context.validate());
+    },
+
+    If the function isn't needed, garbage collection will get it
+ */
+Context.prototype.validate = function () {
+    var self = this;
+    if (self.reciped.onvalidate) {
+        self.reciped.onvalidate(self);
+    }
+
+    return function() {
+        self.validate();
+    }
 };
 
 Context.prototype.done = function (timeout) {
@@ -74,15 +162,28 @@ Context.prototype.done = function (timeout) {
 
 };
 
-Context.prototype.run = function (value) {
+Context.prototype.onclick = function (value) {
     var self = this;
 
     self.running = false;
-    self.reciped.run(self, value);
+    if (self.reciped.onclick) {
+        if (self.reciped._valued !== undefined) {
+            value = self.reciped._valued[value];
+        }
+
+        self.reciped.onclick(self, value);
+    } else {
+        logger.info({
+            method: "onclick",
+            cause: "attempt by the user to 'click' a recipe that doesn't want to be clicked",
+        }, "no 'onclick' method");
+    }
 };
 
 /**
  *  Use this to load recipes
+ *  <p>
+ *  They end up in iot.data('recipes')
  */
 var load_recipes = function (initd) {
     var self = this;
@@ -115,6 +216,46 @@ var load_recipes = function (initd) {
             filename: paramd.filename
         }, "found Model");
     });
+};
+
+/**
+ *  Call me once
+ */
+var init_recipes = function () {
+    var iot = iotdb.iot();
+    var cds = iot.data("recipe");
+    if (!cds || !cds.length) {
+        return;
+    }
+
+    for (var ci in cds) {
+        var reciped = cds[ci];
+        reciped._id = recipe_to_id(reciped);
+        reciped._state = {};
+
+        if (reciped.enabled === false) {
+            continue;
+        }
+        if (reciped.value !== undefined) {
+            reciped.value = _.expand(reciped.value, "iot-js:")
+            if (reciped.value === _.expand("iot-js:boolean")) {
+                reciped.values = [ "Off", "On", ]
+                reciped._valued = {
+                    "Off": false,
+                    "On": true,
+                };
+            }
+        }
+
+        if ((reciped.run !== undefined) && (reciped.onclick === undefined)) {
+            reciped.onclick = reciped.run;
+        }
+
+        /* initialization function */
+        if (reciped.oninit) {
+            reciped.oninit(context(reciped));
+        }
+    }
 };
 
 /**
@@ -155,6 +296,9 @@ var recipe_by_id = function (id) {
 
     for (var ci in cds) {
         var reciped = cds[ci];
+        if (reciped.enabled === false) {
+            continue;
+        }
         if (recipe_to_id(reciped) === id) {
             return reciped;
         }
@@ -196,7 +340,9 @@ var group_recipes = function () {
 
     for (var ci in cds) {
         var reciped = cds[ci];
-        reciped._id = recipe_to_id(reciped);
+        if (reciped.enabled === false) {
+            continue;
+        }
 
         var gds = gdsd[reciped.group];
         if (gds === undefined) {
@@ -209,12 +355,35 @@ var group_recipes = function () {
     return gdsd;
 };
 
+var recipes = function () {
+    var iot = iotdb.iot();
+    var recipeds = iot.data("recipe");
+    if (!recipeds || !recipeds.length) {
+        return [];
+    }
+
+    var rds = []
+    for (var ri in recipeds) {
+        var reciped = recipeds[ri];
+        if (reciped.enabled === false) {
+            continue;
+        }
+
+        rds.push(reciped);
+    }
+
+    rds.sort(order_recipe);
+    return rds;
+};
+
 /**
  *  API
  */
-exports.Context = Context;
+exports.context = context;
 exports.order_recipe = order_recipe;
 exports.load_recipes = load_recipes;
+exports.init_recipes = init_recipes;
+exports.recipes = recipes;
 exports.group_recipes = group_recipes;
 exports.recipe_to_id = recipe_to_id;
 exports.recipe_by_id = recipe_by_id;

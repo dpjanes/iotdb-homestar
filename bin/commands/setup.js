@@ -93,21 +93,21 @@ exports.run = function (ad) {
 
     /* secrets */
     var is_changed = false;
-    is_changed |= _set(keystored, "homestar/secrets/host", uuid.v4());
-    is_changed |= _set(keystored, "homestar/secrets/session", uuid.v4());
+    is_changed |= _set(keystored, "homestar/runner/secrets/host", uuid.v4());
+    is_changed |= _set(keystored, "homestar/runner/secrets/session", uuid.v4());
 
     /* location */
     unirest
         .get("http://ip-api.com/json")
         .end(function (result) {
             if (result.body && (result.body.status === "success")) {
-                is_changed |= _set(keystored, "homestar/location/latitude", result.body.lat);
-                is_changed |= _set(keystored, "homestar/location/longitude", result.body.lon);
-                is_changed |= _set(keystored, "homestar/location/locality", result.body.city);
-                is_changed |= _set(keystored, "homestar/location/country", result.body.countryCode || result.body.county);
-                is_changed |= _set(keystored, "homestar/location/region", result.body.region || result.body.regionName);
-                is_changed |= _set(keystored, "homestar/location/timezone", result.body.timezone);
-                is_changed |= _set(keystored, "homestar/location/postal_code", result.body.zip);
+                is_changed |= _set(keystored, "homestar/runner/location/latitude", result.body.lat);
+                is_changed |= _set(keystored, "homestar/runner/location/longitude", result.body.lon);
+                is_changed |= _set(keystored, "homestar/runner/location/locality", result.body.city);
+                is_changed |= _set(keystored, "homestar/runner/location/country", result.body.countryCode || result.body.county);
+                is_changed |= _set(keystored, "homestar/runner/location/region", result.body.region || result.body.regionName);
+                is_changed |= _set(keystored, "homestar/runner/location/timezone", result.body.timezone);
+                is_changed |= _set(keystored, "homestar/runner/location/postal_code", result.body.zip);
             }
 
             if (is_changed) {

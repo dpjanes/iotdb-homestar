@@ -103,7 +103,8 @@ var webserver_recipe = function (request, result) {
         return;
     }
 
-    if (reciped._context) {
+    var context = recipe.context(reciped);
+    if (context.running) {
         logger.error({
             method: "webserver_recipe",
             recipe_id: request.params.recipe_id,
@@ -115,39 +116,52 @@ var webserver_recipe = function (request, result) {
             error: "recipe is still running",
             recipe_id: request.params.recipe_id
         }, null, 2));
+
         return;
     }
 
-    var context = new recipe.Context(request.params.recipe_id, reciped);
-    context.on("message", function (id, reciped, message) {
-        var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
-        var payload = {
-            message: message
-        };
-
-        mqtt.publish(settings.d.mqttd, topic, payload);
-    });
-    context.on("running", function (id, reciped) {
-        var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
-        var payload = {
-            running: context.running
-        };
-
-        mqtt.publish(settings.d.mqttd, topic, payload);
-
-        if (!context.running) {
-            reciped._context = undefined;
-        }
-    });
-    context.run(request.body.value);
+    context.onclick(request.body.value);
 
     result.set('Content-Type', 'application/json');
     result.send(JSON.stringify({
         running: context.running
     }, null, 2));
+};
 
-    if (context.running) {
-        reciped._context = context;
+/**
+ *  Set up all the events around connecting events to MQTT
+ */
+var setup_recipe_mqtt = function() {
+    var recipeds = recipe.recipes();
+    for (var ri in recipeds) {
+        var reciped = recipeds[ri];
+        var context = recipe.context(reciped);
+
+        context.on("message", function (id, reciped, message) {
+            var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
+            var payload = {
+                message: message
+            };
+
+            mqtt.publish(settings.d.mqttd, topic, payload);
+        });
+        context.on("state", function (id, state) {
+            console.log("HERE:D");
+            var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
+            var payload = {
+                state: state,
+            };
+
+            mqtt.publish(settings.d.mqttd, topic, payload);
+        });
+        context.on("running", function (id, reciped) {
+            var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
+            var payload = {
+                running: context.running
+            };
+
+            mqtt.publish(settings.d.mqttd, topic, payload);
+        });
     }
 };
 
@@ -290,9 +304,12 @@ iot.on_thing(function (thing) {
 });
 
 /*
- *  Load Actions
+ *  Load the Cookbook
  */
 recipe.load_recipes();
+recipe.init_recipes();
+
+setup_recipe_mqtt();
 
 /**
  *  Setup the web server

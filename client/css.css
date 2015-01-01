@@ -6,6 +6,9 @@
 .action-message {
     display: block;
 }
+.action-state {
+    display: block;
+}
 li.action-item {
     -webkit-user-select: none;
 }
