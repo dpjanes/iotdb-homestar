@@ -59,7 +59,7 @@ util.inherits(Context, events.EventEmitter);
 /*
  *  This is how you get Context objects
  */
-var context = function (reciped) {
+var make_context = function (reciped) {
     if (reciped._context) {
         return reciped._context;
     } else {
@@ -126,25 +126,15 @@ Context.prototype.state = function (state) {
 };
 
 /*
- *  Call the validate function. This also
- *  returns a function that can call itself!
- *  Why? to simplify recipes:
- *
-    oninit: function(context) {
-        tv.on_thing(context.validate());
-        denon.on_thing(context.validate());
-    },
-
-    If the function isn't needed, garbage collection will get it
+ *  Call the validate function on a recipe.
+ *  Typically you'll just 'watch' to watch things,
+ *  which will call validate when anyhing
+ *  interesting changes
  */
 Context.prototype.validate = function () {
     var self = this;
     if (self.reciped.onvalidate) {
         self.reciped.onvalidate(self);
-    }
-
-    return function() {
-        self.validate();
     }
 };
 
@@ -229,33 +219,63 @@ var init_recipes = function () {
     }
 
     for (var ci in cds) {
-        var reciped = cds[ci];
-        reciped._id = recipe_to_id(reciped);
-        reciped._state = {};
+        init_recipe(cds[ci]);
+    }
+};
 
-        if (reciped.enabled === false) {
-            continue;
-        }
-        if (reciped.value !== undefined) {
-            reciped.value = _.expand(reciped.value, "iot-js:")
-            if (reciped.value === _.expand("iot-js:boolean")) {
-                reciped.values = [ "Off", "On", ]
-                reciped._valued = {
-                    "Off": false,
-                    "On": true,
-                };
-            }
-        }
+var init_recipe = function (reciped) {
+    reciped._id = recipe_to_id(reciped);
+    reciped._state = {};
 
-        if ((reciped.run !== undefined) && (reciped.onclick === undefined)) {
-            reciped.onclick = reciped.run;
-        }
+    /* enabled: if false, do not use */
+    if (reciped.enabled === false) {
+        return;
+    }
 
-        /* initialization function */
-        if (reciped.oninit) {
-            reciped.oninit(context(reciped));
+    /* this handles manipulating the recipe */
+    var context = make_context(reciped);
+
+    /* */
+    if (reciped.value !== undefined) {
+        reciped.value = _.expand(reciped.value, "iot-js:")
+        if (reciped.value === _.expand("iot-js:boolean")) {
+            reciped.values = [ "Off", "On", ]
+            reciped._valued = {
+                "Off": false,
+                "On": true,
+            };
         }
     }
+
+    /* run: old name for onclick: */
+    if ((reciped.run !== undefined) && (reciped.onclick === undefined)) {
+        reciped.onclick = reciped.run;
+    }
+
+    /* watch: ThingArrays we need to monitor for reachable changes */
+    if (reciped.watch) {
+        if (!_.isArray(reciped.watch)) {
+            reciped.watch = [ reciped.watch ]
+        }
+
+        var _validate = function() {
+            context.validate();
+        };
+
+        for (var wi in reciped.watch) {
+            var things = reciped.watch[wi];
+            
+            things.on_thing(_validate);
+            things.on_meta(_validate);
+        }
+    }
+
+    /* oninit: initialization function */
+    if (reciped.oninit) {
+        reciped.oninit(context);
+    }
+
+    context.validate();
 };
 
 /**
@@ -379,7 +399,7 @@ var recipes = function () {
 /**
  *  API
  */
-exports.context = context;
+exports.make_context = make_context;
 exports.order_recipe = order_recipe;
 exports.load_recipes = load_recipes;
 exports.init_recipes = init_recipes;

@@ -103,7 +103,7 @@ var webserver_recipe = function (request, result) {
         return;
     }
 
-    var context = recipe.context(reciped);
+    var context = recipe.make_context(reciped);
     if (context.running) {
         logger.error({
             method: "webserver_recipe",
@@ -135,7 +135,7 @@ var setup_recipe_mqtt = function() {
     var recipeds = recipe.recipes();
     for (var ri in recipeds) {
         var reciped = recipeds[ri];
-        var context = recipe.context(reciped);
+        var context = recipe.make_context(reciped);
 
         context.on("message", function (id, reciped, message) {
             var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
@@ -146,7 +146,6 @@ var setup_recipe_mqtt = function() {
             mqtt.publish(settings.d.mqttd, topic, payload);
         });
         context.on("state", function (id, state) {
-            console.log("HERE:D");
             var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
             var payload = {
                 state: state,
