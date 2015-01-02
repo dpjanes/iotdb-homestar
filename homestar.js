@@ -44,3 +44,53 @@ exports.recipe = recipe;
 
 exports.cfg = iotdb.cfg;
 exports._ = iotdb.helpers;
+
+/*
+ *  For recipes
+ */
+exports.value = {
+    "boolean": {
+        "type": "iot-js:boolean",
+    },
+    "integer": {
+        "type": "iot-js:integer",
+    },
+    "number": {
+        "type": "iot-js:number",
+    },
+    "string": {
+        "type": "iot-js:string",
+    },
+    "date": {
+        "type": "iot-js:string",
+        "format": "iot-js:date",
+    },
+    "datetime": {
+        "type": "iot-js:string",
+        "format": "iot-js:datetime",
+    },
+    "time": {
+        "type": "iot-js:string",
+        "format": "iot-js:time",
+    },
+    "unit": {
+        "type": "iot-js:number",
+        "minumum": 0,
+        "maximum": 1,
+        "format": "iot-unit:math.fraction.unit",
+    },
+    "percent": {
+        "type": "iot-js:number",
+        "minumum": 0,
+        "maximum": 100,
+        "format": "iot-unit:math.fraction.percent",
+    },
+    "fahrenheit": {
+        "type": "iot-js:number",
+        "unit": "iot-unit:temperature.imperial.fahrenheit",
+    },
+    "celsius": {
+        "type": "iot-js:number",
+        "unit": "iot-unit:temperature.metrix.celsius",
+    },
+};

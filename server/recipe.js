@@ -235,10 +235,21 @@ var init_recipe = function (reciped) {
     /* this handles manipulating the recipe */
     var context = make_context(reciped);
 
-    /* */
-    if (reciped.value !== undefined) {
-        reciped.value = _.expand(reciped.value, "iot-js:")
-        if (reciped.value === _.expand("iot-js:boolean")) {
+    /* IOTDB types */
+    var keys = [ "value", "type", "format", "unit", ];
+    for (var ki in keys) {
+        var key = keys[ki];
+        var value = reciped[key];
+
+        if (_.isObject(value)) {
+            _.smart_extend(reciped, value);
+        }
+    }
+
+    /* JavaScript types */
+    if (reciped.type !== undefined) {
+        reciped.type = _.compact(_.expand(reciped.type, "iot-js:"))
+        if (reciped.type === "iot-js:boolean") {
             reciped.values = [ "Off", "On", ]
             reciped._valued = {
                 "Off": false,
