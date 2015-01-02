@@ -281,6 +281,21 @@ var init_recipe = function (reciped) {
         }
     }
 
+    /* validation function default */
+    if (reciped.watch && !reciped.onvalidate) {
+        reciped.onvalidate = function(context) {
+            for (var wi in reciped.watch) {
+                var things = reciped.watch[wi];
+                if (things.reachable() === 0) {
+                    context.state("Some Things have not been found (yet)");
+                    return;
+                }
+            }
+
+            context.state("");
+        };
+    }
+
     /* oninit: initialization function */
     if (reciped.oninit) {
         reciped.oninit(context);

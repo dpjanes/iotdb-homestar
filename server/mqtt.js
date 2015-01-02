@@ -105,7 +105,7 @@ var server_client = function (client) {
         client.stream.end();
     });
 
-    client.on('close', function (err) {
+    client.on('close', function (error) {
         if (settings.d.mqttd.verbose) {
             logger.info({
                 method: "server_client/on(close)",
@@ -114,7 +114,7 @@ var server_client = function (client) {
         delete self.clients[client.id];
     });
 
-    client.on('error', function (err) {
+    client.on('error', function (error) {
         if (settings.d.mqttd.verbose) {
             logger.error({
                 method: "server_client/on(error)",
