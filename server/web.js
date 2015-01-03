@@ -352,7 +352,7 @@ setup_recipe_mqtt();
 /**
  *  Setup the web server
  */
-settings.setup();
+settings.setup(process.argv);
 setup_passport();
 
 var app = express();

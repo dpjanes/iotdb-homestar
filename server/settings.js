@@ -99,11 +99,64 @@ var settings = {
     }
 };
 
-var setup = function () {
+var _set = function (key, value) {
+    var d = settings.d;
+    var subkeys = key.split('/');
+    var lastkey = subkeys[subkeys.length - 1];
+
+    for (var ski = 0; ski < subkeys.length - 1; ski++) {
+        var subkey = subkeys[ski];
+        var subd = d[subkey];
+        if (!_.isObject(subd)) {
+            subd = {};
+            d[subkey] = subd;
+        }
+
+        d = subd;
+    }
+
+    var ovalue = d[lastkey];
+    if (_.isBoolean(ovalue)) {
+        value = parseInt(value) ? true : false;
+    } else if (_.isInteger(ovalue)) {
+        value = parseInt(value);
+    } else if (_.isNumber(ovalue)) {
+        value = parseFloat(value);
+    } else if (_.isArray(ovalue)) {
+        logger.fatal({
+            method: "_set",
+            key: key,
+            value: value,
+            cause: "sorry - cannot set an array value here",
+        }, "can't set an array");
+    } else if (_.isArray(ovalue)) {
+        logger.fatal({
+            method: "_set",
+            key: key,
+            value: value,
+            cause: "sorry - cannot set a dictionary value here",
+        }, "can't set a dictionary");
+    }
+
+    d[lastkey] = value;
+};
+
+var setup = function (av) {
     var iot = iotdb.iot();
     var d = iot.cfg_get("homestar/runner");
     if (d) {
         _.smart_extend(settings.d, d);
+    }
+
+    /* command line arguments - homestar/runner prefix not needed (or desired) */
+    if (av !== undefined) {
+        for (var ai in av) {
+            var a = av[ai];
+            var amatches = a.match(/^([^=]*)=(.*)/);
+            if (amatches) {
+                _set(amatches[1], amatches[2]);
+            }
+        }
     }
 
     /* all secrets must be set */

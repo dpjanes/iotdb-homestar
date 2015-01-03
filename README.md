@@ -39,10 +39,22 @@ Then:
 
 ### Additional Node modules
 
-* <b>Bluetooth Low Energy</b>  
-<code>$ npm install -g noble</code>
-* <b>LIFX</b>  
-<code>$ npm install -g lifx</code>
+
+#### Bluetooth Low Energy
+
+	$ npm install -g noble
+
+#### Feeds (Atom and RSS)
+
+	$ npm install -g feedparser
+
+#### Firmata (Arduino)  
+
+	$ npm install -g firmata
+
+#### LIFX 
+
+	$ npm install -g lifx
 
 ## Running
 
