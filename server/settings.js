@@ -66,7 +66,16 @@ var settings = {
             secret: null,
             scheme: "http",
             host: null,
-            port: 3000
+            port: 3000,
+            folders: {
+                static: [
+                    path.join('$HOMESTAR_INSTALL', 'client'),
+                    path.join('$HOMESTAR_INSTALL', 'client', 'flat-ui'),
+                ],
+                dynamic: [
+                    path.join('$HOMESTAR_INSTALL', 'client'),
+                ]
+            }
         },
         secrets: {
             host: null,     // not really a secret, as published on MQTT
@@ -172,3 +181,6 @@ var setup = function () {
  */
 exports.setup = setup;
 exports.d = settings.d;
+exports.envd = {
+    "HOMESTAR_INSTALL": path.join(__dirname, ".."),
+};

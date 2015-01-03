@@ -55,6 +55,8 @@ var logger = bunyan.createLogger({
     module: 'web',
 });
 
+var home_template;
+
 /**
  *  Serve the home page - dynamically created
  */
@@ -73,7 +75,27 @@ var webserver_home = function (request, result) {
     delete sd.homestar.key;
     delete sd.homestar.bearer;
 
-    var home_template = path.join(__dirname, '..', 'client', 'index.html');
+    if (home_template === undefined) {
+        for (var fi in settings.d.webserver.folders.dynamic) {
+            var folder = settings.d.webserver.folders.dynamic[fi];
+            folder = cfg.cfg_expand(settings.envd, folder)
+
+            var index_path = path.join(folder, "index.html");
+            if (fs.existsSync(index_path)) {
+                home_template = index_path;
+                break;
+            }
+        }
+
+        if (home_template === undefined) {
+            logger.fatal({
+                method: "webserver_home",
+                folders: settings.d.webserver.folders.dynamic,
+            }, "index.html not found in homestar/runner/webserver/folders/dynamic");
+            process.exit(1);
+        }
+    }
+
     var home_page = swig.renderFile(home_template, {
         cdsd: recipe.group_recipes(),
         settings: sd,
@@ -212,9 +234,20 @@ var setup_express = function (app) {
 };
 
 var setup_pages = function (app) {
+    /* _the_ home page - always dynamic */
     app.get('/', webserver_home);
-    app.use('/', express.static(path.join(__dirname, '..', 'client')));
-    app.use('/', express.static(path.join(__dirname, '..', 'client', 'flat-ui')));
+
+    /* static files - before internal dynamic pages */
+    for (var fi in settings.d.webserver.folders.static) {
+        app.use('/', 
+            express.static(
+                cfg.cfg_expand(settings.envd, settings.d.webserver.folders.static[fi])
+            )
+        );
+    }
+    // app.use('/', express.static(path.join(__dirname, '..', 'client')));
+    // app.use('/', express.static(path.join(__dirname, '..', 'client', 'flat-ui')));
+
     app.put('/api/cookbook/:recipe_id', webserver_recipe);
 
     app.get('/auth/logout', function (request, response) {

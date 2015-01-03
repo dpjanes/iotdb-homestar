@@ -51,12 +51,50 @@ exports._ = iotdb.helpers;
 exports.value = {
     "boolean": {
         "type": "iot-js:boolean",
+        "on_off": {
+            "type": "iot-js:boolean",
+            "values": [ "Off", "On", ],
+        },
+        "up_down": {
+            "type": "iot-js:boolean",
+            "values": [ "Down", "Up", ],
+        },
+        "true_false": {
+            "type": "iot-js:boolean",
+            "values": [ "False", "True", ],
+        },
     },
     "integer": {
         "type": "iot-js:integer",
+        "percent": {
+            "type": "iot-js:integer",
+            "minumum": 0,
+            "maximum": 100,
+            "format": "iot-unit:math.fraction.percent",
+        },
     },
     "number": {
         "type": "iot-js:number",
+        "unit": {
+            "type": "iot-js:number",
+            "minumum": 0,
+            "maximum": 1,
+            "format": "iot-unit:math.fraction.unit",
+        },
+        "percent": {
+            "type": "iot-js:number",
+            "minumum": 0,
+            "maximum": 100,
+            "format": "iot-unit:math.fraction.percent",
+        },
+        "fahrenheit": {
+            "type": "iot-js:number",
+            "unit": "iot-unit:temperature.imperial.fahrenheit",
+        },
+        "celsius": {
+            "type": "iot-js:number",
+            "unit": "iot-unit:temperature.metrix.celsius",
+        },
     },
     "string": {
         "type": "iot-js:string",
@@ -73,24 +111,8 @@ exports.value = {
         "type": "iot-js:string",
         "format": "iot-js:time",
     },
-    "unit": {
-        "type": "iot-js:number",
-        "minumum": 0,
-        "maximum": 1,
-        "format": "iot-unit:math.fraction.unit",
-    },
-    "percent": {
-        "type": "iot-js:number",
-        "minumum": 0,
-        "maximum": 100,
-        "format": "iot-unit:math.fraction.percent",
-    },
-    "fahrenheit": {
-        "type": "iot-js:number",
-        "unit": "iot-unit:temperature.imperial.fahrenheit",
-    },
-    "celsius": {
-        "type": "iot-js:number",
-        "unit": "iot-unit:temperature.metrix.celsius",
+    "color": {
+        "type": "iot-js:string",
+        "format": "iot-js:color",
     },
 };

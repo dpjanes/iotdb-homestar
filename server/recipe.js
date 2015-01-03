@@ -242,7 +242,12 @@ var init_recipe = function (reciped) {
         var value = reciped[key];
 
         if (_.isObject(value)) {
-            _.smart_extend(reciped, value);
+            for (var vkey in value) {
+                var vvalue = value[vkey];
+                if (_.isArray(vvalue) || !_.isObject(vvalue)) {
+                    reciped[vkey] = vvalue;
+                }
+            }
         }
     }
 
