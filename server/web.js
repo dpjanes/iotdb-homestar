@@ -67,10 +67,16 @@ var webserver_home = function (request, result) {
     /*
      *  Render
      */
+    var sd = _.smart_extend({}, settings.d);
+    delete sd["secrets"];
+    delete sd.homestar.secret;
+    delete sd.homestar.key;
+    delete sd.homestar.bearer;
+
     var home_template = path.join(__dirname, '..', 'client', 'index.html');
     var home_page = swig.renderFile(home_template, {
         cdsd: recipe.group_recipes(),
-        settings: settings.d,
+        settings: sd,
         user: request.user,
     });
 
