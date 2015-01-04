@@ -58,7 +58,12 @@ var ping = function () {
         })
         .type('json')
         .end(function (result) {
-            if (result.body) {
+            if (result.error) {
+                logger.error({
+                    url: URL_CONSUMER,
+                    error: result.error,
+                }, "ping failed");
+            } else if (result.body) {
                 logger.info({
                     url: URL_CONSUMER,
                 }, "pinged");
@@ -97,7 +102,7 @@ var profile = function () {
 };
 
 var setup = function () {
-    if (!settings.d.homestar.bearer) {
+    if (!settings.d.keys.homestar.bearer) {
         logger.error({
             method: "setup",
             cause: "no bearer token",
@@ -106,8 +111,8 @@ var setup = function () {
     }
 
     /* setup variables */
-    bearer = 'Bearer ' + settings.d.homestar.bearer;
-    URL_CONSUMER = settings.d.homestar.url + '/api/1.0/consumers/' + settings.d.homestar.key;
+    bearer = 'Bearer ' + settings.d.keys.homestar.bearer;
+    URL_CONSUMER = settings.d.homestar.url + '/api/1.0/consumers/' + settings.d.keys.homestar.key;
     URL_PROFILE = settings.d.homestar.url + '/api/1.0/profile';
 
     /* ping now and forever */

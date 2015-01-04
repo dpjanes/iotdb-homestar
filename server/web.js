@@ -71,9 +71,7 @@ var webserver_home = function (request, result) {
      */
     var sd = _.smart_extend({}, settings.d);
     delete sd["secrets"];
-    delete sd.homestar.secret;
-    delete sd.homestar.key;
-    delete sd.homestar.bearer;
+    delete sd["keys"];
 
     if (home_template === undefined) {
         for (var fi in settings.d.webserver.folders.dynamic) {
@@ -274,8 +272,8 @@ var setup_passport = function () {
     var client_url = settings.d.webserver.url;
     passport.use(
         new passport_twitter({
-                consumerKey: settings.d.homestar.key,
-                consumerSecret: settings.d.homestar.secret,
+                consumerKey: settings.d.keys.homestar.key,
+                consumerSecret: settings.d.keys.homestar.secret,
                 callbackURL: client_url + "/auth/homestar/callback",
                 requestTokenURL: server_url + '/oauth/request_token',
                 accessTokenURL: server_url + '/oauth/access_token',

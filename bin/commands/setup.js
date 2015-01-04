@@ -95,6 +95,7 @@ exports.run = function (ad) {
     var is_changed = false;
     is_changed |= _set(keystored, "homestar/runner/secrets/host", uuid.v4());
     is_changed |= _set(keystored, "homestar/runner/secrets/session", uuid.v4());
+    is_changed |= _set(keystored, "machine_id", uuid.v4());
 
     /* location */
     unirest

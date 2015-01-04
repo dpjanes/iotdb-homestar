@@ -58,9 +58,6 @@ var settings = {
             url: "https://homestar.io",
             ping: true,
             profile: true,
-            key: null,
-            secret: null,
-            bearer: null,
         },
         webserver: {
             secret: null,
@@ -80,6 +77,13 @@ var settings = {
         secrets: {
             host: null,     // not really a secret, as published on MQTT
             session: null,
+        },
+        keys: {
+            homestar: {
+                key: null,
+                secret: null,
+                bearer: null,
+            }
         },
         debug: {
             requests: null,
@@ -174,7 +178,7 @@ var setup = function (av) {
     }
 
     /* Homestar.io */
-    if (!settings.d.homestar.key || !settings.d.homestar.secret || !settings.d.homestar.bearer) {
+    if (!settings.d.keys.homestar.key || !settings.d.keys.homestar.secret || !settings.d.keys.homestar.bearer) {
         logger.error({
             method: "setup",
             cause: "HomeStar.io API keys not added",
