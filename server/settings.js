@@ -66,11 +66,11 @@ var settings = {
             port: 3000,
             folders: {
                 static: [
-                    path.join('$HOMESTAR_INSTALL', 'client'),
-                    path.join('$HOMESTAR_INSTALL', 'client', 'flat-ui'),
+                    path.join('$HOMESTAR_INSTALL', 'static'),
+                    path.join('$HOMESTAR_INSTALL', 'static', 'flat-ui'),
                 ],
                 dynamic: [
-                    path.join('$HOMESTAR_INSTALL', 'client'),
+                    path.join('$HOMESTAR_INSTALL', 'dynamic'),
                 ]
             }
         },
