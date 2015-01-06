@@ -95,7 +95,9 @@ var webserver_home = function (request, result) {
     }
 
     var home_page = swig.renderFile(home_template, {
-        cdsd: recipe.group_recipes(),
+        cookbook: function() {
+            return recipe.group_recipes();
+        },
         settings: sd,
         user: request.user,
     });

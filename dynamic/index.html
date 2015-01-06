@@ -25,24 +25,24 @@
         {% endif %}
         </div>
 
-        {% for cds in cdsd %}
+        {% for recipes in cookbook() %}
         <ul class="list-group">
             <li class="list-group-item active">
                 <span class="action-group">{{ loop.key }}</span>
             </li>
-            {% for cd in cds %}
-<script>recipedd[{{ cd._id|json|safe}}] = {
-    id: {{ cd._id|json|safe }},
-    name: {{ cd.name|json|safe }}{% if cd._state %}, 
-    state: {{ cd._state|json|safe }}{% endif %}
+            {% for recipe in recipes %}
+<script>recipedd[{{ recipe._id|json|safe}}] = {
+    id: {{ recipe._id|json|safe }},
+    name: {{ recipe.name|json|safe }}{% if recipe._state %}, 
+    state: {{ recipe._state|json|safe }}{% endif %}
 };</script>
-                {% if cd.values %}
-            <li class="list-group-item" data-id="{{ cd._id }}" onclick="">
-                <span class="action-name text-primary">{{ cd.name }}</span>
+                {% if recipe.values %}
+            <li class="list-group-item" data-id="{{ recipe._id }}" onclick="">
+                <span class="action-name text-primary">{{ recipe.name }}</span>
                 <span class="action-subcommands">
                     <div class="btn-group btn-group-sm">
-                    {% for value in cd.values %}
-                        <button type="button" class="btn btn-default action-item" data-id="{{ cd._id}}" data-value="{{ value }}">{{ value }}</button>
+                    {% for value in recipe.values %}
+                        <button type="button" class="btn btn-default action-item" data-id="{{ recipe._id}}" data-value="{{ value }}">{{ value }}</button>
                     {% endfor %}
                     </div>
                 </span>
@@ -50,8 +50,8 @@
                 <span class="action-state text-muted"></span>
             </li>
                 {% else %}
-            <li class="list-group-item action-item" data-id="{{ cd._id }}" onclick="">
-                <span class="action-name text-primary">{{ cd.name }}</span>
+            <li class="list-group-item action-item" data-id="{{ recipe._id }}" onclick="">
+                <span class="action-name text-primary">{{ recipe.name }}</span>
                 <span class="action-message text-warning"></span>
                 <span class="action-state text-muted"></span>
             </li>
