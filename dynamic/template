@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block title %}
+    <title>Home☆Star</title>
+    {% endblock %}
+    {% block head %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/flat-ui.min.css">
+    <link rel="stylesheet" href="css.css">
+    {% endblock %}
+    {% block head_footer %}
+    {% endblock %}
+</head>
+
+<body>
+    <div class="container" style="margin-top: 20px">
+        {% block nav %}
+        <div class="text-right">
+        {% if user %}
+        <p>
+        <a href="/auth/logout">{{ user.username }}</a>
+        </p>
+        {% else %}
+        <p>
+        <a href="/auth/homestar">Sign in with HomeStar</a>
+        </p>
+        {% endif %}
+        </div>
+        {% endblock %}
+        {% block content %}
+        {% endblock %}
+    </div>
+    {% block javascript %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="js/flat-ui.min.js"></script>
+    {% endblock %}
+    {% block body_footer %}
+    {% endblock %}
+</body>
+</html>

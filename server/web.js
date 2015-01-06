@@ -39,7 +39,7 @@ var passport_twitter = require('passport-twitter').Strategy;
 
 var os = require('os');
 var open = require('open');
-var path = require('path');
+var node_path = require('path');
 var util = require('util');
 var fs = require('fs');
 
@@ -56,55 +56,6 @@ var logger = bunyan.createLogger({
 });
 
 var home_template;
-
-/**
- *  Serve the home page - dynamically created
- */
-var webserver_home = function (request, result) {
-    logger.info({
-        method: "webserver_home",
-        user: request.user,
-    }, "called");
-
-    /*
-     *  Render
-     */
-    var sd = _.smart_extend({}, settings.d);
-    delete sd["secrets"];
-    delete sd["keys"];
-
-    if (home_template === undefined) {
-        for (var fi in settings.d.webserver.folders.dynamic) {
-            var folder = settings.d.webserver.folders.dynamic[fi];
-            folder = cfg.cfg_expand(settings.envd, folder)
-
-            var index_path = path.join(folder, "index.html");
-            if (fs.existsSync(index_path)) {
-                home_template = index_path;
-                break;
-            }
-        }
-
-        if (home_template === undefined) {
-            logger.fatal({
-                method: "webserver_home",
-                folders: settings.d.webserver.folders.dynamic,
-            }, "index.html not found in homestar/runner/webserver/folders/dynamic");
-            process.exit(1);
-        }
-    }
-
-    var home_page = swig.renderFile(home_template, {
-        cookbook: function() {
-            return recipe.group_recipes();
-        },
-        settings: sd,
-        user: request.user,
-    });
-
-    result.set('Content-Type', 'text/html');
-    result.send(home_page);
-};
 
 /**
  *  Run a particular recipe. This is always
@@ -233,9 +184,74 @@ var setup_express = function (app) {
     }
 };
 
+/**
+ *  Dynamic pages - we decide at runtime
+ *  what these are based on our paths
+ */
+var make_dynamic = function(template, mount) {
+    return function (request, result) {
+        logger.info({
+            method: "make_dynamic/(page)",
+            template: template,
+            mount: mount,
+            user: request.user,
+        }, "called");
+
+        var home_page = swig.renderFile(template, {
+            cookbook: function() {
+                return recipe.group_recipes();
+            },
+            settings: function() {
+                var sd = _.smart_extend({}, settings.d);
+                delete sd["secrets"];
+                delete sd["keys"];
+
+                return sd;
+            },
+            user: request.user,
+        });
+
+        result
+            .set('Content-Type', 'text/html')
+            .send(home_page);
+    };
+};
+
+var setup_dynamic = function (app) {
+    var mapped = {};
+
+    for (var fi in settings.d.webserver.folders.dynamic) {
+        var folder = settings.d.webserver.folders.dynamic[fi];
+        folder = cfg.cfg_expand(settings.envd, folder)
+
+        var files = fs.readdirSync(folder) 
+        for (var fi in files) {
+            var file = files[fi];
+            var match = file.match(/^(.*)[.]html$/);
+            if (!match) {
+                continue;
+            }
+
+            var base = match[1];
+            if (base === 'index') {
+                base = '';
+            }
+
+            if (mapped[base] !== undefined) {
+                continue;
+            }
+
+            var template = node_path.join(folder, file);
+            var mount = '/' + base;
+
+            app.get(mount, make_dynamic(template, mount));
+        }
+    }
+};
+
 var setup_pages = function (app) {
     /* _the_ home page - always dynamic */
-    app.get('/', webserver_home);
+    // app.get('/', webserver_home);
 
     /* static files - before internal dynamic pages */
     for (var fi in settings.d.webserver.folders.static) {
@@ -245,8 +261,8 @@ var setup_pages = function (app) {
             )
         );
     }
-    // app.use('/', express.static(path.join(__dirname, '..', 'client')));
-    // app.use('/', express.static(path.join(__dirname, '..', 'client', 'flat-ui')));
+    // app.use('/', express.static(node_path.join(__dirname, '..', 'client')));
+    // app.use('/', express.static(node_path.join(__dirname, '..', 'client', 'flat-ui')));
 
     app.put('/api/cookbook/:recipe_id', webserver_recipe);
 
@@ -303,7 +319,7 @@ var setup_passport = function () {
 
         /* rehash ID just in case */
         var id_hash = _.md5_hash(user.id);
-        var user_path = path.join(settings.d.folders.users, id_hash + ".json");
+        var user_path = node_path.join(settings.d.folders.users, id_hash + ".json");
 
         fs.writeFileSync(user_path, JSON.stringify(user, null, 2) + "\n");
 
@@ -312,7 +328,7 @@ var setup_passport = function () {
 
     passport.deserializeUser(function (user_id, done) {
         var id_hash = _.md5_hash(user_id);
-        var user_path = path.join(settings.d.folders.users, id_hash + ".json");
+        var user_path = node_path.join(settings.d.folders.users, id_hash + ".json");
 
         try {
             var user = JSON.parse(fs.readFileSync(user_path));
@@ -359,6 +375,7 @@ var app = express();
 exports.app = app;
 
 setup_express(app);
+setup_dynamic(app);
 setup_pages(app);
 
 /*
