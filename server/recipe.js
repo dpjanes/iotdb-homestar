@@ -50,6 +50,7 @@ var Context = function (reciped) {
     self.id = recipe_to_id(reciped);
 
     self.reciped._context = self;
+    self.reciped.state = {};
 
     events.EventEmitter.call(self);
 };
@@ -80,49 +81,41 @@ Context.prototype.message = function () {
 };
 
 /*
- *  Emit the state of this recipe
+ *  Change (and emit) the state of this recipe
  */
 Context.prototype.state = function (state) {
     var self = this;
 
     if ((state === undefined) || (state === null)) {
-        self.reciped._state = {
-        };
+        self.reciped.state._text = null;
+        self.reciped.state._html = null;
+        self.reciped.state._number = null;
     } else if (_.isString(state)) {
-        self.reciped._state = {
-            type: "iot-js:string",
-            message: state
-        };
-    } else if ((state === undefined) || (state === undefined)) {
-        self.reciped._state = {
-            type: "iot-js:null"
-        };
+        self.reciped.state._text = state;
+        self.reciped.state._html = null;
+        self.reciped.state._number = null;
     } else if (_.isBoolean(state)) {
-        self.reciped._state = {
-            type: "iot-js:boolean",
-            message: state
-        };
+        self.reciped.state._text = null;
+        self.reciped.state._html = null;
+        self.reciped.state._number = state ? 1 : 0;
     } else if (_.isNumber(state)) {
-        self.reciped._state = {
-            type: "iot-js:number",
-            message: state
-        };
+        self.reciped.state._text = null;
+        self.reciped.state._html = null;
+        self.reciped.state._number = state;
     } else if (!_.isObject(state)) {
+        self.reciped.state._text = null;
+        self.reciped.state._html = null;
+        self.reciped.state._number = null;
+
         self.reciped._logger.error({
             method: "state",
         }, "don't know what to do with this state");
         return;
-    } else if (state.type === undefined) {
-        self.reciped._logger.error({
-            method: "state",
-            state: state,
-        }, "state.type is needed");
-        return;
-    } else {
-        self.reciped._state = state;
+    } else if (state) {
+        _.extend(self.reciped.state, state);
     }
 
-    self.emit("state", self.id, self.reciped._state);
+    self.emit("state", self.id, self.reciped.state);
 };
 
 /*
@@ -225,7 +218,7 @@ var init_recipes = function () {
 
 var init_recipe = function (reciped) {
     reciped._id = recipe_to_id(reciped);
-    reciped._state = {};
+    reciped.state = {};
 
     /* enabled: if false, do not use */
     if (reciped.enabled === false) {

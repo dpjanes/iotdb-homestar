@@ -193,7 +193,13 @@ var js = {
             } 
 
             if (d.state !== undefined) {
-                e_li.find(".action-state").text(d.state.message || "");
+                if (d.state._text) {
+                    e_li.find(".action-state").text(d.state._text || "");
+                } else if (d.state._html) {
+                    e_li.find(".action-state").text(d.state._html);
+                } else if (d.state._number) {
+                    e_li.find(".action-state").text("" + d.state._number);
+                }
             }
         },
 

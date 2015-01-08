@@ -15,8 +15,8 @@ id: {{ recipe._id|json|safe }},
 api: {
   url: "/api/cookbook/{{ recipe._id }}"
 },
-name: {{ recipe.name|json|safe }}{% if recipe._state %}, 
-state: {{ recipe._state|json|safe }}{% endif %}
+name: {{ recipe.name|json|safe }}{% if recipe.state %}, 
+state: {{ recipe.state|json|safe }}{% endif %}
 };</script>
             {% if recipe.values %}
         <li class="list-group-item" data-id="{{ recipe._id }}" onclick="">
