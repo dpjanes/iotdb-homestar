@@ -1,7 +1,8 @@
 {% extends 'template' %}
 {% block content %}
     <h1>uPnP</h1>
-    <p>
-    comming soon
-    </p>
+    {% for dd in upnp().devices %}
+        <h3>{{ dd.friendlyName }} &mdash; <code>{{ dd.host }}:{{ dd.port }}</code></h3>
+        <pre>{{ dd|json(2)|safe }}</pre>
+    {% endfor %}
 {% endblock %}

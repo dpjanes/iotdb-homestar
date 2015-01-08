@@ -198,6 +198,37 @@ var make_dynamic = function(template, mount) {
         }, "called");
 
         var home_page = swig.renderFile(template, {
+            upnp: function() {
+                var ds = [];
+                var devices = iotdb.upnp.devices();
+                for (var di in devices) {
+                    var device = devices[di];
+                    var d = {};
+                    for (var key in device) {
+                        var value = device[key];
+                        if (key.match(/^[^_]/) && (_.isNumber(value) || _.isString(value))) {
+                            d[key] = value;
+                        }
+                    }
+
+                    ds.push(d);
+                }
+
+                ds.sort(function(a, b) {
+                    if (a.friendlyName < b.friendlyName) {
+                        return -1;
+                    } else if (a.friendlyName > b.friendlyName){
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+
+                });
+
+                return {
+                    devices: ds
+                };
+            },
             cookbook: function() {
                 return recipe.group_recipes();
             },
