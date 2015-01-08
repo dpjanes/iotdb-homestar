@@ -1,16 +1,20 @@
 {% extends 'template' %}
 {% block head_footer %}
-    <script>var recipedd = {};</script>
+    <script>var rdd = {};</script>
 {% endblock %}
 {% block content %}
-    {% for recipes in cookbook() %}
+    {% for recipes in cookbook()|groupBy('group') %}
     <ul class="list-group">
         <li class="list-group-item active">
             <span class="action-group">{{ loop.key }}</span>
         </li>
         {% for recipe in recipes %}
-<script>recipedd[{{ recipe._id|json|safe}}] = {
+
+<script>rdd[{{ recipe._id|json|safe}}] = {
 id: {{ recipe._id|json|safe }},
+api: {
+  url: "/api/cookbook/{{ recipe._id }}"
+},
 name: {{ recipe.name|json|safe }}{% if recipe._state %}, 
 state: {{ recipe._state|json|safe }}{% endif %}
 };</script>
@@ -26,14 +30,14 @@ state: {{ recipe._state|json|safe }}{% endif %}
             </span>
             <span class="action-message text-warning"></span>
             <span class="action-state text-muted"></span>
-        </li>
             {% else %}
         <li class="list-group-item action-item" data-id="{{ recipe._id }}" onclick="">
             <span class="action-name text-primary">{{ recipe.name }}</span>
             <span class="action-message text-warning"></span>
             <span class="action-state text-muted"></span>
-        </li>
             {% endif %}
+        <pre>{{ recipe|scrub|json(2)|safe }}</pre>
+        </li>
         {% endfor %}
     </ul>
     {% endfor %}

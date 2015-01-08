@@ -57,20 +57,27 @@ var logger = bunyan.createLogger({
 
 var home_template;
 
+/*
+ *  Filter to make printing JSON easy
+ */
+swig.setFilter('scrub', function (input) {
+    return _.scrub_circular(input);
+});
+
 /**
  *  Run a particular recipe. This is always
  *  the result of a PUT
  */
-var webserver_recipe = function (request, result) {
+var webserver_recipe_update = function (request, result) {
     logger.info({
-        method: "webserver_recipe",
+        method: "webserver_recipe_update",
         recipe_id: request.params.recipe_id
     }, "called");
 
     var reciped = recipe.recipe_by_id(request.params.recipe_id);
     if (!reciped) {
         logger.error({
-            method: "webserver_recipe",
+            method: "webserver_recipe_update",
             recipe_id: request.params.recipe_id
         }, "recipe not found");
 
@@ -85,7 +92,7 @@ var webserver_recipe = function (request, result) {
     var context = recipe.make_context(reciped);
     if (context.running) {
         logger.error({
-            method: "webserver_recipe",
+            method: "webserver_recipe_update",
             recipe_id: request.params.recipe_id,
             cause: "user sent the request before a previous version finished",
         }, "recipe is still running");
@@ -106,6 +113,20 @@ var webserver_recipe = function (request, result) {
         running: context.running
     }, null, 2));
 };
+
+var webserver_thing_update = function (request, result) {
+    logger.info({
+        method: "webserver_thing_update",
+        recipe_id: request.params.thing_id,
+        body: request.body,
+    }, "called");
+
+    result.set('Content-Type', 'application/json');
+    result.send(JSON.stringify({
+        running: false
+    }, null, 2));
+}
+
 
 /**
  *  Set up all the events around connecting events to MQTT
@@ -183,6 +204,13 @@ var setup_express = function (app) {
         });
     }
 };
+var _scrub = function(v) {
+    if (!v) {
+        return ""
+    } else {
+        return v.replace(/.*#/, '')
+    }
+}
 
 /**
  *  Dynamic pages - we decide at runtime
@@ -198,6 +226,96 @@ var make_dynamic = function(template, mount) {
         }, "called");
 
         var home_page = swig.renderFile(template, {
+            things: function() {
+                // the result should look like 'recipies' below
+                var rds = [];
+                var things = iotdb.iot().things();
+
+                for (var ti = 0; ti < things.length; ti++) {
+                    var thing = things[ti];
+                    var meta = thing.meta();
+
+                    var thing_name = meta.get('iot:name') || thing.name;
+                    if (thing_name === undefined) {
+                        continue
+                    }
+
+                    // attributes are what go into rds
+                    /*
+                     *  Preprocess attributes
+                     *  - compact everything
+                     *  - find out if control or reading attibute
+                     */
+                    var catd = []
+                    var tats = thing.attributes()
+                    for (var tax in tats) {
+                        var tat = tats[tax]
+                        var cat = _.compact(tat)
+                        var cid = _scrub(_.ld_get_first(cat, "@id", ""))
+
+                        if (_.ld_get_list(cat, 'iot:role') === undefined) {
+                            cat.control = cid
+                            cat.reading = cid
+                        } 
+                        if (_.ld_contains(cat, 'iot:role', 'iot-attribute:role-control')) {
+                            cat.control = cid
+                        }
+                        if (_.ld_contains(cat, 'iot:role', 'iot-attribute:role-reading')) {
+                            cat.reading = cid
+                        }
+
+                        cat.code = tat.get_code()
+
+                        var name = _.ld_get_first(cat, 'iot:name')
+                        cat.name = name ? name : tat.get_code()
+                        cat._id = thing.thing_id();
+                        cat.group = thing_name;
+
+                        catd[cid] = cat
+                    }
+
+                    /**
+                     *  Group related control/reading attributes together
+                     */
+                    for (var cid in catd) {
+                        var cat = catd[cid]
+                        if (cat.use === undefined) {
+                            cat.use = true
+                        }
+
+                        var rids = _.ld_get_list(cat, "iot:related-role", [])
+                        for (var rix in rids) {
+                            var rid = _scrub(rids[rix])
+                            var rat = catd[rid]
+                            if (rat === undefined) {
+                                continue
+                            }
+
+                            if (rat.use === undefined) {
+                                rat.use = false
+                            }
+                            if (cat.control && !rat.control) {
+                                rat.control = cat.control
+                            }
+                            if (cat.reading && !rat.reading) {
+                                rat.reading = cat.reading
+                            }
+                        }
+
+                    }
+
+                    for (var ci in catd) {
+                        var cat = catd[ci];
+                        if (cat.use) {
+                            rds.push(cat);
+                        }
+
+                    }
+                }
+
+                return rds;
+            },
+
             upnp: function() {
                 var ds = [];
                 var devices = iotdb.upnp.devices();
@@ -230,7 +348,16 @@ var make_dynamic = function(template, mount) {
                 };
             },
             cookbook: function() {
-                return recipe.group_recipes();
+                var rds = [];
+                var recipes = recipe.recipes()
+                for (var ri in recipes) {
+                    var rd = _.clone(recipes[ri]);
+                    rd._context = undefined;
+                    rd.watch = undefined;
+                    rds.push(rd);
+                }
+
+                return rds;
             },
             settings: function() {
                 var sd = _.smart_extend({}, settings.d);
@@ -295,7 +422,8 @@ var setup_pages = function (app) {
     // app.use('/', express.static(node_path.join(__dirname, '..', 'client')));
     // app.use('/', express.static(node_path.join(__dirname, '..', 'client', 'flat-ui')));
 
-    app.put('/api/cookbook/:recipe_id', webserver_recipe);
+    app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
+    app.put('/api/things/:thing_id', webserver_thing_update);
 
     app.get('/auth/logout', function (request, response) {
         request.logout();

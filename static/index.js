@@ -11,8 +11,9 @@ var js = {
         js.actions.on_load();
         js.mqtt.on_load();
 
-        for (var rdi in recipedd) {
-            var rd = recipedd[rdi];
+        // set up initial state
+        for (var rdi in rdd) {
+            var rd = rdd[rdi];
             js.actions.on_message(rd.id, {
                 running: rd.running,
                 message: rd.message,
@@ -103,10 +104,11 @@ var js = {
                 "local=", topic_local
             );
 
-            var parts = topic_local.match(/\/api\/cookbook\/([0-9a-f]+)/);
+            var parts = topic_local.match(/\/api\/cookbook\/(urn:[:0-9a-z]+)/);
             if (parts) {
                 js.actions.on_message(parts[1], JSON.parse(message.payloadString));
-                return;
+            } else {
+                console.log("?no match?");
             }
         },	
 
@@ -130,24 +132,42 @@ var js = {
 
         on_click: function(e) {
             var id = $(this).data("id");
+            var rd = rdd[id];
+            if (!rd) {
+                alert("sorry, can't find this recipe?");
+                return;
+            }
+
+            var key = $(this).data("key");
+            if (!key) {
+                key = "value";
+            }
 
             var value = $(this).data("value");
             if (!value) {
                 value = (new Date()).toISOString();
             }
-            var requestd = {
-                value: value
-            };
-            console.log(requestd);
+
+            var requestd = {};
+            requestd[key] = value;
+            // console.log(requestd);
 
             var paramd = {
                 type : 'PUT',
-                url : '/api/cookbook/' + id,
+                url : rd.api.url,
                 data: JSON.stringify(requestd),
                 contentType: "application/json",
                 dataType : 'json',
-                error : js.actions.on_failure,
-                success : js.actions.on_success,
+                error : function(xhr, status, error) {
+                    alert("" + rd.api.url + "\n" + status + ": " + error);
+                    $('li.action-item').removeClass('running');
+                },
+                success : function(data, status, xhr) {
+                    console.log("success", data);
+                    if (!data.running) {
+                        $('li.action-item').removeClass('running');
+                    }
+                },
             };
 
             // $('li.action-item').removeClass('running');
@@ -156,17 +176,6 @@ var js = {
             $.ajax(paramd);
         },
 
-        on_success: function(data, status, xhr) {
-            console.log("success", data);
-            if (!data.running) {
-                $('li.action-item').removeClass('running');
-            }
-        },
-
-        on_failure: function(xhr, status, error) {
-            alert(status + ": " + error);
-            $('li.action-item').removeClass('running');
-        },
 
         on_message: function(id, d) {
             var e_li = $('li[data-id="' + id + '"]');
