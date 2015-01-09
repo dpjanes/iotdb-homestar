@@ -70,7 +70,7 @@ exports.value = {
             "type": "iot-js:integer",
             "minumum": 0,
             "maximum": 100,
-            "format": "iot-unit:math.fraction.percent",
+            "iot-js:format": "iot-unit:math.fraction.percent",
         },
     },
     "number": {
@@ -79,13 +79,13 @@ exports.value = {
             "type": "iot-js:number",
             "minumum": 0,
             "maximum": 1,
-            "format": "iot-unit:math.fraction.unit",
+            "iot-js:format": "iot-unit:math.fraction.unit",
         },
         "percent": {
             "type": "iot-js:number",
             "minumum": 0,
             "maximum": 100,
-            "format": "iot-unit:math.fraction.percent",
+            "iot-js:format": "iot-unit:math.fraction.percent",
         },
         "fahrenheit": {
             "type": "iot-js:number",
@@ -101,18 +101,18 @@ exports.value = {
     },
     "date": {
         "type": "iot-js:string",
-        "format": "iot-js:date",
+        "iot-js:format": "iot-js:date",
     },
     "datetime": {
         "type": "iot-js:string",
-        "format": "iot-js:datetime",
+        "iot-js:format": "iot-js:datetime",
     },
     "time": {
         "type": "iot-js:string",
-        "format": "iot-js:time",
+        "iot-js:format": "iot-js:time",
     },
     "color": {
         "type": "iot-js:string",
-        "format": "iot-js:color",
+        "iot-js:format": "iot-js:color",
     },
 };

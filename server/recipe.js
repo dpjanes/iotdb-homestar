@@ -244,10 +244,31 @@ var init_recipe = function (reciped) {
         }
     }
 
+    delete reciped.value;
+    if (reciped.type) {
+        reciped['iot-js:type'] = reciped.type;
+        delete reciped.type;
+    }
+    if (reciped.format) {
+        reciped['iot-js:format'] = reciped.format;
+        delete reciped.format;
+    }
+    if (reciped.type) {
+        reciped['iot:unit'] = reciped.unit;
+        delete reciped.unit;
+    }
+
     /* JavaScript types */
-    if (reciped.type !== undefined) {
-        reciped.type = _.compact(_.expand(reciped.type, "iot-js:"))
-        if (reciped.type === "iot-js:boolean") {
+    var type = reciped['iot-js:type'];
+    if (type === undefined) {
+        if (reciped.values) {
+            reciped['iot-js:type'] = 'iot-js:string';
+        } else {
+            reciped['iot-js:type'] = 'iot-js:null';
+        }
+    } else {
+        type = _.compact(_.expand(type, "iot-js:"))
+        if (type === "iot-js:boolean") {
             reciped.values = [ "Off", "On", ]
             reciped._valued = {
                 "Off": false,
@@ -255,6 +276,7 @@ var init_recipe = function (reciped) {
             };
         }
     }
+
 
     /* run: old name for onclick: */
     if ((reciped.run !== undefined) && (reciped.onclick === undefined)) {

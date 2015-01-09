@@ -231,14 +231,27 @@ var make_dynamic = function(template, mount) {
                 var rds = [];
                 var things = iotdb.iot().things();
 
+                var tts = [];
                 for (var ti = 0; ti < things.length; ti++) {
                     var thing = things[ti];
                     var meta = thing.meta();
-
                     var thing_name = meta.get('iot:name') || thing.name;
                     if (thing_name === undefined) {
                         continue
                     }
+
+                    tts.push([ thing_name, thing ]);
+                }
+
+                tts.sort();
+
+                for (var ti in tts) {
+                    var tt = tts[ti];
+                    var thing_name = tt[0];
+                    var thing = tt[1];
+
+                    var meta = thing.meta();
+                    var state = thing.state();
 
                     // attributes are what go into rds
                     /*
@@ -268,7 +281,8 @@ var make_dynamic = function(template, mount) {
 
                         var name = _.ld_get_first(cat, 'iot:name')
                         cat.name = name ? name : tat.get_code()
-                        cat._id = thing.thing_id();
+                        cat._thing_id = thing.thing_id();
+                        cat._id = thing.thing_id() + "/#" + cat.code;
                         cat.group = thing_name;
 
                         catd[cid] = cat
@@ -306,10 +320,19 @@ var make_dynamic = function(template, mount) {
 
                     for (var ci in catd) {
                         var cat = catd[ci];
-                        if (cat.use) {
-                            rds.push(cat);
+                        if (!cat.use) {
+                            continue;
                         }
 
+                        cat.state = {};
+                        if (cat.reading) {
+                            cat.state[cat.reading] = state[cat.reading];
+                        }
+                        if (cat.control) {
+                            cat.state[cat.control] = state[cat.control];
+                        }
+
+                        rds.push(cat);
                     }
                 }
 
