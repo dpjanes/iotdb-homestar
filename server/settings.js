@@ -68,6 +68,7 @@ var settings = {
                 static: [
                     path.join('$HOMESTAR_INSTALL', 'static'),
                     path.join('$HOMESTAR_INSTALL', 'static', 'flat-ui'),
+                    path.join('$HOMESTAR_INSTALL', 'static', 'bootstrap-colorpicker'),
                 ],
                 dynamic: [
                     path.join('$HOMESTAR_INSTALL', 'dynamic'),
@@ -88,6 +89,7 @@ var settings = {
         debug: {
             requests: null,
             urls: null,
+            pre: null, // homestar/runner/debug/pre
         },
         location: {
             latitude: null,

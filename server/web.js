@@ -48,6 +48,7 @@ var recipe = require('./recipe');
 var data = require('./data');
 var settings = require('./settings');
 var homestar = require('./homestar');
+var things = require('./things');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -113,20 +114,6 @@ var webserver_recipe_update = function (request, result) {
         running: context.running
     }, null, 2));
 };
-
-var webserver_thing_update = function (request, result) {
-    logger.info({
-        method: "webserver_thing_update",
-        recipe_id: request.params.thing_id,
-        body: request.body,
-    }, "called");
-
-    result.set('Content-Type', 'application/json');
-    result.send(JSON.stringify({
-        running: false
-    }, null, 2));
-}
-
 
 /**
  *  Set up all the events around connecting events to MQTT
@@ -204,13 +191,43 @@ var setup_express = function (app) {
         });
     }
 };
-var _scrub = function(v) {
-    if (!v) {
-        return ""
-    } else {
-        return v.replace(/.*#/, '')
+
+/**
+ *  How the user interacts with this control
+ */
+var _interactor = function(rd) {
+    rd.group = rd._thing_name
+
+    var values = rd.values;
+    if (values) {
+        rd._interactor = "enumeration";
+        return;
     }
-}
+
+    var format = rd['iot-js:format'];
+    if (format === "iot-js:color") {
+        rd._interactor = "color";
+        return;
+    } else if (format === "iot-js:date") {
+        rd._interactor = "date";
+        return;
+    } else if (format === "iot-js:datetime") {
+        rd._interactor = "datetime";
+        return;
+    } else if (format === "iot-js:time") {
+        rd._interactor = "time";
+        return;
+    }
+
+    var type = rd['iot-js:type'];
+    if (type === "iot-js:boolean") {
+        rd.values = [ "Off", "On", ];
+        rd._interactor = "enumeration";
+        return;
+    }
+
+    rd._interactor = "click";
+};
 
 /**
  *  Dynamic pages - we decide at runtime
@@ -227,116 +244,10 @@ var make_dynamic = function(template, mount) {
 
         var home_page = swig.renderFile(template, {
             things: function() {
-                // the result should look like 'recipies' below
-                var rds = [];
-                var things = iotdb.iot().things();
+                var ts = things.structured();
+                ts.map(_interactor);
 
-                var tts = [];
-                for (var ti = 0; ti < things.length; ti++) {
-                    var thing = things[ti];
-                    var meta = thing.meta();
-                    var thing_name = meta.get('iot:name') || thing.name;
-                    if (thing_name === undefined) {
-                        continue
-                    }
-
-                    tts.push([ thing_name, thing ]);
-                }
-
-                tts.sort();
-
-                for (var ti in tts) {
-                    var tt = tts[ti];
-                    var thing_name = tt[0];
-                    var thing = tt[1];
-
-                    var meta = thing.meta();
-                    var state = thing.state();
-
-                    // attributes are what go into rds
-                    /*
-                     *  Preprocess attributes
-                     *  - compact everything
-                     *  - find out if control or reading attibute
-                     */
-                    var catd = []
-                    var tats = thing.attributes()
-                    for (var tax in tats) {
-                        var tat = tats[tax]
-                        var cat = _.compact(tat)
-                        var cid = _scrub(_.ld_get_first(cat, "@id", ""))
-
-                        if (_.ld_get_list(cat, 'iot:role') === undefined) {
-                            cat.control = cid
-                            cat.reading = cid
-                        } 
-                        if (_.ld_contains(cat, 'iot:role', 'iot-attribute:role-control')) {
-                            cat.control = cid
-                        }
-                        if (_.ld_contains(cat, 'iot:role', 'iot-attribute:role-reading')) {
-                            cat.reading = cid
-                        }
-
-                        cat.code = tat.get_code()
-
-                        var name = _.ld_get_first(cat, 'iot:name')
-                        cat.name = name ? name : tat.get_code()
-                        cat._thing_id = thing.thing_id();
-                        cat._id = thing.thing_id() + "/#" + cat.code;
-                        cat.group = thing_name;
-
-                        catd[cid] = cat
-                    }
-
-                    /**
-                     *  Group related control/reading attributes together
-                     */
-                    for (var cid in catd) {
-                        var cat = catd[cid]
-                        if (cat.use === undefined) {
-                            cat.use = true
-                        }
-
-                        var rids = _.ld_get_list(cat, "iot:related-role", [])
-                        for (var rix in rids) {
-                            var rid = _scrub(rids[rix])
-                            var rat = catd[rid]
-                            if (rat === undefined) {
-                                continue
-                            }
-
-                            if (rat.use === undefined) {
-                                rat.use = false
-                            }
-                            if (cat.control && !rat.control) {
-                                rat.control = cat.control
-                            }
-                            if (cat.reading && !rat.reading) {
-                                rat.reading = cat.reading
-                            }
-                        }
-
-                    }
-
-                    for (var ci in catd) {
-                        var cat = catd[ci];
-                        if (!cat.use) {
-                            continue;
-                        }
-
-                        cat.state = {};
-                        if (cat.reading) {
-                            cat.state[cat.reading] = state[cat.reading];
-                        }
-                        if (cat.control) {
-                            cat.state[cat.control] = state[cat.control];
-                        }
-
-                        rds.push(cat);
-                    }
-                }
-
-                return rds;
+                return ts;
             },
 
             upnp: function() {
@@ -376,7 +287,10 @@ var make_dynamic = function(template, mount) {
                 for (var ri in recipes) {
                     var rd = _.clone(recipes[ri]);
                     rd._context = undefined;
+                    rd._valued = undefined;
                     rd.watch = undefined;
+                    _interactor(rd);
+
                     rds.push(rd);
                 }
 
@@ -446,7 +360,7 @@ var setup_pages = function (app) {
     // app.use('/', express.static(node_path.join(__dirname, '..', 'client', 'flat-ui')));
 
     app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
-    app.put('/api/things/:thing_id', webserver_thing_update);
+    app.put('/api/things/:thing_id', things.webserver_thing_update);
 
     app.get('/auth/logout', function (request, response) {
         request.logout();
@@ -579,4 +493,5 @@ if (settings.d.open_browser) {
  *  Other servers
  */
 mqtt.setup();
+things.setup();
 homestar.setup();

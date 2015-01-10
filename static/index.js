@@ -14,12 +14,81 @@ var js = {
         // set up initial state
         for (var rdi in rdd) {
             var rd = rdd[rdi];
-            js.actions.on_message(rd.id, {
+            js.actions.on_message(rd.section || "cookbook", rd.id, {
                 running: rd.running,
                 message: rd.message,
                 state: rd.state
             });
         }
+
+        // setup interactors
+        js.interactors.on_load();
+    },
+
+    interactors: {
+        on_load: function() {
+            js.interactors.color.on_load();
+        },
+
+        update: function(id, value) {
+            js.interactors.color.update(id, value);
+        },
+
+        color: {
+            on_load: function() {
+                $('.interactor.interactor-color')
+                    .colorpicker({
+                        component: '.box',
+                        horizontal: true
+                    })
+                    .on('changeColor', function(event) {
+                        $(event.target)
+                            .parents("li")
+                            .data("value", event.color.toHex())
+                            .attr("data-value", event.color.toHex())
+                            .each(function(index, element) {
+                                js.actions.send($(element));
+                            })
+                    })
+                    /* .on('create', function(event) {
+                        console.log("ARGUMENTS", event);
+                    }) 
+                    .each(function(_index, element) {
+                        console.log("ARGUMENTS", $(element).colorpicker({
+                            color: "#FF0000"
+                        }))
+                    })*/
+                    ;
+            },
+
+            update: function(id, color) {
+                if (color === null) {
+                    return
+                }
+
+                $('li[data-id="' + id + '"] .interactor.interactor-color')
+                    .each(function(_index, _element) {
+                        console.log("HERE:A", color);
+                        var e = $(_element);
+                        var c = e.data("colorpicker");
+                        if (!c) {
+                            return;
+                        }
+
+                        c = e.colorpicker({
+                            'setValue': color
+                        })
+
+                        console.log("HERE:B", c);
+                        // c.setColor(color);
+                        // var cp = $(_element).colorpicker();
+                    });
+            },
+
+            end: 0
+        },
+
+        end: 0
     },
 
     mqtt: {
@@ -104,11 +173,18 @@ var js = {
                 "local=", topic_local
             );
 
-            var parts = topic_local.match(/\/api\/cookbook\/(urn:[:0-9a-z]+)/);
-            if (parts) {
-                js.actions.on_message(parts[1], JSON.parse(message.payloadString));
-            } else {
+            var parts = topic_local.match(/\/api\/(cookbook|things)\/(urn:[:0-9a-z]+)/);
+            if (!parts) {
                 console.log("?no match?");
+            } else {
+                var payload = JSON.parse(message.payloadString);
+                js.actions.on_message(parts[1], parts[2], payload);
+
+                if ((parts[1] === "things") && payload.state) {
+                    for (var key in payload.state) {
+                        js.actions.on_message(parts[1], parts[2] + "/#" + key, payload);
+                    }
+                }
             }
         },	
 
@@ -131,19 +207,23 @@ var js = {
         },
 
         on_click: function(e) {
-            var id = $(this).data("id");
+            js.actions.send($(this));
+        },
+
+        send: function(element) {
+            var id = element.data("id");
             var rd = rdd[id];
             if (!rd) {
                 alert("sorry, can't find this recipe?");
                 return;
             }
 
-            var key = $(this).data("key");
+            var key = element.data("key");
             if (!key) {
                 key = "value";
             }
 
-            var value = $(this).data("value");
+            var value = element.data("value");
             if (!value) {
                 value = (new Date()).toISOString();
             }
@@ -171,13 +251,13 @@ var js = {
             };
 
             // $('li.action-item').removeClass('running');
-            $(this).addClass('running');
+            element.addClass('running');
 
             $.ajax(paramd);
         },
 
 
-        on_message: function(id, d) {
+        on_message: function(section, id, d) {
             var e_li = $('li[data-id="' + id + '"]');
             if (d.message !== undefined) {
                 e_li.find(".action-message").text(d.message);
@@ -200,7 +280,19 @@ var js = {
                 } else if (d.state._number) {
                     e_li.find(".action-state").text("" + d.state._number);
                 }
+
+                var rd = rdd[id];
+                if (rd) {
+                    for (var key in d.state) {
+                        rd.state[key] = d.state[key];
+                    }
+
+                    if (rd.key) {
+                        js.interactors.update(id, rd.state[rd.key]);
+                    }
+                }
             }
+
         },
 
         end: 0

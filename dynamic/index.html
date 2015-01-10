@@ -8,35 +8,41 @@
         <li class="list-group-item active">
             <span class="action-group">{{ loop.key }}</span>
         </li>
-        {% for recipe in recipes %}
-
-<script>rdd[{{ recipe._id|json|safe}}] = {
-id: {{ recipe._id|json|safe }},
+        {% for a in recipes %}
+<script>rdd[{{ a._id|json|safe}}] = {
+id: {{ a._id|json|safe }},
 api: {
-  url: "/api/cookbook/{{ recipe._id }}"
+  url: "/api/cookbook/{{ a._id }}"
 },
-name: {{ recipe.name|json|safe }}{% if recipe.state %}, 
-state: {{ recipe.state|json|safe }}{% endif %}
+name: {{ a.name|json|safe }}{% if a.state %}, 
+state: {{ a.state|json|safe }}{% endif %}
 };</script>
-            {% if recipe.values %}
-        <li class="list-group-item" data-id="{{ recipe._id }}" onclick="">
-            <span class="action-name text-primary">{{ recipe.name }}</span>
-            <span class="action-subcommands">
+        <li class="list-group-item{% if a._interactor == "click" %} action-item{% endif %}" data-id="{{ a._id }}" onclick="">
+            <span class="action-name text-primary">{{ a.name }}</span>
+            {% if a._interactor == "enumeration" %}
+            <span class="interactor action-subcommands">
                 <div class="btn-group btn-group-sm">
-                {% for value in recipe.values %}
-                    <button type="button" class="btn btn-default action-item" data-id="{{ recipe._id}}" data-value="{{ value }}">{{ value }}</button>
+                {% for value in a.values %}
+                    <button type="button" class="btn btn-default action-item" data-id="{{ a._id}}" data-value="{{ value }}">{{ value }}</button>
                 {% endfor %}
                 </div>
             </span>
+            {% endif %}
+            {% if a._interactor == "color" %}
+            <span class="interactor action-subcommands">
+                SET THE COLOR
+            </span>
+            {% endif %}
             <span class="action-message text-warning"></span>
             <span class="action-state text-muted"></span>
-            {% else %}
-        <li class="list-group-item action-item" data-id="{{ recipe._id }}" onclick="">
-            <span class="action-name text-primary">{{ recipe.name }}</span>
+        {#
+        <li class="list-group-item action-item" data-id="{{ a._id }}" onclick="">
+            <span class="action-name text-primary">{{ a.name }}</span>
             <span class="action-message text-warning"></span>
             <span class="action-state text-muted"></span>
             {% endif %}
-        <pre>{{ recipe|scrub|json(2)|safe }}</pre>
+        #}
+        {% if settings().debug.pre %}<pre>{{ a|scrub|json(2)|safe }}</pre>{% endif %}
         </li>
         {% endfor %}
     </ul>

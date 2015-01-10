@@ -3,6 +3,11 @@
     margin-bottom: 5px;
     display: block;
 }
+body.desktop .action-subcommands {
+    float: right;
+    margin-top: -33px;
+}
+
 .action-message {
     display: block;
 }
@@ -28,3 +33,9 @@ body.desktop li.action-item.running {
     background: #fcf8e3;
 }
 
+.interactor .box {
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+    border-radius: 4px;
+}
