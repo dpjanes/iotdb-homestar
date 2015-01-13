@@ -68,7 +68,8 @@ var settings = {
                 static: [
                     path.join('$HOMESTAR_INSTALL', 'static'),
                     path.join('$HOMESTAR_INSTALL', 'static', 'flat-ui'),
-                    path.join('$HOMESTAR_INSTALL', 'static', 'bootstrap-colorpicker'),
+                    // path.join('$HOMESTAR_INSTALL', 'static', 'bootstrap-colorpicker'),
+                    path.join('$HOMESTAR_INSTALL', 'static', 'jquery-minicolors'),
                 ],
                 dynamic: [
                     path.join('$HOMESTAR_INSTALL', 'dynamic'),

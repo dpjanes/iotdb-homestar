@@ -26,6 +26,7 @@ var js = {
     },
 
     interactors: {
+
         on_load: function() {
             js.interactors.color.on_load();
         },
@@ -35,6 +36,48 @@ var js = {
         },
 
         color: {
+            supress: false,
+            
+            on_load: function() {
+                $('.interactor.interactor-color')
+                    .minicolors({
+                        position: 'bottom right',
+                        changeDelay: 200,
+                        change: function(hex, opactity) {
+                            if (js.interactors.color.supress) {
+                                js.interactors.color.supress = false;
+                                return;
+                            }
+
+                            $(this)
+                                .parents("li")
+                                .data("value", hex)
+                                .attr("data-value", hex)
+                                .each(function(index, element) {
+                                    js.actions.send($(element));
+                                })
+                            },
+                    });
+            },
+
+            update: function(id, value) {
+                if (!value) {
+                    return;
+                }
+
+                try {
+                    js.interactors.color.supress = true;
+                    $('li[data-id="' + id + '"] .interactor.interactor-color')
+                        .minicolors('value', value)
+                        ;
+                } catch(x) {
+                }
+            },
+
+            end: 0
+        },
+
+        xxx_color: {
             on_load: function() {
                 $('.interactor.interactor-color')
                     .colorpicker({
