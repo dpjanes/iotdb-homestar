@@ -197,7 +197,11 @@ var setup_express = function (app) {
  */
 var _interactor = function(rd) {
     if (rd._thing_name) {
-        rd.group = rd._thing_name
+        rd._group = rd._thing_name
+    } else if (rd.group) {
+        rd._group = rd.group
+    } else {
+        rd._group = "Ungrouped";
     }
 
     var values = rd.values;

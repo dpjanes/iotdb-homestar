@@ -3,7 +3,7 @@
     <script>var rdd = {};</script>
 {% endblock %}
 {% block content %}
-    {% for recipes in cookbook()|groupBy('group') %}
+    {% for recipes in cookbook()|groupBy('_group') %}
     <ul class="list-group">
         <li class="list-group-item active">
             <span class="action-group">{{ loop.key }}</span>
