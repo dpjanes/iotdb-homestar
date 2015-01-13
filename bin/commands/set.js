@@ -59,6 +59,12 @@ exports.run = function (ad) {
     }
 
     var key = ad._[1];
+    if (key.indexOf('/') === 0) {
+        key = key.substring(1);
+    } else {
+        key = "homestar/runner/" + key;
+    }
+
     var value;
     if (ad.list) {
         value = ad._.slice(2);

@@ -166,7 +166,7 @@ var setup = function (av) {
         }
     }
 
-    /* all secrets must be set */
+    /* all secrets must be set  - note that this is done automatically by $ homestar setup */
     var sd = settings.d.secrets;
     for (var key in sd) {
         var value = sd[key];
@@ -174,7 +174,7 @@ var setup = function (av) {
             logger.error({
                 method: "setup",
                 cause: "admin hasn't completed setup",
-                fix: "$ homestar set homestar/runner/secrets/" + key + " 0 --uuid",
+                fix: "$ homestar set secrets/" + key + " 0 --uuid",
             }, "missing secret");
             process.exit(1);
         }
