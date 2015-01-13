@@ -24,7 +24,7 @@
 
 var iotdb = require('iotdb');
 var timers = require('iotdb-timers');
-var data = require('./server/data');
+var data = require('./app/data');
 
 var iot = function(initd) {
     return iotdb.iot(initd);

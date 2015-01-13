@@ -47,5 +47,5 @@ exports.run = function (ad) {
         },
     });
 
-    require("../../server/web");
+    require("../../app/app");
 };

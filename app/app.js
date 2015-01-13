@@ -1,5 +1,5 @@
 /*
- *  web.js
+ *  app.js
  *
  *  David Janes
  *  IOTDB.org
@@ -196,7 +196,9 @@ var setup_express = function (app) {
  *  How the user interacts with this control
  */
 var _interactor = function(rd) {
-    rd.group = rd._thing_name
+    if (rd._thing_name) {
+        rd.group = rd._thing_name
+    }
 
     var values = rd.values;
     if (values) {
