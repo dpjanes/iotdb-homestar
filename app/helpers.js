@@ -55,16 +55,24 @@ var edit_add_chapter_ids = function(filename) {
         return;
     }
 
-    var found = true;
-    var contents = fs.readFileSync(filename, 'utf8');
+    var encoding = 'utf8';
+    var changed = false;
+    var contents = fs.readFileSync(filename, encoding);
     var _replacer = function(full, chapter_name) {
+        changed = true;
         return util.format('homestar.chapter(%s, "%s");', chapter_name, uuid.v4());
     };
 
     contents = contents.replace(/^\s*homestar\s*.\s*chapter\s*[(]\s*("[^"]*")\s*[)](\s*;)?/mg, _replacer);
     contents = contents.replace(/^\s*homestar\s*.\s*chapter\s*[(]\s*('[^"]*')\s*[)](\s*;)?/mg, _replacer);
 
-    console.log(contents);
+    if (changed) {
+        fs.writeFileSync(filename, contents, { encoding: encoding });
+        logger.info({
+            method: "edit_add_chapter_ids",
+            filename: filename
+        }, "updated recipe");
+    }
 };
 
 /**

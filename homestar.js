@@ -53,7 +53,7 @@ var chapter = function(name, id) {
     }
 
     if (id) {
-        _group_name = id;
+        _group_id = id;
     }
 };
 
