@@ -56,8 +56,6 @@ var logger = bunyan.createLogger({
     module: 'web',
 });
 
-var home_template;
-
 /*
  *  Filter to make printing JSON easy
  */

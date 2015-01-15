@@ -102,6 +102,11 @@ var setup_commands = function() {
 };
 
 var help = function() {
+    console.log("usage: homestar <command> [optional arguments");
+    console.log("");
+    console.log("valid commands are:");
+    console.log("");
+
     var cs = [];
     for (var c in commandd) {
         cs.push(c);
@@ -111,14 +116,19 @@ var help = function() {
     for (var ci in cs) {
         var c = cs[ci];
         var command = commandd[c];
-        console.log("%s: %s", c, command.summary || "");
+        console.log("  %s: %s", c, command.summary || "");
     };
+
+    console.log("");
+    console.log("use 'homestar help <command>' for more info on a particular command");
+    console.log("");
 };
 
 var help_on = function(name) {
     var command = commandd[name];
     if (!command) {
-        console.log("homestar: unknown command:", name);
+        console.log("homestar: unknown command '%s'", name);
+        console.log();
         help();
         return;
     }
@@ -164,7 +174,8 @@ var run_cli = function()  {
     } else {
         var command = commandd[ad._[0]];
         if (!command) {
-            console.log("homestar: unknown command:", ad._[0]);
+            console.log("homestar: unknown command '%s'", ad._[0]);
+            console.log("");
             help();
             process.exit(1);
         }
