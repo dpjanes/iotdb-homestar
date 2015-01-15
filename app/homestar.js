@@ -86,20 +86,20 @@ var send_cookbooks = function() {
     var rs = recipe.recipes();
     for (var ri in rs) {
         var r = rs[ri];
-        if (!r.group_id) {
+        if (!r.cookbook_id) {
             continue;
         }
 
-        if (r.group_id != cookbook.chapter_id) {
-            send_chapter(cookbook, function(error) {
+        if (r.cookbook_id != cookbook.cookbook_id) {
+            send_cookbook(cookbook, function(error) {
                 if (error) {
                     sent = false;
                 }
             });
 
             cookbook = {
-                chapter_id: r.group_id,
-                name: r.group || r.group_id,
+                cookbook_id: r.cookbook_id,
+                name: r.group || r.cookbook_id,
                 recipes: [],
             };
         }
@@ -107,7 +107,7 @@ var send_cookbooks = function() {
         cookbook.recipes.push(r.name);
     }
 
-    send_chapter(cookbook, function(error) {
+    send_cookbook(cookbook, function(error) {
         if (error) {
             sent = false;
         }
@@ -117,17 +117,17 @@ var send_cookbooks = function() {
 };
 
 /**
- *  Send recipe info to the server
+ *  Send Cookbook info to the server
  */
-var send_chapter = function(cookbook, callback) {
-    if (!cookbook.chapter_id) {
+var send_cookbook = function(cookbook, callback) {
+    if (!cookbook.cookbook_id) {
         return callback(null, null);
     }
     if (!callback) {
         callback = function() {};
     }
 
-    var url = URL_CONSUMER + '/chapters/' + cookbook.chapter_id;
+    var url = URL_CONSUMER + '/cookbooks/' + cookbook.cookbook_id;
     unirest
         .put(url)
         .headers({
@@ -142,7 +142,7 @@ var send_chapter = function(cookbook, callback) {
                     url: url,
                     error: result.error,
                 }, "permissions failed");
-                callback("send_chapter() permissions failed", null);
+                callback("send_cookbook() permissions failed", null);
             } else if (result.body) {
                 callback(null, result.body);
             } else {
@@ -150,7 +150,7 @@ var send_chapter = function(cookbook, callback) {
                     status: result.statusCode,
                     url: url,
                 }, "no readable response");
-                callback("send_chapter() permissions failed [1]");
+                callback("send_cookbook() permissions failed [1]");
             }
         });
 };
@@ -252,5 +252,5 @@ var setup = function () {
  */
 exports.setup = setup;
 exports.permissions = permissions;
-exports.send_chapter = send_chapter;
+exports.send_cookbook = send_cookbook;
 exports.send_cookbooks = send_cookbooks;

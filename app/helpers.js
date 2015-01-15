@@ -46,10 +46,10 @@ var logger = bunyan.createLogger({
  *  <p>
  *  This is synchronous
  */
-var edit_add_chapter_ids = function(filename) {
+var edit_add_cookbook_ids = function(filename) {
     if (!fs.existsSync(filename)) {
         logger.error({
-            method: "edit_add_chapter_ids",
+            method: "edit_add_cookbook_ids",
             filename: filename
         }, "file does not exist");
         return;
@@ -58,18 +58,18 @@ var edit_add_chapter_ids = function(filename) {
     var encoding = 'utf8';
     var changed = false;
     var contents = fs.readFileSync(filename, encoding);
-    var _replacer = function(full, chapter_name) {
+    var _replacer = function(full, cookbook_name) {
         changed = true;
-        return util.format('homestar.chapter(%s, "%s");', chapter_name, uuid.v4());
+        return util.format('homestar.cookbook(%s, "%s");', cookbook_name, uuid.v4());
     };
 
-    contents = contents.replace(/^\s*homestar\s*.\s*chapter\s*[(]\s*("[^"]*")\s*[)](\s*;)?/mg, _replacer);
-    contents = contents.replace(/^\s*homestar\s*.\s*chapter\s*[(]\s*('[^"]*')\s*[)](\s*;)?/mg, _replacer);
+    contents = contents.replace(/^\s*homestar\s*.\s*cookbook\s*[(]\s*("[^"]*")\s*[)](\s*;)?/mg, _replacer);
+    contents = contents.replace(/^\s*homestar\s*.\s*cookbook\s*[(]\s*('[^"]*')\s*[)](\s*;)?/mg, _replacer);
 
     if (changed) {
         fs.writeFileSync(filename, contents, { encoding: encoding });
         logger.info({
-            method: "edit_add_chapter_ids",
+            method: "edit_add_cookbook_ids",
             filename: filename
         }, "updated recipe");
     }
@@ -78,4 +78,4 @@ var edit_add_chapter_ids = function(filename) {
 /**
  *  API
  */
-exports.edit_add_chapter_ids = edit_add_chapter_ids;
+exports.edit_add_cookbook_ids = edit_add_cookbook_ids;

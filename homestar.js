@@ -30,30 +30,30 @@ var iot = function(initd) {
     return iotdb.iot(initd);
 };
 
-var _group_default = "Chapter";
-var _group_name = _group_default;
-var _group_id;
+var _group_default = "My Cookbook";
+var _cookbook_name = _group_default;
+var _cookbook_id;
 
 var recipe = function(initd) {
-    if (_group_name) {
-        initd.group = _group_name;
+    if (_cookbook_name) {
+        initd.group = _cookbook_name;
     }
-    if (_group_id) {
-        initd.group_id = _group_id;
+    if (_cookbook_id) {
+        initd.cookbook_id = _cookbook_id;
     }
 
     iot().data("recipe", initd);
 };
 
-var chapter = function(name, id) {
-    if (name) {
-        _group_name = name;
+var cookbook = function(cookbook_name, cookbook_id) {
+    if (cookbook_name) {
+        _cookbook_name = cookbook_name;
     } else {
-        _group_name = _group_default;
+        _cookbook_name = _group_default;
     }
 
-    if (id) {
-        _group_id = id;
+    if (cookbook_id) {
+        _cookbook_id = cookbook_id;
     }
 };
 
@@ -64,7 +64,7 @@ exports.iotdb = iotdb;
 exports.timers = timers;
 exports.iot = iot;
 exports.recipe = recipe;
-exports.chapter = chapter;
+exports.cookbook = cookbook;
 
 exports.cfg = iotdb.cfg;
 exports._ = iotdb.helpers;

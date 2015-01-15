@@ -42,7 +42,7 @@ exports.help = function () {
     console.log("Add IDs to your Cookbook");
     console.log("");
     console.log("This will go through all your recipies in cookbook/*.js");
-    console.log("and add IDs to any homestar.chapter() declarations");
+    console.log("and add IDs to any homestar.cookbook() declarations");
     console.log("that don't have them.");
     console.log("");
     console.log("This will allow Homestar to add permissions so they");
@@ -59,6 +59,6 @@ exports.run = function (ad) {
     var filenames = cfg.cfg_find(iotdb.iot().envd, initd.recipes_path, /[.]js$/);
 
     for (var fi in filenames) {
-        helpers.edit_add_chapter_ids(filenames[fi]);
+        helpers.edit_add_cookbook_ids(filenames[fi]);
     }
 };
