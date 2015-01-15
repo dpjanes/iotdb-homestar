@@ -101,7 +101,7 @@ var settings = {
             timezone: null,
             postal_code: null,
         },
-        open_browser: true,
+        browser: true,
         name: null
     }
 };

@@ -421,6 +421,9 @@ var group_recipes = function () {
     return gdsd;
 };
 
+/**
+ *  Return all the recipes, ordered
+ */
 var recipes = function () {
     var iot = iotdb.iot();
     var recipeds = iot.data("recipe");
@@ -440,6 +443,40 @@ var recipes = function () {
 
     rds.sort(order_recipe);
     return rds;
+};
+
+/**
+ *  Archive entire cookbook
+ */
+var archive = function() {
+    initd = _.defaults(initd, {
+        recipes_path: "cookbook",
+    });
+
+    logger.info({
+        method: "archive",
+        recipes_path: initd.recipes_path,
+    }, "loading recipes");
+
+    var filenames = cfg.cfg_find(iotdb.iot().envd, initd.recipes_path, /[.]js$/);
+    cfg.cfg_load_js(filenames, function (paramd) {
+        if (paramd.error !== undefined) {
+            if (paramd.filename) {
+                logger.error({
+                    method: "_load_recipes",
+                    filename: paramd.filename,
+                    error: paramd.error,
+                    exception: paramd.exception,
+                }, "error loading JS Model");
+            }
+            return;
+        }
+
+        logger.debug({
+            method: "_load_recipes",
+            filename: paramd.filename
+        }, "found Model");
+    });
 };
 
 /**

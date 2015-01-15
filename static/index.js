@@ -41,8 +41,8 @@ var js = {
             on_load: function() {
                 $('.interactor.interactor-color')
                     .minicolors({
-                        position: 'bottom right',
-                        changeDelay: 200,
+                        position: js.is_mobile ? 'top left': 'bottom right',
+                        changeDelay: 60,
                         change: function(hex, opactity) {
                             if (js.interactors.color.supress) {
                                 js.interactors.color.supress = false;
@@ -72,60 +72,6 @@ var js = {
                         ;
                 } catch(x) {
                 }
-            },
-
-            end: 0
-        },
-
-        xxx_color: {
-            on_load: function() {
-                $('.interactor.interactor-color')
-                    .colorpicker({
-                        component: '.box',
-                        horizontal: true
-                    })
-                    .on('changeColor', function(event) {
-                        $(event.target)
-                            .parents("li")
-                            .data("value", event.color.toHex())
-                            .attr("data-value", event.color.toHex())
-                            .each(function(index, element) {
-                                js.actions.send($(element));
-                            })
-                    })
-                    /* .on('create', function(event) {
-                        console.log("ARGUMENTS", event);
-                    }) 
-                    .each(function(_index, element) {
-                        console.log("ARGUMENTS", $(element).colorpicker({
-                            color: "#FF0000"
-                        }))
-                    })*/
-                    ;
-            },
-
-            update: function(id, color) {
-                if (color === null) {
-                    return
-                }
-
-                $('li[data-id="' + id + '"] .interactor.interactor-color')
-                    .each(function(_index, _element) {
-                        console.log("HERE:A", color);
-                        var e = $(_element);
-                        var c = e.data("colorpicker");
-                        if (!c) {
-                            return;
-                        }
-
-                        c = e.colorpicker({
-                            'setValue': color
-                        })
-
-                        console.log("HERE:B", c);
-                        // c.setColor(color);
-                        // var cp = $(_element).colorpicker();
-                    });
             },
 
             end: 0

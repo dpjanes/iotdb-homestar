@@ -491,7 +491,7 @@ logger.info({
     url: settings.d.webserver.url,
 }, "listening for connect");
 
-if (settings.d.open_browser) {
+if (settings.d.browser) {
     open(settings.d.webserver.url);
 }
 
