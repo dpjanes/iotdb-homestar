@@ -101,6 +101,7 @@ var settings = {
             timezone: null,
             postal_code: null,
         },
+        cookbooks_path: "cookbooks",
         browser: true,
         name: null
     }

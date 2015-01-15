@@ -29,6 +29,7 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 var helpers = require("../../app/helpers");
+var settings = require("../../app/settings");
 
 var child_process = require('child_process')
 var path = require('path')
@@ -53,10 +54,10 @@ exports.run = function (ad) {
     var self = this;
 
     var initd = {
-        recipes_path: "cookbook",
+        cookbooks_path: settings.d.cookbooks_path,
     };
 
-    var filenames = cfg.cfg_find(iotdb.iot().envd, initd.recipes_path, /[.]js$/);
+    var filenames = cfg.cfg_find(iotdb.iot().envd, initd.cookbooks_path, /[.]js$/);
 
     for (var fi in filenames) {
         helpers.edit_add_cookbook_ids(filenames[fi]);

@@ -27,6 +27,7 @@ var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
 var homestar = require('../homestar');
+var settings = require('./settings');
 
 var events = require('events');
 var util = require('util');
@@ -174,15 +175,15 @@ var load_recipes = function (initd) {
     var self = this;
 
     initd = _.defaults(initd, {
-        recipes_path: "cookbook",
+        cookbooks_path: settings.d.cookbooks_path,
     });
 
     logger.info({
         method: "_load_recipes",
-        recipes_path: initd.recipes_path,
+        cookbooks_path: initd.cookbooks_path,
     }, "loading recipes");
 
-    var filenames = cfg.cfg_find(iotdb.iot().envd, initd.recipes_path, /[.]js$/);
+    var filenames = cfg.cfg_find(iotdb.iot().envd, initd.cookbooks_path, /[.]js$/);
     cfg.cfg_load_js(filenames, function (paramd) {
         if (paramd.error !== undefined) {
             if (paramd.filename) {
@@ -455,19 +456,19 @@ var recipes = function () {
 };
 
 /**
- *  Archive entire cookbook
+ *  Archive entire cookbooks
  */
 var archive = function() {
     initd = _.defaults(initd, {
-        recipes_path: "cookbook",
+        cookbooks_path: settings.d.cookbooks_path,
     });
 
     logger.info({
         method: "archive",
-        recipes_path: initd.recipes_path,
+        cookbooks_path: initd.cookbooks_path,
     }, "loading recipes");
 
-    var filenames = cfg.cfg_find(iotdb.iot().envd, initd.recipes_path, /[.]js$/);
+    var filenames = cfg.cfg_find(iotdb.iot().envd, initd.cookbooks_path, /[.]js$/);
     cfg.cfg_load_js(filenames, function (paramd) {
         if (paramd.error !== undefined) {
             if (paramd.filename) {
