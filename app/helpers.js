@@ -30,6 +30,9 @@ var homestar = require('../homestar');
 
 var fs = require('fs');
 var path = require('path');
+var util = require('util');
+
+var uuid = require('uuid');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -49,7 +52,19 @@ var edit_add_chapter_ids = function(filename) {
             method: "edit_add_chapter_ids",
             filename: filename
         }, "file does not exist");
+        return;
     }
+
+    var found = true;
+    var contents = fs.readFileSync(filename, 'utf8');
+    var _replacer = function(full, chapter_name) {
+        return util.format('homestar.chapter(%s, "%s");', chapter_name, uuid.v4());
+    };
+
+    contents = contents.replace(/^\s*homestar\s*.\s*chapter\s*[(]\s*("[^"]*")\s*[)](\s*;)?/mg, _replacer);
+    contents = contents.replace(/^\s*homestar\s*.\s*chapter\s*[(]\s*('[^"]*')\s*[)](\s*;)?/mg, _replacer);
+
+    console.log(contents);
 };
 
 /**

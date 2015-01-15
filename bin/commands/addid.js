@@ -50,5 +50,15 @@ exports.help = function () {
 };
 
 exports.run = function (ad) {
-    console.log("HI!");
+    var self = this;
+
+    var initd = {
+        recipes_path: "cookbook",
+    };
+
+    var filenames = cfg.cfg_find(iotdb.iot().envd, initd.recipes_path, /[.]js$/);
+
+    for (var fi in filenames) {
+        helpers.edit_add_chapter_ids(filenames[fi]);
+    }
 };
