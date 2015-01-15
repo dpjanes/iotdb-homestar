@@ -26,6 +26,8 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
+var homestar = require('../homestar');
+
 var events = require('events');
 var util = require('util');
 
@@ -198,6 +200,9 @@ var load_recipes = function (initd) {
             method: "_load_recipes",
             filename: paramd.filename
         }, "found Model");
+
+        // this resets the groups and ID for every file
+        homestar.group();
     });
 };
 

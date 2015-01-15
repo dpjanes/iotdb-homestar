@@ -30,8 +30,31 @@ var iot = function(initd) {
     return iotdb.iot(initd);
 };
 
+var _group_default = "Chapter";
+var _group_name = _group_default;
+var _group_id;
+
 var recipe = function(initd) {
+    if (_group_name) {
+        initd.group = _group_name;
+    }
+    if (_group_id) {
+        initd.group_id = _group_id;
+    }
+
     iot().data("recipe", initd);
+};
+
+var chapter = function(name, id) {
+    if (name) {
+        _group_name = name;
+    } else {
+        _group_name = _group_default;
+    }
+
+    if (id) {
+        _group_name = id;
+    }
 };
 
 /*
@@ -41,6 +64,7 @@ exports.iotdb = iotdb;
 exports.timers = timers;
 exports.iot = iot;
 exports.recipe = recipe;
+exports.chapter = chapter;
 
 exports.cfg = iotdb.cfg;
 exports._ = iotdb.helpers;
