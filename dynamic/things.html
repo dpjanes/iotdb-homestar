@@ -1,0 +1,64 @@
+{% extends 'template' %}
+{% block head_footer %}
+    <script>var rdd = {};</script>
+{% endblock %}
+{% block content %}
+    <h1>Things</h1>
+    {% for thing in things()|groupBy('_group') %}
+    <ul class="list-group">
+        <li class="list-group-item active">
+            <span class="action-group">{{ loop.key }}</span>
+        </li>
+        {% for a in thing %}
+<script>{% if loop.first %}
+var state = {{ a.state|json(2)|safe }};
+var api = {
+  url: "/api/things/{{ a._thing_id }}"
+};
+rdd[{{ a._thing_id|json|safe}}] = {
+  section: "things",
+  id: {{ a._thing_id|json|safe }},
+  api: api,
+  name: {{ a._thing_name|json|safe }},
+  state: state
+};{% endif %}
+rdd[{{ a._id|json|safe}}] = {
+  section: "things",
+  id: {{ a._id|json|safe }},
+  api: api,
+  name: {{ a._name|json|safe }},
+  key: {{ a._control|json|safe }},
+  state: state
+};
+</script>
+        <li class="list-group-item{% if a._interactor === "click" %} action-item{% endif %}" data-id="{{ a._id }}" data-key="{{ a._control }}" onclick="">
+            <span class="action-name text-primary">{{ a._name }}</span>
+            {% if a._interactor == "enumeration" %}
+            <span class="interactor action-subcommands">
+                <div class="btn-group btn-group-sm">
+                {% for value in a.values %}
+                    <button type="button" class="btn btn-default action-item" data-id="{{ a._id}}" data-value="{{ value }}">{{ value }}</button>
+                {% endfor %}
+                </div>
+            </span>
+            {% endif %}
+            {% if a._interactor == "color" %}
+            <span class="action-subcommands">
+                <span class="interactor interactor-color" data-color={{ a.state[a._reading]|json|safe }}>
+                    <span class="box">&nbsp;</span>
+                </span>
+            </span>
+            {% endif %}
+            <span class="action-message text-warning"></span>
+            <span class="action-state text-muted"></span>
+            {% if settings().debug.pre %}<pre>{{ a|scrub|json(2)|safe }}</pre>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+{% endblock %}
+{% block body_footer %}
+    <script>var settingsd = {{ settings()|json(2)|safe }};</script>
+    <script src="mqttws31.js"></script>
+    <script src="index.js"></script>
+{% endblock %}
