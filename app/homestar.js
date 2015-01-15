@@ -31,6 +31,7 @@ var cfg = iotdb.cfg;
 var unirest = require('unirest');
 
 var settings = require('./settings');
+var recipe = require('./recipe');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -41,6 +42,118 @@ var logger = bunyan.createLogger({
 var bearer;
 var URL_CONSUMER;
 var URL_PROFILE;
+
+/**
+ *  Fetch a user's permissions with this consumer
+ */
+var permissions = function (user, callback) {
+    var url = URL_CONSUMER + '/users/' + user.id;
+    unirest
+        .get(url)
+        .headers({
+            'Accept': 'application/json',
+            'Authorization': bearer,
+        })
+        .type('json')
+        .end(function (result) {
+            if (result.error) {
+                logger.error({
+                    url: url,
+                    error: result.error,
+                }, "permissions failed");
+                callback("fetch permissions failed", null);
+            } else if (result.body) {
+                callback(null, result.body);
+            } else {
+                logger.error({
+                    status: result.statusCode,
+                    url: url,
+                }, "no readable response");
+                callback("fetch permissions failed [1]");
+            }
+        });
+};
+
+var _cookbooks_sent = false;
+
+/**
+ *  Send cookbooks to HomeStar.io
+ */
+var send_cookbooks = function() {
+    var cookbook = {};
+    var sent = true;
+
+    var rs = recipe.recipes();
+    for (var ri in rs) {
+        var r = rs[ri];
+        if (!r.group_id) {
+            continue;
+        }
+
+        if (r.group_id != cookbook.chapter_id) {
+            send_chapter(cookbook, function(error) {
+                if (error) {
+                    sent = false;
+                }
+            });
+
+            cookbook = {
+                chapter_id: r.group_id,
+                name: r.group || r.group_id,
+                recipes: [],
+            };
+        }
+
+        cookbook.recipes.push(r.name);
+    }
+
+    send_chapter(cookbook, function(error) {
+        if (error) {
+            sent = false;
+        }
+    });
+
+    _cookbooks_sent = sent;
+};
+
+/**
+ *  Send recipe info to the server
+ */
+var send_chapter = function(cookbook, callback) {
+    if (!cookbook.chapter_id) {
+        return callback(null, null);
+    }
+    if (!callback) {
+        callback = function() {};
+    }
+
+    var url = URL_CONSUMER + '/chapters/' + cookbook.chapter_id;
+    unirest
+        .put(url)
+        .headers({
+            'Accept': 'application/json',
+            'Authorization': bearer,
+        })
+        .json(cookbook)
+        .type('json')
+        .end(function (result) {
+            if (result.error) {
+                logger.error({
+                    url: url,
+                    error: result.error,
+                }, "permissions failed");
+                callback("send_chapter() permissions failed", null);
+            } else if (result.body) {
+                callback(null, result.body);
+            } else {
+                logger.error({
+                    status: result.statusCode,
+                    url: url,
+                }, "no readable response");
+                callback("send_chapter() permissions failed [1]");
+            }
+        });
+};
 
 /**
  *  Ping the server that I'm alive
@@ -128,9 +241,16 @@ var setup = function () {
 
     /* fetch my profile */
     profile();
+
+    /* send recipes */
+    send_cookbooks();
+
 };
 
 /*
  *  API
  */
 exports.setup = setup;
+exports.permissions = permissions;
+exports.send_chapter = send_chapter;
+exports.send_cookbooks = send_cookbooks;

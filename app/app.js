@@ -64,10 +64,34 @@ swig.setFilter('scrub', function (input) {
 });
 
 /**
- *  Run a particular recipe. This is always
- *  the result of a PUT
+ *  Edit the permissions of a recipe - i.e. who can use it.
+ *  We actually do all the editing on HomeStar
  */
-var webserver_recipe_update = function (request, result) {
+var webserver_recipe_permissions = function (request, response) {
+    logger.info({
+        method: "webserver_recipe_permissions",
+        recipe_id: request.params.recipe_id
+    }, "called");
+
+    var reciped = recipe.recipe_by_id(request.params.recipe_id);
+    if (!reciped) {
+        logger.error({
+            method: "webserver_recipe_update",
+            recipe_id: request.params.recipe_id
+        }, "recipe not found");
+
+        response.status(404).send("recipe not found");
+        return;
+    }
+
+    response.redirect(util.format("%s/runners/%s/recipes/%s", settings.d.homestar.url, settings.d.keys.homestar.key, request.params.recipe_id));
+};
+
+/**
+ *  Run a particular recipe. This is always
+ *  the eesult of a PUT
+ */
+var webserver_recipe_update = function (request, response) {
     logger.info({
         method: "webserver_recipe_update",
         recipe_id: request.params.recipe_id
@@ -80,8 +104,8 @@ var webserver_recipe_update = function (request, result) {
             recipe_id: request.params.recipe_id
         }, "recipe not found");
 
-        result.set('Content-Type', 'application/json');
-        result.status(404).send(JSON.stringify({
+        response.set('Content-Type', 'application/json');
+        response.status(404).send(JSON.stringify({
             error: "recipe not found",
             recipe_id: request.params.recipe_id
         }, null, 2));
@@ -96,8 +120,8 @@ var webserver_recipe_update = function (request, result) {
             cause: "user sent the request before a previous version finished",
         }, "recipe is still running");
 
-        result.set('Content-Type', 'application/json');
-        result.status(409).send(JSON.stringify({
+        response.set('Content-Type', 'application/json');
+        response.status(409).send(JSON.stringify({
             error: "recipe is still running",
             recipe_id: request.params.recipe_id
         }, null, 2));
@@ -107,8 +131,8 @@ var webserver_recipe_update = function (request, result) {
 
     context.onclick(request.body.value);
 
-    result.set('Content-Type', 'application/json');
-    result.send(JSON.stringify({
+    response.set('Content-Type', 'application/json');
+    response.send(JSON.stringify({
         running: context.running
     }, null, 2));
 };
@@ -366,6 +390,8 @@ var setup_pages = function (app) {
     app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
     app.put('/api/things/:thing_id', things.webserver_thing_update);
 
+    app.get('/auth/cookbook/:recipe_id', webserver_recipe_permissions);
+
     app.get('/auth/logout', function (request, response) {
         request.logout();
         response.redirect('/');
@@ -377,6 +403,7 @@ var setup_pages = function (app) {
             failureRedirect: '/'
         })
     );
+
 };
 
 /**
@@ -399,6 +426,7 @@ var setup_passport = function () {
                 userProfileURL: server_url + '/api/1.0/profile'
             },
             function (token, token_secret, profile, done) {
+                
                 var user = {
                     id: profile.id,
                     username: profile.username,
@@ -408,7 +436,19 @@ var setup_passport = function () {
                         token_secret: token_secret,
                     },
                 };
-                done(null, user);
+
+                // fetch user's permissions
+                homestar.permissions(user, function(error, permissions) {
+                    user.permissions = permissions;
+                    /*
+                    console.log("-------------");
+                    console.log(profile);
+                    console.log(permissions);
+                    console.log("-------------");
+                     */
+
+                    done(null, user);
+                });
             })
     );
 

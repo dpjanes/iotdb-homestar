@@ -352,7 +352,11 @@ var order_recipe = function (a, b) {
  *  Make a unique ID for an Action
  */
 var recipe_to_id = function (reciped) {
-    return "urn:iotdb:recipe:" + _.md5_hash("2014-12-13T06:34:00", reciped.group, reciped.name);
+    if (reciped.group_id) {
+        return "urn:iotdb:recipe:" + reciped.group_id;
+    } else {
+        return "urn:iotdb:recipe:" + _.md5_hash("2014-12-13T06:34:00", reciped.group, reciped.name);
+    }
 };
 
 /**

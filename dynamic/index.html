@@ -7,6 +7,9 @@
     <ul class="list-group">
         <li class="list-group-item active">
             <span class="action-group">{{ loop.key }}</span>
+            {% if user.permissions.owner %}
+            <a href="/auth/cookbook/{{ recipes[0]._id }}" class="pull-right action-edit-permission">☆</a>
+            {% endif %}
         </li>
         {% for a in recipes %}
 <script>rdd[{{ a._id|json|safe}}] = {
