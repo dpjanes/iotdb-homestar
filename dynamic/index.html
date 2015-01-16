@@ -25,8 +25,8 @@ state: {{ a.state|json|safe }}{% endif %}
             {% if a._interactor == "enumeration" %}
             <span class="interactor action-subcommands">
                 <div class="btn-group btn-group-sm">
-                {% for value in a.values %}
-                    <button type="button" class="btn btn-default action-item" data-id="{{ a._id}}" data-value="{{ value }}">{{ value }}</button>
+                {% for vd in a._values %}
+                    <button type="button" class="btn btn-default action-item" data-id="{{ a._id}}" data-value="{{ vd.value }}">{{ vd.name }}</button>
                 {% endfor %}
                 </div>
             </span>
