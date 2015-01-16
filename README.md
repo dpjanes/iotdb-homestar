@@ -24,7 +24,7 @@ Run:
 
     $ homestar setup
 
-This will store some random values in <code>.iotdb/keystore.json</code> and try to figure out your geographic location.
+This will store some interesting values in <code>.iotdb/keystore.json</code> and try to figure out your geographic location.
 
 ### Integrate with HomeStar.io
 
@@ -38,7 +38,6 @@ Then:
 [HomeStar.io](https://homestar.io) provides a user authentication layer for you so you can decide who's allowed to use what
 
 ### Additional Node modules
-
 
 #### Bluetooth Low Energy
 
@@ -65,6 +64,8 @@ The home page will be brought up in your browser.
 
 ## Getting new recipes
 
+    homestar browse
+
 ## Important Settings
 
 ### Change the name of my server as it appears on HomeStar.io
@@ -73,7 +74,11 @@ The home page will be brought up in your browser.
 
 ### Don't open webpage 
 
-    homestar set open_browser 0 --boolean
+    homestar set browser 0 --boolean
+
+(you can also change this at runtime)
+
+    homestar runner browser=0
 
 ### Change http port
 
