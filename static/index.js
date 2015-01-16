@@ -209,12 +209,15 @@ var js = {
 
             var key = element.data("key");
             if (!key) {
+                key = element.parents("li").data("key");
+            }
+            if (!key) {
                 key = "value";
             }
 
             var value = element.data("value");
-            if (!value) {
-                value = (new Date()).toISOString();
+            if (value === undefined) {
+                value = "";
             }
 
             var requestd = {};

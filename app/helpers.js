@@ -76,6 +76,66 @@ var edit_add_cookbook_ids = function(filename) {
 };
 
 /**
+ *  How the user interacts with this control
+ */
+var interactor = function(rd) {
+    if (rd._thing_name) {
+        rd._group = rd._thing_name
+    } else if (rd.group) {
+        rd._group = rd.group
+    } else {
+        rd._group = "Ungrouped";
+    }
+
+    var values = rd.values;
+    if (values) {
+        rd._interactor = "enumeration";
+        rd._values = [];
+        for (var vi in values) {
+            rd._values.push({
+                name: values[vi],
+                value: values[vi],
+            });
+        }
+        return;
+    }
+
+    var format = rd['iot-js:format'];
+    if (format === "iot-js:color") {
+        rd._interactor = "color";
+        return;
+    } else if (format === "iot-js:date") {
+        rd._interactor = "date";
+        return;
+    } else if (format === "iot-js:datetime") {
+        rd._interactor = "datetime";
+        return;
+    } else if (format === "iot-js:time") {
+        rd._interactor = "time";
+        return;
+    }
+
+    var type = rd['iot-js:type'];
+    if (type === "iot-js:boolean") {
+        rd._values = [ 
+            {
+                name: "Off",
+                value: 0
+            },
+            {
+                name: "On",
+                value: 1
+            },
+        ];
+        rd._interactor = "enumeration";
+        return;
+    }
+
+    rd._interactor = "click";
+};
+
+/**
  *  API
  */
 exports.edit_add_cookbook_ids = edit_add_cookbook_ids;
+exports.interactor = interactor;

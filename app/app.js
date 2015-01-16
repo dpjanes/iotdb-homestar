@@ -49,6 +49,7 @@ var data = require('./data');
 var settings = require('./settings');
 var homestar = require('./homestar');
 var things = require('./things');
+var helpers = require('./helpers');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -206,49 +207,6 @@ var setup_express = function (app) {
 };
 
 /**
- *  How the user interacts with this control
- */
-var _interactor = function(rd) {
-    if (rd._thing_name) {
-        rd._group = rd._thing_name
-    } else if (rd.group) {
-        rd._group = rd.group
-    } else {
-        rd._group = "Ungrouped";
-    }
-
-    var values = rd.values;
-    if (values) {
-        rd._interactor = "enumeration";
-        return;
-    }
-
-    var format = rd['iot-js:format'];
-    if (format === "iot-js:color") {
-        rd._interactor = "color";
-        return;
-    } else if (format === "iot-js:date") {
-        rd._interactor = "date";
-        return;
-    } else if (format === "iot-js:datetime") {
-        rd._interactor = "datetime";
-        return;
-    } else if (format === "iot-js:time") {
-        rd._interactor = "time";
-        return;
-    }
-
-    var type = rd['iot-js:type'];
-    if (type === "iot-js:boolean") {
-        rd.values = [ "Off", "On", ];
-        rd._interactor = "enumeration";
-        return;
-    }
-
-    rd._interactor = "click";
-};
-
-/**
  *  Dynamic pages - we decide at runtime
  *  what these are based on our paths
  */
@@ -264,7 +222,7 @@ var make_dynamic = function(template, mount) {
         var home_page = swig.renderFile(template, {
             things: function() {
                 var ts = things.structured();
-                ts.map(_interactor);
+                ts.map(helpers.interactor);
 
                 return ts;
             },
@@ -308,7 +266,7 @@ var make_dynamic = function(template, mount) {
                     rd._context = undefined;
                     rd._valued = undefined;
                     rd.watch = undefined;
-                    _interactor(rd);
+                    helpers.interactor(rd);
 
                     rds.push(rd);
                 }

@@ -28,6 +28,7 @@ var cfg = iotdb.cfg;
 
 var mqtt = require('./mqtt');
 var settings = require('./settings');
+var helpers = require('./helpers');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -228,6 +229,8 @@ var webserver_thing_update = function (request, result) {
             thing_id: request.params.thing_id
         }, null, 2));
     }
+
+    console.log("HERE:AAA", request.body);
 
     thing.update(request.body, { notify: true });
 
