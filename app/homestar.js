@@ -75,13 +75,49 @@ var permissions = function (user, callback) {
 };
 
 var _cookbooks_sent = false;
+var _cookbooks_timer = null;
 
 /**
  *  Send cookbooks to HomeStar.io
  */
-var send_cookbooks = function() {
+var send_cookbooks = function(retry) {
     var cookbook = {};
+
+    if (_cookbooks_timer && retry > 0) {
+        clearTimeout(_cookbooks_timer);
+    }
+
     var sent = true;
+    var count = 1;
+    var _track_callback = function(error) {
+        count--;
+
+        if (error) {
+            sent = false;
+        }
+
+        if (count !== 0) {
+            return;
+        }
+
+        _cookbooks_sent = sent;
+
+        console.log("=======================");
+        console.log(_cookbooks_sent, retry);
+        console.log("=======================");
+
+        if (_cookbooks_sent) {
+            return;
+        }
+        if (retry <= 0) {
+            return;
+        }
+
+        _cookbooks_timer = setTimeout(function() {
+            _cookbooks_timer = null;
+            send_cookbooks(retry);
+        }, retry * 1000);
+    };
 
     var rs = recipe.recipes();
     for (var ri in rs) {
@@ -91,11 +127,8 @@ var send_cookbooks = function() {
         }
 
         if (r.cookbook_id != cookbook.cookbook_id) {
-            send_cookbook(cookbook, function(error) {
-                if (error) {
-                    sent = false;
-                }
-            });
+            count++;
+            send_cookbook(cookbook, _track_callback);
 
             cookbook = {
                 cookbook_id: r.cookbook_id,
@@ -107,13 +140,11 @@ var send_cookbooks = function() {
         cookbook.recipes.push(r.name);
     }
 
-    send_cookbook(cookbook, function(error) {
-        if (error) {
-            sent = false;
-        }
-    });
+    count++;
+    send_cookbook(cookbook, _track_callback);
 
-    _cookbooks_sent = sent;
+    // this clears out the original "count=1"
+    _track_callback(null, null);
 };
 
 /**
@@ -243,7 +274,7 @@ var setup = function () {
     profile();
 
     /* send recipes */
-    send_cookbooks();
+    send_cookbooks(10);
 
 };
 

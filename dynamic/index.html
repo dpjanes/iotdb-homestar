@@ -8,7 +8,7 @@
         <li class="list-group-item active">
             <span class="action-group">{{ loop.key }}</span>
             {% if user.permissions.owner %}
-            <a href="/auth/cookbook/{{ recipes[0]._id }}" class="pull-right action-edit-permission">☆</a>
+            <a href="/auth/cookbooks/{{ recipes[0].cookbook_id }}" class="pull-right action-edit-permission">☆</a>
             {% endif %}
         </li>
         {% for a in recipes %}

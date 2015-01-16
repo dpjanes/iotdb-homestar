@@ -67,24 +67,15 @@ swig.setFilter('scrub', function (input) {
  *  Edit the permissions of a recipe - i.e. who can use it.
  *  We actually do all the editing on HomeStar
  */
-var webserver_recipe_permissions = function (request, response) {
+var webserver_cookbook = function (request, response) {
     logger.info({
-        method: "webserver_recipe_permissions",
+        method: "webserver_cookbook",
         recipe_id: request.params.recipe_id
     }, "called");
 
-    var reciped = recipe.recipe_by_id(request.params.recipe_id);
-    if (!reciped) {
-        logger.error({
-            method: "webserver_recipe_update",
-            recipe_id: request.params.recipe_id
-        }, "recipe not found");
-
-        response.status(404).send("recipe not found");
-        return;
-    }
-
-    response.redirect(util.format("%s/runners/%s/recipes/%s", settings.d.homestar.url, settings.d.keys.homestar.key, request.params.recipe_id));
+    response.redirect(
+        util.format("%s/runners/%s/cookbooks/%s", settings.d.homestar.url, settings.d.keys.homestar.key, request.params.cookbook_id)
+    );
 };
 
 /**
@@ -390,7 +381,7 @@ var setup_pages = function (app) {
     app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
     app.put('/api/things/:thing_id', things.webserver_thing_update);
 
-    app.get('/auth/cookbook/:recipe_id', webserver_recipe_permissions);
+    app.get('/auth/cookbooks/:cookbook_id', webserver_cookbook);
 
     app.get('/auth/logout', function (request, response) {
         request.logout();
