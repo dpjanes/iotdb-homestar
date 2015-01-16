@@ -28,6 +28,7 @@
 var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
+var settings = require("../../app/settings");
 
 var child_process = require('child_process')
 var path = require('path')

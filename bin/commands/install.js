@@ -28,6 +28,7 @@
 var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
+var settings = require("../../app/settings");
 
 var node_fs = require('fs');
 var node_url = require('url');
@@ -62,6 +63,9 @@ exports.run = function (ad) {
     var urlp = node_url.parse(url);
     if (urlp.host === null) {
         url = "https://raw.githubusercontent.com/dpjanes/homestar-cookbook/master/" + urlp.path;
+        if (!url.match(/[.]js$/)) {
+            url += ".js";
+        }
     } else if (urlp.host == "github.com")  {
         var prefix = "/dpjanes/homestar-cookbook/blob/master/";
         if (urlp.path.indexOf(prefix) === 0) {
@@ -69,12 +73,14 @@ exports.run = function (ad) {
         }
     }
 
+    console.log("* downloading", url);
+
     // make the local filename and make sure it doesn't exist
     var urlp = node_url.parse(url);
     var basename = node_path.basename(urlp.path);
-    var path = node_path.join("cookbook", basename);
+    var path = node_path.join(settings.d.cookbooks_path, basename);
     if (node_fs.existsSync(path)) {
-        console.log("error: %s exists - delete it or move it away first", path);
+        console.log("# error: %s exists - delete it or move it away first", path);
         process.exit(1)
     }
 
@@ -83,28 +89,19 @@ exports.run = function (ad) {
         .get(url)
         .end(function (result) {
             if (result.error) {
-                console.log("error: %s", result.error);
+                console.log("# error: %s", result.error);
                 process.exit(1);
+            }
+
+            try {
+                node_fs.mkdirSync(settings.d.cookbooks_path);
+            } catch (err) {
             }
 
             node_fs.writeFile(path, result.body);
             
-            console.log("done!");
+            console.log("- done!");
             console.log("* read %s", url);
             console.log("* wrote %s", path);
         });
-
-    /*
-var unirest = require("unirest")
-
-    console.log(basename);
-    */
-
-    /*
-    iotdb.iot({
-        envd: {
-            IOTDB_PROJECT: process.cwd()
-        },
-    });
-    */
 };

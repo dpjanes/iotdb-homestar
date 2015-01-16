@@ -28,6 +28,7 @@
 var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
+var settings = require("../../app/settings");
 
 var fs = require('fs');
 var uuid = require('uuid');
@@ -77,7 +78,7 @@ exports.run = function (ad) {
 
     }
     try {
-        fs.mkdirSync("cookbook");
+        fs.mkdirSync(settings.d.cookbooks_path);
     } catch (err) {
     }
 
