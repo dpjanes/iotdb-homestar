@@ -42,6 +42,8 @@ var logger = bunyan.createLogger({
 var bearer;
 var URL_CONSUMER;
 var URL_PROFILE;
+var URL_COOKBOOKS;
+var URL_THINGS;
 
 /**
  *  Fetch a user's permissions with this consumer
@@ -102,9 +104,11 @@ var send_cookbooks = function(retry) {
 
         _cookbooks_sent = sent;
 
+        /*
         console.log("=======================");
         console.log(_cookbooks_sent, retry);
         console.log("=======================");
+        */
 
         if (_cookbooks_sent) {
             return;
@@ -132,12 +136,11 @@ var send_cookbooks = function(retry) {
 
             cookbook = {
                 cookbook_id: r.cookbook_id,
-                name: r.group || r.cookbook_id,
-                recipes: [],
+                'iot:name': r.group || r.cookbook_id,
             };
         }
 
-        cookbook.recipes.push(r.name);
+        // cookbook.recipes.push(r.name);
     }
 
     count++;
@@ -158,7 +161,7 @@ var send_cookbook = function(cookbook, callback) {
         callback = function() {};
     }
 
-    var url = URL_CONSUMER + '/cookbooks/' + cookbook.cookbook_id;
+    var url = URL_COOKBOOKS + '/' + cookbook.cookbook_id;
     unirest
         .put(url)
         .headers({
@@ -184,6 +187,50 @@ var send_cookbook = function(cookbook, callback) {
                 callback("send_cookbook() permissions failed [1]");
             }
         });
+};
+
+/**
+ *  Send Thing metadata to the server
+ */
+var send_thing = function(thing, callback) {
+    if (!callback) {
+        callback = function() {};
+    }
+
+    var url = URL_THINGS + '/' + thing.thing_id();
+    unirest
+        .put(url)
+        .headers({
+            'Accept': 'application/json',
+            'Authorization': bearer,
+        })
+        .json(thing.meta().state())
+        .type('json')
+        .end(function (result) {
+            if (result.error) {
+                logger.error({
+                    url: url,
+                    error: result.error,
+                }, "permissions failed");
+                callback("send_thing() permissions failed", null);
+            } else if (result.body) {
+                callback(null, result.body);
+            } else {
+                logger.error({
+                    status: result.statusCode,
+                    url: url,
+                }, "no readable response");
+                callback("send_thing() permissions failed [1]");
+            }
+        });
+};
+
+var send_things = function() {
+    var iot = iotdb.iot()
+    iot.on_thing(function(thing) {
+        console.log("++++++++++ THING ++++++");
+        send_thing(thing);
+    });
 };
 
 /**
@@ -258,6 +305,8 @@ var setup = function () {
     bearer = 'Bearer ' + settings.d.keys.homestar.bearer;
     URL_CONSUMER = settings.d.homestar.url + '/api/1.0/consumers/' + settings.d.keys.homestar.key;
     URL_PROFILE = settings.d.homestar.url + '/api/1.0/profile';
+    URL_COOKBOOKS = settings.d.homestar.url + '/api/1.0/cookbooks';
+    URL_THINGS = settings.d.homestar.url + '/api/1.0/things';
 
     /* ping now and forever */
     if (settings.d.homestar.ping) {
@@ -275,7 +324,7 @@ var setup = function () {
 
     /* send recipes */
     send_cookbooks(10);
-
+    send_things();
 };
 
 /*
@@ -285,3 +334,5 @@ exports.setup = setup;
 exports.permissions = permissions;
 exports.send_cookbook = send_cookbook;
 exports.send_cookbooks = send_cookbooks;
+exports.send_thing = send_thing;
+exports.send_things = send_things;

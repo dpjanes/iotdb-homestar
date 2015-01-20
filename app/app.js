@@ -71,11 +71,22 @@ swig.setFilter('scrub', function (input) {
 var webserver_cookbook = function (request, response) {
     logger.info({
         method: "webserver_cookbook",
-        recipe_id: request.params.recipe_id
+        metadata_id: request.params.metadata_id
     }, "called");
 
     response.redirect(
-        util.format("%s/runners/%s/cookbooks/%s", settings.d.homestar.url, settings.d.keys.homestar.key, request.params.cookbook_id)
+        util.format("%s/cookbooks/%s", settings.d.homestar.url, request.params.metadata_id)
+    );
+};
+
+var webserver_thing = function (request, response) {
+    logger.info({
+        method: "webserver_thing",
+        metadata_id: request.params.metadata_id
+    }, "called");
+
+    response.redirect(
+        util.format("%s/things/%s", settings.d.homestar.url, request.params.metadata_id)
     );
 };
 
@@ -339,7 +350,8 @@ var setup_pages = function (app) {
     app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
     app.put('/api/things/:thing_id', things.webserver_thing_update);
 
-    app.get('/auth/cookbooks/:cookbook_id', webserver_cookbook);
+    app.get('/auth/cookbooks/:metadata_id', webserver_cookbook);
+    app.get('/auth/things/:metadata_id', webserver_thing);
 
     app.get('/auth/logout', function (request, response) {
         request.logout();

@@ -8,6 +8,9 @@
     <ul class="list-group">
         <li class="list-group-item active">
             <span class="action-group">{{ loop.key }}</span>
+            {% if user.permissions.owner %}
+            <a href="/auth/things/{{ thing[0]._thing_id }}" class="pull-right action-edit-permission">☆</a>
+            {% endif %}
         </li>
         {% for a in thing %}
 <script>{% if loop.first %}
