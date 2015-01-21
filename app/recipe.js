@@ -191,7 +191,7 @@ var load_recipes = function (initd) {
                     method: "_load_recipes",
                     filename: paramd.filename,
                     error: paramd.error,
-                    exception: paramd.exception,
+                    exception: paramd.exception ? "" + paramd.exception : "",
                 }, "error loading JS Model");
             }
             return;
@@ -203,8 +203,10 @@ var load_recipes = function (initd) {
         }, "found Model");
 
         // this resets the groups and ID for every file
-        homestar.group();
+        homestar.cookbook();
     });
+    // console.log("HERE:BBBB ----------");
+    // process.exit(0)
 };
 
 /**

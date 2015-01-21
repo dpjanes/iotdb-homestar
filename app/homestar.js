@@ -228,7 +228,6 @@ var send_thing = function(thing, callback) {
 var send_things = function() {
     var iot = iotdb.iot()
     iot.on_thing(function(thing) {
-        console.log("++++++++++ THING ++++++");
         send_thing(thing);
     });
 };

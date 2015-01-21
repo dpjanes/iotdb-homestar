@@ -2,12 +2,29 @@
 
 ## What is it
 
+HomeStar is a little server you can 
+run on your home computer, Raspberry Pi,
+Intel Edison, BeagleBone Black, &c
+to automate your home.
+
+Ideal early users have Belkin WeMo, Philips Hue,
+LIFX, but theoretically it'll run with anything.
+
+
+## Discussion and Bug Reports
+
+On Google+
+
+* [https://plus.google.com/communities/108112460238486371606](https://plus.google.com/communities/108112460238486371606)
+
 ## Installation
+
+### Node.JS
 
 You'll need to have Node-JS installed on your computer,
 [in whatever the usual way for you is](http://nodejs.org/download/).
 
-### Package
+### Homestar Modules
 
 Run:
 
@@ -17,6 +34,12 @@ Run:
 If the second command gives an error, run it as:
 
 	$ sudo npm link homestar
+
+### Upgrading from a previous version
+
+Run:
+
+    $ sudo npm upgrade -g homestar
 
 ### Configuration
 
