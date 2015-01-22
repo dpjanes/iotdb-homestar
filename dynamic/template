@@ -34,6 +34,14 @@
         {% endblock %}
         {% block content %}
         {% endblock %}
+        {% block more %}
+        <hr />
+        <ul class="list-inline">
+            <li><a href="/">Home</a></li>
+            <li><a href="/things">Things</a></li>
+            <li><a href="/upnp">UPnP</a></li>
+        </ul>
+        {% endblock %}
     </div>
     {% block javascript %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
