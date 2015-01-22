@@ -6,7 +6,7 @@
     <h1>Things</h1>
     {% for thing in things()|groupBy('_group') %}
     <ul class="list-group">
-        <li class="list-group-item active">
+        <li class="list-group-item active" id="{{ thing[0]._thing_id }}">
             <span class="action-group">{{ loop.key }}</span>
             {% if user.permissions.owner %}
             <a href="/auth/things/{{ thing[0]._thing_id }}" class="pull-right action-edit-permission">☆</a>

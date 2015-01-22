@@ -71,11 +71,11 @@ swig.setFilter('scrub', function (input) {
 var webserver_cookbook = function (request, response) {
     logger.info({
         method: "webserver_cookbook",
-        metadata_id: request.params.metadata_id
+        metadata_id: request.params.metadata_id,
     }, "called");
 
     response.redirect(
-        util.format("%s/cookbooks/%s", settings.d.homestar.url, request.params.metadata_id)
+        util.format("%s/cookbooks/%s?from=%s", settings.d.homestar.url, request.params.metadata_id, request.headers.referer)
     );
 };
 
@@ -86,7 +86,7 @@ var webserver_thing = function (request, response) {
     }, "called");
 
     response.redirect(
-        util.format("%s/things/%s", settings.d.homestar.url, request.params.metadata_id)
+        util.format("%s/things/%s?from=%s", settings.d.homestar.url, request.params.metadata_id, request.headers.referer)
     );
 };
 

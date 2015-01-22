@@ -228,7 +228,17 @@ var send_thing = function(thing, callback) {
 var send_things = function() {
     var iot = iotdb.iot()
     iot.on_thing(function(thing) {
-        send_thing(thing);
+        send_thing(thing, function(error, metad) {
+            if (!metad) {
+                return;
+            }
+
+            
+            metad = _.ld.expand(metad, { scrub: true });
+            if (thing.meta().update(metad)) {
+                iotdb.iot().meta_save(thing);
+            }
+        });
     });
 };
 
