@@ -285,6 +285,8 @@ var init_recipe = function (reciped) {
         delete reciped.purpose;
     }
 
+    reciped._name = reciped.name;
+
     /* JavaScript types */
     var type = reciped['iot-js:type'];
     if (type === undefined) {

@@ -39,7 +39,7 @@ var js = {
             supress: false,
             
             on_load: function() {
-                $('.interactor.interactor-color')
+                $('.interactor-color .interactor-interactor .wrapper')
                     .minicolors({
                         position: js.is_mobile ? 'top left': 'bottom right',
                         changeDelay: 60,
@@ -67,7 +67,7 @@ var js = {
 
                 try {
                     js.interactors.color.supress = true;
-                    $('li[data-id="' + id + '"] .interactor.interactor-color')
+                    $('li[data-id="' + id + '"] .interactor-interactor .wrapper')
                         .minicolors('value', value)
                         ;
                 } catch(x) {
@@ -182,9 +182,9 @@ var js = {
 
     actions: {
         on_load: function() {
-            $('.action-item').on('click', js.actions.on_click);
-            $('li.action-item').on('touchstart', js.actions.on_touchstart);
-            $('li.action-item').on('touchend', js.actions.on_touchend);
+            $('.interactor-item').on('click', js.actions.on_click);
+            $('li.interactor-item').on('touchstart', js.actions.on_touchstart);
+            $('li.interactor-item').on('touchend', js.actions.on_touchend);
         },
 
         on_touchstart: function(e) {
@@ -232,17 +232,17 @@ var js = {
                 dataType : 'json',
                 error : function(xhr, status, error) {
                     alert("" + rd.api.url + "\n" + status + ": " + error);
-                    $('li.action-item').removeClass('running');
+                    $('li.interactor-item').removeClass('running');
                 },
                 success : function(data, status, xhr) {
                     console.log("success", data);
                     if (!data.running) {
-                        $('li.action-item').removeClass('running');
+                        $('li.interactor-item').removeClass('running');
                     }
                 },
             };
 
-            // $('li.action-item').removeClass('running');
+            // $('li.interactor-item').removeClass('running');
             element.addClass('running');
 
             $.ajax(paramd);
@@ -252,7 +252,7 @@ var js = {
         on_message: function(section, id, d) {
             var e_li = $('li[data-id="' + id + '"]');
             if (d.message !== undefined) {
-                e_li.find(".action-message").text(d.message);
+                e_li.find(".interactor-message").text(d.message);
             }
 
             if (d.running !== undefined) {
@@ -260,17 +260,17 @@ var js = {
                     e_li.addClass('running');
                 } else {
                     e_li.removeClass('running');
-                    e_li.find(".action-message").text("");
+                    e_li.find(".interactor-message").text("");
                 }
             } 
 
             if (d.state !== undefined) {
                 if (d.state._text) {
-                    e_li.find(".action-state").text(d.state._text || "");
+                    e_li.find(".interactor-state").text(d.state._text || "");
                 } else if (d.state._html) {
-                    e_li.find(".action-state").text(d.state._html);
+                    e_li.find(".interactor-state").text(d.state._html);
                 } else if (d.state._number) {
-                    e_li.find(".action-state").text("" + d.state._number);
+                    e_li.find(".interactor-state").text("" + d.state._number);
                 }
 
                 var rd = rdd[id];

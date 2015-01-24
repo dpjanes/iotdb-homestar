@@ -34,28 +34,41 @@ rdd[{{ a._id|json|safe}}] = {
   state: state
 };
 </script>
-        <li class="list-group-item{% if a._interactor === "click" %} action-item{% endif %}" data-id="{{ a._id }}" data-key="{{ a._control }}" onclick="">
-            <span class="action-name text-primary">{{ a._name }}</span>
-            {% if a._interactor == "enumeration" %}
-            <span class="interactor action-subcommands">
+<li class="list-group-item interactor interactor-{{ a._interactor }}" data-id="{{ a._id }}" data-key="{{ a._control }}" onclick>
+    {% if a._interactor == "click" %}
+        <div>
+            <span class="interactor-name text-primary">{{ a._name }}</span>
+            <span class="interactor-message text-warning"></span>
+            <span class="interactor-state text-muted"></span>
+        </div>
+    {% endif %}
+    {% if a._interactor == "enumeration" %}
+        <div>
+            <span class="interactor-name text-primary">{{ a._name }}</span>
+            <span class="interactor-interactor">
                 <div class="btn-group btn-group-sm">
                 {% for vd in a._values %}
-                    <button type="button" class="btn btn-default action-item" data-id="{{ a._id}}" data-value="{{ vd.value }}">{{ vd.name }}</button>
+                    <button type="button" class="btn btn-default interactor-item" data-id="{{ a._id}}" data-value="{{ vd.value }}">{{ vd.name }}</button>
                 {% endfor %}
                 </div>
             </span>
-            {% endif %}
-            {% if a._interactor == "color" %}
-            <span class="action-subcommands">
-                <span class="interactor interactor-color" data-color={{ a.state[a._reading]|json|safe }}>
-                    <span class="box">&nbsp;</span>
+            <span class="interactor-message text-warning"></span>
+            <span class="interactor-state text-muted"></span>
+        </div>
+    {% endif %}
+    {% if a._interactor == "color" %}
+        <div>
+            <span class="interactor-name text-primary">{{ a._name }}</span>
+            <span class="interactor-interactor">
+                <span class="wrapper" data-color={{ a.state[a._reading]|json|safe }}>
+                    <span class="interactor-box">&nbsp;</span>
                 </span>
             </span>
-            {% endif %}
-            <span class="action-message text-warning"></span>
-            <span class="action-state text-muted"></span>
-            {% if settings().debug.pre %}<pre>{{ a|scrub|json(2)|safe }}</pre>{% endif %}
-        </li>
+            <span class="interactor-message text-warning"></span>
+            <span class="interactor-state text-muted"></span>
+        </div>
+    {% endif %}
+</li>
         {% endfor %}
     </ul>
     {% endfor %}

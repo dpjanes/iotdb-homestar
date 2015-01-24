@@ -1,35 +1,35 @@
-.action-subcommands {
+.interactor-interactor {
     margin-top: 5px;
     margin-bottom: 5px;
     display: block;
 }
-body.desktop .action-subcommands {
+body.desktop .interactor-interactor {
     float: right;
     margin-top: -33px;
 }
 
-.action-message {
+.interactor-message {
     display: block;
 }
-.action-state {
+.interactor-state {
     display: block;
 }
-li.action-item {
+li.interactor-item {
     -webkit-user-select: none;
 }
-li.action-item .action-name {
+li.interactor-item .interactor-name {
 }
 
-body.desktop li.action-item:hover {
+body.desktop li.interactor-item:hover {
     background: #EEE;
 }
-body.desktop li.action-item:active,
-body.mobile li.action-item.touched {
+body.desktop li.interactor-item:active,
+body.mobile li.interactor-item.touched {
     background: #DDD;
 }
 
-body.mobile li.action-item.running,
-body.desktop li.action-item.running {
+body.mobile li.interactor-item.running,
+body.desktop li.interactor-item.running {
     background: #fcf8e3;
 }
 
@@ -54,6 +54,15 @@ body.desktop li.action-item.running {
     padding: 0px;
     border-radius: 4px;
 }
-.action-edit-permission {
+.interactor-edit-permission {
     color: white;
+}
+
+/* -- */
+.interactor-click:hover {
+    background: #EEE;
+}
+.interactor-click:active,
+.interactor-click.touched {
+    background: #DDD;
 }
