@@ -99,10 +99,10 @@ var _structure_thing = function(thing) {
     for (var tax in tats) {
         var tat = tats[tax]
 
-        var cat = _.compact(tat)
+        var cat = _.ld.compact(tat)
         cat._code = tat.get_code()
 
-        var name = _.ld_get_first(cat, 'iot:name')
+        var name = _.ld.first(cat, 'iot:name')
         cat['@id'] = "/api/things/" + thing.thing_id() + "/#" + cat._code;
         cat._name = name || cat._code;
         cat._thing_id = thing.thing_id();
@@ -110,15 +110,15 @@ var _structure_thing = function(thing) {
         cat._id = thing.thing_id() + "/#" + cat._code;
         cat.group = thing_name;
 
-        var cid = scrub_id(_.ld_get_first(cat, "@id", ""))
-        if (_.ld_get_list(cat, 'iot:role') === undefined) {
+        var cid = scrub_id(_.ld.first(cat, "@id", ""))
+        if (_.ld.list(cat, 'iot:role') === undefined) {
             cat._control = cid
             cat._reading = cid
         } 
-        if (_.ld_contains(cat, 'iot:role', 'iot-attribute:role-control')) {
+        if (_.ld.contains(cat, 'iot:role', 'iot-attribute:role-control')) {
             cat._control = cid
         }
-        if (_.ld_contains(cat, 'iot:role', 'iot-attribute:role-reading')) {
+        if (_.ld.contains(cat, 'iot:role', 'iot-attribute:role-reading')) {
             cat._reading = cid
         }
 
@@ -134,7 +134,7 @@ var _structure_thing = function(thing) {
             cat._use = true
         }
 
-        var rids = _.ld_get_list(cat, "iot:related-role", [])
+        var rids = _.ld.list(cat, "iot:related-role", [])
         for (var rix in rids) {
             var rid = scrub_id(rids[rix])
             var rat = catd[rid]
@@ -229,8 +229,6 @@ var webserver_thing_update = function (request, result) {
             thing_id: request.params.thing_id
         }, null, 2));
     }
-
-    console.log("HERE:AAA", request.body);
 
     thing.update(request.body, { notify: true });
 

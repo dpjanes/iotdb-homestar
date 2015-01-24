@@ -69,6 +69,10 @@ exports.cookbook = cookbook;
 exports.cfg = iotdb.cfg;
 exports._ = iotdb.helpers;
 
+for (var key in iotdb.definitions.attribute) {
+    exports[key] = iotdb.definitions.attribute[key];
+}
+
 /*
  *  For recipes
  */

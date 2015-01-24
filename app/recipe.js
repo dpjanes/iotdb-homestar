@@ -224,6 +224,10 @@ var init_recipes = function () {
     }
 };
 
+var _add = function(reciped, key, value) {
+
+}
+
 var init_recipe = function (reciped) {
     reciped._id = recipe_to_id(reciped);
     reciped.state = {};
@@ -240,17 +244,28 @@ var init_recipe = function (reciped) {
     var keys = [ "value", "type", "format", "unit", ];
     for (var ki in keys) {
         var key = keys[ki];
+
         var value = reciped[key];
+        if (value === undefined) {
+            continue
+        }
+
+        value = _.ld.compact(reciped[key], { json: true, scrub: true });
 
         if (_.isObject(value)) {
-            for (var vkey in value) {
+            var vkeys = [ "iot-js:type", "iot-js:format", "iot:unit", "iot:purpose", ];
+            for (var vi in vkeys) {
+                var vkey = vkeys[vi];
                 var vvalue = value[vkey];
-                if (_.isArray(vvalue) || !_.isObject(vvalue)) {
+                if ((vvalue !== undefined) && (_.isArray(vvalue) || !_.isObject(vvalue))) {
                     reciped[vkey] = vvalue;
                 }
             }
+        } else {
+            reciped[key] = value;
         }
     }
+
 
     delete reciped.value;
     if (reciped.type) {
@@ -265,6 +280,10 @@ var init_recipe = function (reciped) {
         reciped['iot:unit'] = reciped.unit;
         delete reciped.unit;
     }
+    if (reciped.purpose) {
+        reciped['iot:purpose'] = reciped.purpose;
+        delete reciped.purpose;
+    }
 
     /* JavaScript types */
     var type = reciped['iot-js:type'];
@@ -275,7 +294,7 @@ var init_recipe = function (reciped) {
             reciped['iot-js:type'] = 'iot-js:null';
         }
     } else {
-        type = _.compact(_.expand(type, "iot-js:"))
+        type = _.ld.compact(_.ld.expand(type, "iot-js:"))
         if (type === "iot-js:boolean") {
             reciped.values = [ "Off", "On", ]
             reciped._valued = {

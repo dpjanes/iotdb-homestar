@@ -32,8 +32,10 @@ state: {{ a.state|json|safe }}{% endif %}
             </span>
             {% endif %}
             {% if a._interactor == "color" %}
-            <span class="interactor action-subcommands">
-                SET THE COLOR
+            <span class="action-subcommands">
+                <span class="interactor interactor-color" data-color={{ a.state[a._reading]|json|safe }}>
+                    <span class="box">&nbsp;</span>
+                </span>
             </span>
             {% endif %}
             <span class="action-message text-warning"></span>
