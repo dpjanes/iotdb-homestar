@@ -26,55 +26,30 @@ var js = {
     },
 
     interactors: {
-
         on_load: function() {
-            js.interactors.color.on_load();
+            for (var ikey in js.interactors) {
+                var ivalue = js.interactors[ikey];
+                if (ivalue.on_load) {
+                    try {
+                        ivalue.on_load();
+                    } catch (x) {
+                        console.log("js.interactors.on_load", "unexpected exception", ikey, x);
+                    }
+                }
+            }
         },
 
         update: function(id, value) {
-            js.interactors.color.update(id, value);
-        },
-
-        color: {
-            supress: false,
-            
-            on_load: function() {
-                $('.interactor-color .interactor-interactor .wrapper')
-                    .minicolors({
-                        position: js.is_mobile ? 'top left': 'bottom right',
-                        changeDelay: 60,
-                        change: function(hex, opactity) {
-                            if (js.interactors.color.supress) {
-                                js.interactors.color.supress = false;
-                                return;
-                            }
-
-                            $(this)
-                                .parents("li")
-                                .data("value", hex)
-                                .attr("data-value", hex)
-                                .each(function(index, element) {
-                                    js.actions.send($(element));
-                                })
-                            },
-                    });
-            },
-
-            update: function(id, value) {
-                if (!value) {
-                    return;
+            for (var ikey in js.interactors) {
+                var ivalue = js.interactors[ikey];
+                if (ivalue.update) {
+                    try {
+                        ivalue.update();
+                    } catch (x) {
+                        console.log("js.interactors.update", "unexpected exception", ikey, x);
+                    }
                 }
-
-                try {
-                    js.interactors.color.supress = true;
-                    $('li[data-id="' + id + '"] .interactor-interactor .wrapper')
-                        .minicolors('value', value)
-                        ;
-                } catch(x) {
-                }
-            },
-
-            end: 0
+            }
         },
 
         end: 0
