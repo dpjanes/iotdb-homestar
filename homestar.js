@@ -78,69 +78,69 @@ for (var key in iotdb.definitions.attribute) {
  */
 exports.value = {
     "boolean": {
-        "type": "iot-js:boolean",
+        "type": "iot:boolean",
         "on_off": {
-            "type": "iot-js:boolean",
+            "type": "iot:boolean",
             "values": [ "Off", "On", ],
         },
         "up_down": {
-            "type": "iot-js:boolean",
+            "type": "iot:boolean",
             "values": [ "Down", "Up", ],
         },
         "true_false": {
-            "type": "iot-js:boolean",
+            "type": "iot:boolean",
             "values": [ "False", "True", ],
         },
     },
     "integer": {
-        "type": "iot-js:integer",
+        "type": "iot:integer",
         "percent": {
-            "type": "iot-js:integer",
+            "type": "iot:integer",
             "minumum": 0,
             "maximum": 100,
-            "iot-js:format": "iot-unit:math.fraction.percent",
+            "iot:format": "iot-unit:math.fraction.percent",
         },
     },
     "number": {
-        "type": "iot-js:number",
+        "type": "iot:number",
         "unit": {
-            "type": "iot-js:number",
+            "type": "iot:number",
             "minumum": 0,
             "maximum": 1,
-            "iot-js:format": "iot-unit:math.fraction.unit",
+            "iot:format": "iot-unit:math.fraction.unit",
         },
         "percent": {
-            "type": "iot-js:number",
+            "type": "iot:number",
             "minumum": 0,
             "maximum": 100,
-            "iot-js:format": "iot-unit:math.fraction.percent",
+            "iot:format": "iot-unit:math.fraction.percent",
         },
         "fahrenheit": {
-            "type": "iot-js:number",
+            "type": "iot:number",
             "unit": "iot-unit:temperature.imperial.fahrenheit",
         },
         "celsius": {
-            "type": "iot-js:number",
+            "type": "iot:number",
             "unit": "iot-unit:temperature.metrix.celsius",
         },
     },
     "string": {
-        "type": "iot-js:string",
+        "type": "iot:string",
     },
     "date": {
-        "type": "iot-js:string",
-        "iot-js:format": "iot-js:date",
+        "type": "iot:string",
+        "iot:format": "iot:date",
     },
     "datetime": {
-        "type": "iot-js:string",
-        "iot-js:format": "iot-js:datetime",
+        "type": "iot:string",
+        "iot:format": "iot:datetime",
     },
     "time": {
-        "type": "iot-js:string",
-        "iot-js:format": "iot-js:time",
+        "type": "iot:string",
+        "iot:format": "iot:time",
     },
     "color": {
-        "type": "iot-js:string",
-        "iot-js:format": "iot-js:color",
+        "type": "iot:string",
+        "iot:format": "iot:color",
     },
 };

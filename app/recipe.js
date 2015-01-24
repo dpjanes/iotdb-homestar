@@ -253,7 +253,7 @@ var init_recipe = function (reciped) {
         value = _.ld.compact(reciped[key], { json: true, scrub: true });
 
         if (_.isObject(value)) {
-            var vkeys = [ "iot-js:type", "iot-js:format", "iot:unit", "iot:purpose", ];
+            var vkeys = [ "iot:type", "iot:format", "iot:unit", "iot:purpose", ];
             for (var vi in vkeys) {
                 var vkey = vkeys[vi];
                 var vvalue = value[vkey];
@@ -269,11 +269,11 @@ var init_recipe = function (reciped) {
 
     delete reciped.value;
     if (reciped.type) {
-        reciped['iot-js:type'] = reciped.type;
+        reciped['iot:type'] = reciped.type;
         delete reciped.type;
     }
     if (reciped.format) {
-        reciped['iot-js:format'] = reciped.format;
+        reciped['iot:format'] = reciped.format;
         delete reciped.format;
     }
     if (reciped.type) {
@@ -288,16 +288,16 @@ var init_recipe = function (reciped) {
     reciped._name = reciped.name;
 
     /* JavaScript types */
-    var type = reciped['iot-js:type'];
+    var type = reciped['iot:type'];
     if (type === undefined) {
         if (reciped.values) {
-            reciped['iot-js:type'] = 'iot-js:string';
+            reciped['iot:type'] = 'iot:string';
         } else {
-            reciped['iot-js:type'] = 'iot-js:null';
+            reciped['iot:type'] = 'iot:null';
         }
     } else {
-        type = _.ld.compact(_.ld.expand(type, "iot-js:"))
-        if (type === "iot-js:boolean") {
+        type = _.ld.compact(_.ld.expand(type, "iot:"))
+        if (type === "iot:boolean") {
             reciped.values = [ "Off", "On", ]
             reciped._valued = {
                 "Off": false,

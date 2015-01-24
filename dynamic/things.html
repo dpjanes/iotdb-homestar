@@ -30,11 +30,12 @@ rdd[{{ a._id|json|safe}}] = {
   id: {{ a._id|json|safe }},
   api: api,
   name: {{ a._name|json|safe }},
-  key: {{ a._control|json|safe }},
+  out: {{ a._out|json|safe }},
+  in: {{ a._in|json|safe }},
   state: state
 };
 </script>
-<li class="list-group-item interactor interactor-{{ a._interactor }}" data-id="{{ a._id }}" data-key="{{ a._control }}" onclick>
+<li class="list-group-item interactor interactor-{{ a._interactor }}" data-id="{{ a._id }}" data-in="{{ a._in }}" data-out="{{ a._out }}" onclick>
     {% if a._interactor == "click" %}
         <div>
             <span class="interactor-name text-primary">{{ a._name }}</span>

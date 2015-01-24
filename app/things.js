@@ -112,14 +112,14 @@ var _structure_thing = function(thing) {
 
         var cid = scrub_id(_.ld.first(cat, "@id", ""))
         if (_.ld.list(cat, 'iot:role') === undefined) {
-            cat._control = cid
-            cat._reading = cid
+            cat._out = cid
+            cat._in = cid
         } 
         if (_.ld.contains(cat, 'iot:role', 'iot-attribute:role-control')) {
-            cat._control = cid
+            cat._out = cid
         }
         if (_.ld.contains(cat, 'iot:role', 'iot-attribute:role-reading')) {
-            cat._reading = cid
+            cat._in = cid
         }
 
         catd[cid] = cat
@@ -145,11 +145,11 @@ var _structure_thing = function(thing) {
             if (rat._use === undefined) {
                 rat._use = false
             }
-            if (cat._control && !rat._control) {
-                rat._control = cat._control
+            if (cat._out && !rat._out) {
+                rat._out = cat._out
             }
-            if (cat._reading && !rat._reading) {
-                rat._reading = cat._reading
+            if (cat._in && !rat._in) {
+                rat._in = cat._in
             }
         }
 

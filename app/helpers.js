@@ -100,23 +100,23 @@ var interactor = function(rd) {
         return;
     }
 
-    var format = rd['iot-js:format'];
-    if (format === "iot-js:color") {
+    var format = rd['iot:format'];
+    if (format === "iot:color") {
         rd._interactor = "color";
         return;
-    } else if (format === "iot-js:date") {
+    } else if (format === "iot:date") {
         rd._interactor = "date";
         return;
-    } else if (format === "iot-js:datetime") {
+    } else if (format === "iot:datetime") {
         rd._interactor = "datetime";
         return;
-    } else if (format === "iot-js:time") {
+    } else if (format === "iot:time") {
         rd._interactor = "time";
         return;
     }
 
-    var type = rd['iot-js:type'];
-    if (type === "iot-js:boolean") {
+    var type = rd['iot:type'];
+    if (type === "iot:boolean") {
         rd._values = [ 
             {
                 name: "Off",

@@ -16,6 +16,7 @@
 rdd[{{ a._id|json|safe}}] = {
   id: {{ a._id|json|safe }},
   api: { url: "/api/cookbook/{{ a._id }}" },
+  out: "value",
   name: {{ a._name|json|safe }}{% if a.state %}, 
   state: {{ a.state|json|safe }}{% endif %}
 };

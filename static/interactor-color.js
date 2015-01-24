@@ -23,7 +23,14 @@ js.interactors.color = {
             });
     },
 
-    update: function(id, value) {
+    update: function(id, state, rd) {
+        var value;
+        if (rd.in) {
+            value = state[rd.in];
+        } else if (rd.out) {
+            value = state[rd.out];
+        }
+
         if (!value) {
             return;
         }

@@ -43,8 +43,12 @@ var js = {
             for (var ikey in js.interactors) {
                 var ivalue = js.interactors[ikey];
                 if (ivalue.update) {
+                    var rd = rdd[id];
                     try {
-                        ivalue.update();
+                        ivalue.update(id, rd.state, {
+                            out: rd.out,
+                            in: rd.in
+                        });
                     } catch (x) {
                         console.log("js.interactors.update", "unexpected exception", ikey, x);
                     }
@@ -182,12 +186,12 @@ var js = {
                 return;
             }
 
-            var key = element.data("key");
-            if (!key) {
-                key = element.parents("li").data("key");
+            var out_key = element.data("out");
+            if (!out_key) {
+                out_key = element.parents("li").data("out");
             }
-            if (!key) {
-                key = "value";
+            if (!out_key) {
+                out_key = "value";
             }
 
             var value = element.data("value");
@@ -196,7 +200,7 @@ var js = {
             }
 
             var requestd = {};
-            requestd[key] = value;
+            requestd[out_key] = value;
             // console.log(requestd);
 
             var paramd = {
@@ -254,9 +258,10 @@ var js = {
                         rd.state[key] = d.state[key];
                     }
 
-                    if (rd.key) {
-                        js.interactors.update(id, rd.state[rd.key]);
-                    }
+                    js.interactors.update(id, rd.state, {
+                        out: rd.out,
+                        in: rd.in
+                    });
                 }
             }
 
