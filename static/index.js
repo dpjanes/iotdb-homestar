@@ -161,21 +161,6 @@ var js = {
 
     actions: {
         on_load: function() {
-            $('.interactor-item').on('click', js.actions.on_click);
-            $('li.interactor-item').on('touchstart', js.actions.on_touchstart);
-            $('li.interactor-item').on('touchend', js.actions.on_touchend);
-        },
-
-        on_touchstart: function(e) {
-            $(this).addClass("touched");
-        },
-
-        on_touchend: function(e) {
-            $(this).removeClass("touched");
-        },
-
-        on_click: function(e) {
-            js.actions.send($(this));
         },
 
         send: function(element) {
