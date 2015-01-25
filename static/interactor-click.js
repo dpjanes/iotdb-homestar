@@ -17,6 +17,5 @@ js.interactors.click = {
         js.actions.send($(this));
     },
 
-
     end: 0
 };
