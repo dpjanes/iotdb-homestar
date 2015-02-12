@@ -68,6 +68,8 @@ exports.cookbook = cookbook;
 
 exports.cfg = iotdb.cfg;
 exports._ = iotdb.helpers;
+exports.upnp = iotdb.upnp;
+exports.make_model = iotdb.make_model;
 
 for (var key in iotdb.definitions.attribute) {
     exports[key] = iotdb.definitions.attribute[key];
