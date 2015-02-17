@@ -77,7 +77,7 @@ for (var key in iotdb.definitions.attribute) {
     exports[key] = iotdb.definitions.attribute[key];
 }
 
-exports.make_wrap = function(name, bindings) {
+exports.make_wrap = function(name, bindings, initd) {
     var model_code = exports._.identifier_to_dash_case(name);
     for (var bi in bindings) {
         var binding = bindings[bi];
@@ -90,7 +90,7 @@ exports.make_wrap = function(name, bindings) {
             continue;
         }
 
-        return exports._.bridge_wrapper(binding);
+        return exports._.bridge_wrapper(binding, initd);
     }
 };
 
