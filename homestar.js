@@ -77,6 +77,24 @@ for (var key in iotdb.definitions.attribute) {
     exports[key] = iotdb.definitions.attribute[key];
 }
 
+exports.make_wrap = function(name, bindings) {
+    var model_code = exports._.identifier_to_dash_case(name);
+    for (var bi in bindings) {
+        var binding = bindings[bi];
+        if (!binding.model) {
+            continue
+        }
+
+        var model = new binding.model();
+        if (model_code !== model.code) {
+            continue;
+        }
+
+        return exports._.bridge_wrapper(binding);
+    }
+};
+
+
 /*
  *  Always available requires
  */
