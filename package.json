@@ -8,24 +8,24 @@
         "url": "https://github.com/dpjanes/iotdb-homestar/issues"
     }, 
     "dependencies": {
-        "body-parser": "~1.10.0", 
-        "bunyan": "~1.2.3", 
+        "body-parser": "~1.12.0", 
+        "bunyan": "~1.3.3", 
         "connect-fs": "~0.1.1", 
-        "cookie-parser": "~1.3.3", 
-        "express": "~4.10.6", 
-        "express-session": "~1.9.3", 
-        "iotdb": "~0.4.3", 
-        "iotdb-timers": "~0.0.9", 
+        "cookie-parser": "~1.3.4", 
+        "express": "~4.11.2", 
+        "express-session": "~1.10.2", 
+        "iotdb": ">=0.4.12", 
+        "iotdb-timers": ">=0.0.9", 
         "minimist": "~1.1.0", 
         "mows": "~0.0.6", 
-        "mqtt": "~0.3.13", 
+        "mqtt": "~1.0.10", 
         "open": "~0.0.5", 
         "passport": "~0.2.1", 
         "passport-twitter": "~1.0.2", 
         "prompt": "~0.2.14", 
-        "session-file-store": "~0.0.2", 
+        "session-file-store": "~0.0.3", 
         "swig": "~1.4.2", 
-        "unirest": "~0.3.7", 
+        "unirest": "~0.4.0", 
         "uuid": "~2.0.1"
     }, 
     "description": "Home\u2606Star Runner", 
@@ -52,5 +52,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.0.41"
+    "version": "0.0.43"
 }

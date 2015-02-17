@@ -1,11 +1,11 @@
 /*
- *  bin/commands/install.js
+ *  bin/commands/add-recipe.js
  *
  *  David Janes
  *  IOTDB.org
  *  2014-12-30
  *
- *  HomeStar command line control: "homestar install"
+ *  HomeStar command line control: "homestar add-recipe"
  *  Add a recipe from the web to your HomeStar installation
  *
  *  Copyright [2013-2015] [David P. Janes]
@@ -36,11 +36,11 @@ var node_path = require('path');
 
 var unirest = require('unirest');
 
-exports.command = "install";
-exports.summary = "install a recipe to your Runner";
+exports.command = "add-recipe";
+exports.summary = "add a recipe to your Runner";
 
 exports.help = function () {
-    console.log("usage: homestar install [<url>|<recipe_name>]");
+    console.log("usage: homestar add-recipe [<url>|<recipe_name>]");
     console.log("");
     console.log("Add a recipe to your Home☆Star Runner. These are");
     console.log("copied into folder 'cookbook'. Please edit to make");
@@ -52,7 +52,7 @@ exports.help = function () {
 
 exports.run = function (ad) {
     if (ad._.length != 2) {
-        console.log("homestar install takes a single argument");
+        console.log("homestar add-recipe takes a single argument");
         console.log("");
         exports.help();
         process.exit(1);

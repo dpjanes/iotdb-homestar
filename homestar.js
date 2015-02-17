@@ -5,7 +5,7 @@
  *  IOTDB.org
  *  2014-12-30
  *
- *  Copyright [2013-2014] [David P. Janes]
+ *  Copyright [2013-2015] [David P. Janes]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -68,6 +68,8 @@ exports.cookbook = cookbook;
 
 exports.cfg = iotdb.cfg;
 exports._ = iotdb.helpers;
+exports.keystore = iotdb.keystore;
+exports.Keystore = iotdb.Keystore;
 exports.upnp = iotdb.upnp;
 exports.make_model = iotdb.make_model;
 
@@ -76,7 +78,13 @@ for (var key in iotdb.definitions.attribute) {
 }
 
 /*
- *  For recipes
+ *  Always available requires
+ */
+exports.unirest = require('unirest')
+exports.bunyan = require('bunyan')
+
+/*
+ *  For recipes: PROBABLY WILL BE DELETED
  */
 exports.value = {
     "boolean": {
