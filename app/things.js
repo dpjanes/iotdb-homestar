@@ -107,6 +107,7 @@ var _structure_thing = function(thing) {
         cat._name = name || cat._code;
         cat._thing_id = thing.thing_id();
         cat._thing_name = thing_name;
+        cat._thing_group = thing_name + "@@" + thing.thing_id();
         cat._id = thing.thing_id() + "/#" + cat._code;
         cat.group = thing_name;
 

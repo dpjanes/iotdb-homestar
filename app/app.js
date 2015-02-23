@@ -451,7 +451,7 @@ var setup_passport = function () {
  *  Start IOTDB
  */
 var iot = iotdb.iot();
-iot.on_thing(function (thing) {
+iot.on("thing", function (thing) {
     logger.info({
         thing: thing.thing_id(),
         meta: thing.meta().state(),

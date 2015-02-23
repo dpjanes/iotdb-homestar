@@ -25,7 +25,6 @@
 var iotdb = require('iotdb');
 var timers = require('iotdb-timers');
 var _ = iotdb.helpers;
-var cfg = iotdb.cfg;
 
 var os = require('os');
 var open = require('open');
@@ -151,7 +150,7 @@ var _set = function (key, value) {
 
 var setup = function (av) {
     var iot = iotdb.iot();
-    var d = iot.cfg_get("homestar/runner");
+    var d = iotdb.keystore().get("/homestar/runner");
     if (d) {
         _.smart_extend(settings.d, d);
     }

@@ -79,8 +79,10 @@ var edit_add_cookbook_ids = function(filename) {
  *  How the user interacts with this control
  */
 var interactor = function(rd) {
-    if (rd._thing_name) {
-        rd._group = rd._thing_name
+    if (rd._thing_group) {
+        rd._group = rd._thing_group;
+    } else if (rd._thing_name) {
+        rd._group = rd._thing_name;
     } else if (rd.group) {
         rd._group = rd.group
     } else {

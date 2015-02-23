@@ -41,9 +41,10 @@ exports.summary = "configure a bridge";
 exports.help = function () {
     console.log("usage: homestar configure [<bridge-module>|<model>]");
     console.log("");
-    console.log("Configure a bridge");
-    console.log("Recipes can be found here:");
-    console.log("https://github.com/dpjanes/homestar-cookbook");
+    console.log("Configure a Bridge");
+    console.log("");
+    console.log("Use 'homestar configuration' to see what's installed");
+    console.log("Use 'homestar install' to install new Bridges");
 };
 
 exports.run = function (ad) {
