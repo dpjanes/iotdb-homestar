@@ -2,10 +2,9 @@
 
 ## What is it
 
-HomeStar is a little server you can 
-run on your home computer, Raspberry Pi,
-Intel Edison, BeagleBone Black, &c
-to automate your home.
+HomeStar is powerful home automation software written in Node.JS.
+You can run it on your home computer, Raspberry Pi,
+Intel Edison, BeagleBone Black, &c.
 
 Ideal early users have Belkin WeMo, Philips Hue,
 LIFX, but theoretically it'll run with anything.
@@ -28,18 +27,19 @@ You'll need to have Node-JS installed on your computer,
 
 Run:
 
-    $ sudo npm install -g homestar
-    $ npm link homestar
+    $ npm install -g homestar
+    $ npm install iotdb
     
-If the second command gives an error, run it as:
 
-	$ sudo npm link homestar
+The <code>homestar</code> package provides all the management functions, the 
+<code>iotdb</code> package is the actual code.
 
 ### Upgrading from a previous version
 
 Run:
 
-    $ sudo npm upgrade -g homestar
+    $ npm upgrade -g homestar
+    $ npm upgrade iotdb
 
 ### Configuration
 
@@ -60,23 +60,60 @@ Then:
 
 [HomeStar.io](https://homestar.io) provides a user authentication layer for you so you can decide who's allowed to use what
 
-### Additional Node modules
+### Additional Modules
+
+Note how we are using <code>homestar install</code> and not
+<code>npm install</code>.
 
 #### Bluetooth Low Energy
 
-	$ npm install -g noble
+	$ homestar install homestar-ble
 
 #### Feeds (Atom and RSS)
 
-	$ npm install -g feedparser
+	$ homestar install homestar-feed
+
+#### Denon Audio/Video Receiver
+
+	$ homestar install homestar-denon-avr
 
 #### Firmata (Arduino)  
 
-	$ npm install -g firmata
+_Note not working yet_
+
+	$ homestar install homestar-feed
+
+#### LG Smart TV 
+
+	$ homestar install homestar-lg-smart-tv
 
 #### LIFX 
 
-	$ npm install -g lifx
+	$ homestar install homestar-lifx
+
+#### Philips Hue 
+
+	$ homestar install homestar-hue
+	$ homestar configure homestar-hue
+
+#### SmartThings
+
+_Note not working yet. Almost!_
+
+	$ homestar install homestar-smart-things
+	$ homestar configure homestar-smart-things
+
+#### TCP Lighting
+
+_Note not working yet._
+
+	$ homestar install homestar-tcp
+	$ homestar configure homestar-tcp
+
+#### WeMo 
+
+	$ homestar install homestar-wemo
+
 
 ## Running
 
