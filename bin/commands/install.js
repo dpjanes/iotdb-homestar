@@ -51,6 +51,10 @@ exports.help = function () {
     console.log("--update will do 'npm update'");
 };
 
+var update_install = "install";
+var completed = [
+    "iotdb"
+];
 exports.run = function (ad) {
     if (ad._.length != 2) {
         console.log("error: homestar install takes a single argument");
@@ -63,11 +67,14 @@ exports.run = function (ad) {
         process.chdir(process.env['HOME']);
     }
 
+    update_install = ad.update ? "update" : "install";
+
     _make_node_modules();
-    _install(ad._[1], ad.update ? "update" : "install", []);
+    _install(ad._[1]);
 }
 
-var _install = function (name, update_install, completed) {
+
+var _install = function (name) {
     var x = completed.indexOf(name);
     if (x > -1) {
         return;
@@ -75,8 +82,8 @@ var _install = function (name, update_install, completed) {
 
     var command = util.format("npm %s %s", update_install, name);
 
-    console.log("running:", command);
-    console.log("(this may take some time)");
+    console.log("- running:", command);
+    console.log("  (this may take some time)");
 
     child_process.exec(command, function(error, stdout, stderr) {
         if (error) {
@@ -92,7 +99,7 @@ var _install = function (name, update_install, completed) {
         }
 
         if (!match) {
-            console.log("error: running npm");
+            console.log("# error: running npm");
             console.log(stderr);
             process.exit(1);
         }
@@ -100,9 +107,9 @@ var _install = function (name, update_install, completed) {
         var module_name = match[1];
         var module_folder = match[3];
 
-        _save_module(module_name, module_folder, completed);
-        _remove_homestar(module_name, module_folder);
-        _install_children(module_name, module_folder, completed);
+        _save_module(module_name, module_folder);
+        remove_iotdb(module_name, module_folder);
+        _install_children(module_name, module_folder);
     });
 
 };
@@ -110,7 +117,7 @@ var _install = function (name, update_install, completed) {
 /**
  *  Add module info to the keystore
  */
-var _save_module = function (module_name, module_folder, completed) {
+var _save_module = function (module_name, module_folder) {
     var module_path = path.join(process.cwd(), module_folder);
 
     iotdb.keystore().save("/modules", function(current) {
@@ -122,17 +129,18 @@ var _save_module = function (module_name, module_folder, completed) {
         return current;
     });
 
-    console.log("done");
-    console.log("- name:", module_name);
-    console.log("- path:", module_path);
+    console.log("- installed!");
+    console.log("  name:", module_name);
+    console.log("  path:", module_path);
 };
 
 /**
  *  We don't need to have many copies of hoemstar laying about
  */
-var _remove_homestar = function (module_name, module_folder, completed) {
-    var homestar_dir = path.join(process.cwd(), module_folder, "node_modules", "homestar");
-    console.log("cleanup", homestar_dir);
+var remove_iotdb = function (module_name, module_folder) {
+    var homestar_dir = path.join(process.cwd(), module_folder, "node_modules", "iotdb");
+    console.log("- cleanup");
+    console.log("  path:", homestar_dir);
 
     try {
         _rmdirSync(homestar_dir);
@@ -145,24 +153,33 @@ var _remove_homestar = function (module_name, module_folder, completed) {
  *  homestar.dependencies can allow more things to be installed into homestar,
  *  essentially recursively
  */
-var _install_children = function (module_name, module_folder, completed) {
-    var packaged = {};
-    var filename = path.join(process.cwd(), module_folder, "package.json");
+var _install_children = function (module_name, module_folder) {
+    var module_folder = path.join(process.cwd(), module_folder)
+    var module_packaged = _load_package(module_folder);
 
-    cfg.cfg_load_json([ filename ], function(paramd) {
-        for (var key in paramd.doc) {
-            packaged[key] = paramd.doc[key];
-        }
-    });
-
-    var dependencies = _.d.get(packaged, "/homestar/dependencies");
-    if (!dependencies) {
+    var module_dependencies = _.d.get(module_packaged, "/dependencies");
+    if (!module_dependencies) {
         return;
     }
 
-    for (var dname in dependencies) {
-        console.log("found dependency", dname);
-        _install(dname, completed);
+    for (var dname in module_dependencies) {
+        var dependency_folder = path.join(module_folder, "node_modules", dname);
+        var dependency_homestard = _load_homestar(dependency_folder);
+        var is_module = _.d.get(dependency_homestard, "/module", false);
+        if (!is_module) {
+            continue
+        }
+
+        console.log("- found dependency:", dname);
+        _install(dname);
+
+        try {
+            console.log("- cleanup");
+            console.log("  path:", dependency_folder);
+            _rmdirSync(dependency_folder);
+        } catch (x) {
+            console.log("# ignoring error", x);
+        }
     }
 };
 
@@ -192,7 +209,7 @@ var _make_node_modules = function() {
 };
 
 /**
- *  Helper
+ *  Helpers
  */
 var _rmdirSync = function(dir) {
 	var list = fs.readdirSync(dir);
@@ -212,3 +229,23 @@ var _rmdirSync = function(dir) {
 	}
 	fs.rmdirSync(dir);
 };
+
+var _load_json = function(filename) {
+    var d = {};
+    cfg.cfg_load_json([ filename ], function(paramd) {
+        for (var key in paramd.doc) {
+            d[key] = paramd.doc[key];
+        }
+    });
+
+    return d;
+};
+
+var _load_package = function(folder) {
+    return _load_json(path.join(folder, "package.json"));
+};
+
+var _load_homestar = function(folder) {
+    return _load_json(path.join(folder, "homestar.json"));
+};
+
