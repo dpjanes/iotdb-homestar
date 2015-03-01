@@ -240,7 +240,7 @@ var make_dynamic = function(template, mount) {
 
             upnp: function() {
                 var ds = [];
-                var devices = iotdb.upnp.devices();
+                var devices = iotdb.module('iotdb-upnp').devices();
                 for (var di in devices) {
                     var device = devices[di];
                     var d = {};
