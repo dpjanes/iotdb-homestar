@@ -29,6 +29,7 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 var settings = require("../../app/settings");
+var install = require("./install")
 
 var fs = require('fs');
 var uuid = require('uuid');
@@ -116,7 +117,11 @@ exports.run = function (ad) {
                 fs.writeFile(filename, JSON.stringify(keystored, null, 2));
             }
 
-            console.log("homestar: setup complete -- make sure to add API keys: https://homestar.io/runners");
-        });
-
+            install.install("iotdb", function() {
+                install.install("iotdb-timers", function() {
+                    console.log("+ finished!");
+                });
+            });
+    });
 };
+

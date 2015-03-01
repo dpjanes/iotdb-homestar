@@ -70,14 +70,45 @@ exports.run = function (ad) {
     update_install = ad.update ? "update" : "install";
 
     _make_node_modules();
-    _install(ad._[1]);
+    _install(ad._[1], function(error) {
+        console.log("- finished");
+    });
 }
 
+/*
+ *  For the benefit of setup.js - don't use elsewhere
+ */
+exports.install = function(name, callback) {
+    update_install = "install";
 
-var _install = function (name) {
+    // make sure local directory exists
+    _make_node_modules();
+
+    // force this to get installed
+    var namex = completed.indexOf(name);
+    if (namex > -1) {
+        completed.splice(namex, 1);
+    }
+
+    // but not if it's already install - just skip!
+    var module_path = path.join(process.cwd(), "node_modules", name);
+    try {
+        var statbuf = fs.statSync(module_path);
+        if (statbuf.isDirectory()) {
+            return callback();
+        }
+    }
+    catch (x) {
+    }
+
+    // do the work
+    _install(name, callback);
+}
+
+var _install = function (name, callback) {
     var x = completed.indexOf(name);
     if (x > -1) {
-        return;
+        return callback(null);
     }
 
     var command = util.format("npm %s %s", update_install, name);
@@ -107,9 +138,17 @@ var _install = function (name) {
         var module_name = match[1];
         var module_folder = match[3];
 
-        _save_module(module_name, module_folder);
-        remove_iotdb(module_name, module_folder);
-        _install_children(module_name, module_folder);
+        var module_homestard = _load_homestar(module_folder);
+        if (_.d.get(module_homestard, "/module", false)) {
+            _save_module(module_name, module_folder);
+            remove_iotdb(module_name, module_folder);
+            _install_children(module_name, module_folder, callback);
+        } else {
+            console.log("- installed node module!");
+            console.log("  name:", module_name);
+            console.log("  path:", module_folder);
+            callback();
+        }
     });
 
 };
@@ -129,7 +168,7 @@ var _save_module = function (module_name, module_folder) {
         return current;
     });
 
-    console.log("- installed!");
+    console.log("- installed homestar module!");
     console.log("  name:", module_name);
     console.log("  path:", module_path);
 };
@@ -145,7 +184,6 @@ var remove_iotdb = function (module_name, module_folder) {
     try {
         _rmdirSync(homestar_dir);
     } catch (x) {
-        console.log("# ignoring error", x);
     }
 };
 
@@ -153,7 +191,7 @@ var remove_iotdb = function (module_name, module_folder) {
  *  homestar.dependencies can allow more things to be installed into homestar,
  *  essentially recursively
  */
-var _install_children = function (module_name, module_folder) {
+var _install_children = function (module_name, module_folder, callback) {
     var module_folder = path.join(process.cwd(), module_folder)
     var module_packaged = _load_package(module_folder);
 
@@ -162,25 +200,36 @@ var _install_children = function (module_name, module_folder) {
         return;
     }
 
-    for (var dname in module_dependencies) {
+    module_dependencies = _.keys(module_dependencies);
+
+    var _install_next = function() {
+        if (module_dependencies.length === 0) {
+            return callback();
+        }
+
+        var dname = module_dependencies.pop();
         var dependency_folder = path.join(module_folder, "node_modules", dname);
         var dependency_homestard = _load_homestar(dependency_folder);
+
         var is_module = _.d.get(dependency_homestard, "/module", false);
         if (!is_module) {
-            continue
+            return callback();
         }
 
         console.log("- found dependency:", dname);
-        _install(dname);
+        _install(dname, function() {
+            try {
+                console.log("- cleanup");
+                console.log("  path:", dependency_folder);
+                _rmdirSync(dependency_folder);
+            } catch (x) {
+            }
 
-        try {
-            console.log("- cleanup");
-            console.log("  path:", dependency_folder);
-            _rmdirSync(dependency_folder);
-        } catch (x) {
-            console.log("# ignoring error", x);
-        }
+            callback();
+        });
     }
+
+    _install_next();
 };
 
 /**
