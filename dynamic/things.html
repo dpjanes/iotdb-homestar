@@ -3,6 +3,13 @@
     <script>var rdd = {};</script>
 {% endblock %}
 {% block content %}
+<!-- this should be bundle with interactor_enumeration somehow -->
+<style type="text/css">
+li.interactor-enumeration button.selected {
+    background-color: #2ecc71;
+}
+</style>
+
     <h1>Things</h1>
     {% for thing in things()|groupBy('_group') %}
     <ul class="list-group">
@@ -27,6 +34,7 @@ rdd[{{ a._thing_id|json|safe}}] = {
 };{% endif %}
 rdd[{{ a._id|json|safe}}] = {
   section: "things",
+  interactor: "{{ a._interactor }}",
   id: {{ a._id|json|safe }},
   api: api,
   name: {{ a._name|json|safe }},
@@ -69,6 +77,14 @@ rdd[{{ a._id|json|safe}}] = {
             <span class="interactor-state text-muted"></span>
         </div>
     {% endif %}
+    {% if a._interactor == "otherwise" or a._interactor == "datetime" %}
+        <div>
+            <span class="interactor-name text-primary">{{ a._name }}</span>
+            <span class="interactor-message text-warning"></span>
+            <span class="interactor-state text-muted"></span>
+        </div>
+    {% endif %}
+    {# <div>interactor:{{ a._interactor }}</div> #}
 </li>
         {% endfor %}
     </ul>
@@ -81,4 +97,5 @@ rdd[{{ a._id|json|safe}}] = {
     <script src="interactor-color.js"></script>
     <script src="interactor-click.js"></script>
     <script src="interactor-enumeration.js"></script>
+    <script src="interactor-otherwise.js"></script>
 {% endblock %}

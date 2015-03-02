@@ -2,7 +2,7 @@
 
 ## What is it
 
-HomeStar is powerful home automation software written in Node.JS.
+HomeStar is powerful IoT software written in Node.JS.
 You can run it on your home computer, Raspberry Pi,
 Intel Edison, BeagleBone Black, &c.
 

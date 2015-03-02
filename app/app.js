@@ -292,6 +292,7 @@ var make_dynamic = function(template, mount) {
                 return sd;
             },
             user: request.user,
+            homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
         });
 
         result
@@ -376,6 +377,16 @@ var setup_passport = function () {
 
     var server_url = settings.d.homestar.url;
     var client_url = settings.d.webserver.url;
+
+    if (!settings.d.keys.homestar.key || !settings.d.keys.homestar.secret || !settings.d.homestar.url) {
+        logger.info({
+            key: settings.d.keys.homestar.key ? "ok": "missing",
+            secret: settings.d.keys.homestar.secret ? "ok": "missing",
+            url: settings.d.homestar.url ? "ok": "missing",
+        }, "HomeStar.io is not configured");
+        return;
+    }
+
     passport.use(
         new passport_twitter({
                 consumerKey: settings.d.keys.homestar.key,

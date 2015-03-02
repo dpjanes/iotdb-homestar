@@ -61,7 +61,10 @@ var cookbook = function(cookbook_name, cookbook_id) {
  *  API
  */
 exports.iotdb = iotdb;
-exports.timers = timers;
+exports.iotdb.recipe = recipe;
+exports.iotdb.cookbook = cookbook;
+exports.iotdb.timers = timers;
+
 exports.iot = iot;
 exports.recipe = recipe;
 exports.cookbook = cookbook;

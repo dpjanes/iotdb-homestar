@@ -20,17 +20,19 @@
 <body>
     <div class="container" style="margin-top: 20px">
         {% block nav %}
+            {% if homestar_configured %}
         <div class="text-right">
-        {% if user %}
+                {% if user %}
         <p>
         <a href="/auth/logout">{{ user.username }}</a>
         </p>
-        {% else %}
+                {% else %}
         <p>
         <a href="/auth/homestar">Sign in with HomeStar</a>
         </p>
-        {% endif %}
+                {% endif %}
         </div>
+            {% endif %}
         {% endblock %}
         {% block content %}
         {% endblock %}

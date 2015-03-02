@@ -17,7 +17,7 @@
         "iotdb-timers": ">=0.0.9", 
         "minimist": "~1.1.0", 
         "mows": "~0.0.6", 
-        "mqtt": "~1.0.10", 
+        "mqtt": "~1.1.0", 
         "open": "~0.0.5", 
         "passport": "~0.2.1", 
         "passport-twitter": "~1.0.2", 
@@ -51,5 +51,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.0.52"
+    "version": "0.0.53"
 }

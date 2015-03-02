@@ -186,8 +186,7 @@ var setup = function (av) {
             method: "setup",
             cause: "HomeStar.io API keys not added",
             fix: "get a keys from https://homestar.io/runners/",
-        }, "HomeStar.io API keys not added");
-        process.exit(1);
+        }, "HomeStar.io API keys not added - you should do this");
     }
 
     /* MQTT */

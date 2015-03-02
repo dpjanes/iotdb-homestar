@@ -46,6 +46,7 @@ var js = {
                     var rd = rdd[id];
                     try {
                         ivalue.update(id, rd.state, {
+                            interactor: rd.interactor,
                             out: rd.out,
                             in: rd.in
                         });
@@ -141,7 +142,7 @@ var js = {
                 "local=", topic_local
             );
 
-            var parts = topic_local.match(/\/api\/(cookbook|things)\/(urn:[:0-9a-z]+)/);
+            var parts = topic_local.match(/\/api\/(cookbook|things)\/(urn:[-$_:0-9a-zA-Z]+)/);
             if (!parts) {
                 console.log("?no match?");
             } else {
