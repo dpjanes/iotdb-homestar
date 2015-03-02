@@ -10,10 +10,6 @@ js.interactors.enumeration = {
     },
 
     update: function(id, state, rd) {
-        if (rd.interactor !== "enumeration") {
-            return;
-        }
-
         var value;
         if (rd.in) {
             value = state[rd.in];

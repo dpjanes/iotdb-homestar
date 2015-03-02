@@ -27,31 +27,35 @@ var js = {
 
     interactors: {
         on_load: function() {
-            for (var ikey in js.interactors) {
-                var ivalue = js.interactors[ikey];
-                if (ivalue.on_load) {
+            for (var interactor_name in js.interactors) {
+                var interactor_js = js.interactors[interactor_name];
+                if (interactor_js.on_load) {
                     try {
-                        ivalue.on_load();
+                        interactor_js.on_load();
                     } catch (x) {
-                        console.log("js.interactors.on_load", "unexpected exception", ikey, x);
+                        console.log("js.interactors.on_load", "unexpected exception", interactor_name, x);
                     }
                 }
             }
         },
 
         update: function(id, value) {
-            for (var ikey in js.interactors) {
-                var ivalue = js.interactors[ikey];
-                if (ivalue.update) {
+            for (var interactor_name in js.interactors) {
+                var interactor_js = js.interactors[interactor_name];
+                if (interactor_js.update) {
                     var rd = rdd[id];
+                    if (rd.interactor !== interactor_js.name) {
+                        continue
+                    }
+
                     try {
-                        ivalue.update(id, rd.state, {
+                        interactor_js.update(id, rd.state, {
                             interactor: rd.interactor,
                             out: rd.out,
                             in: rd.in
                         });
                     } catch (x) {
-                        console.log("js.interactors.update", "unexpected exception", ikey, x);
+                        console.log("js.interactors.update", "unexpected exception", interactor_name, x);
                     }
                 }
             }
@@ -142,7 +146,7 @@ var js = {
                 "local=", topic_local
             );
 
-            var parts = topic_local.match(/\/api\/(cookbook|things)\/(urn:[-$_:0-9a-zA-Z]+)/);
+            var parts = topic_local.match(/\/api\/(cookbook|things)\/(urn:[-$%_:0-9a-zA-Z]+)/);
             if (!parts) {
                 console.log("?no match?");
             } else {

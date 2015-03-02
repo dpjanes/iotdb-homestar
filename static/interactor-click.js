@@ -1,4 +1,6 @@
 js.interactors.click = {
+    name: "click",
+
     on_load: function() {
         $('.interactor-click').on('click', js.interactors.click.on_click);
         $('.interactor-click').on('touchstart', js.interactors.click.on_touchstart);

@@ -1,4 +1,5 @@
 js.interactors.color = {
+    name: "color",
     supress: false,
     
     on_load: function() {

@@ -1,12 +1,10 @@
 js.interactors.otherwise = {
+    name: "otherwise",
+
     on_load: function() {
     },
 
     update: function(id, state, rd) {
-        if (rd.interactor !== "otherwise") {
-            return;
-        }
-
         var value;
         if (rd.in) {
             value = state[rd.in];
