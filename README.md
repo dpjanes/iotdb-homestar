@@ -9,13 +9,18 @@ Intel Edison, BeagleBone Black, &c.
 Ideal early users have Belkin WeMo, Philips Hue,
 LIFX, but theoretically it'll run with anything.
 
+Read these three in order
+
 * [Install Instructions](docs/install.md)
-* [Configuration](docs/configuration.md) - customizing to your need
 * [Adding new IOTDB Modules](docs/modules.md) - to support your particular devices
+* [Configuration](docs/configure.md) - customizing to your need
+
+Additional
+
 * [Module Management](docs/command-install.md) - technical details
 * Discuss [https://plus.google.com/communities/108112460238486371606](https://plus.google.com/communities/108112460238486371606)
 
-## Running
+## Running HomeStar
 
     $ homestar runner | homestar pretty
 
