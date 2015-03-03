@@ -10,55 +10,10 @@ Ideal early users have Belkin WeMo, Philips Hue,
 LIFX, but theoretically it'll run with anything.
 
 
-## Discussion and Bug Reports
-
-On Google+
-
-* [https://plus.google.com/communities/108112460238486371606](https://plus.google.com/communities/108112460238486371606)
-
-## Installation
-
-### Node.JS
-
-You'll need to have Node-JS installed on your computer,
-[in whatever the usual way for you is](http://nodejs.org/download/).
-
-### Homestar Modules
-
-Run:
-
-    $ npm install -g homestar
-    $ npm install iotdb
-    
-
-The <code>homestar</code> package provides all the management functions, the 
-<code>iotdb</code> package is the actual code.
-
-### Upgrading from a previous version
-
-Run:
-
-    $ npm upgrade -g homestar
-    $ npm upgrade iotdb
-
-### Configuration
-
-Run:
-
-    $ homestar setup
-
-This will store some interesting values in <code>.iotdb/keystore.json</code> and try to figure out your geographic location.
-
-### Integrate with HomeStar.io
-
-Then:
-
-* go to: https://homestar.io
-* sign in / create an account
-* go to: https://homestar.io/runners/add
-* follow the instructions - basically, copy and paste some commands
-
-[HomeStar.io](https://homestar.io) provides a user authentication layer for you so you can decide who's allowed to use what
+* Discuss [https://plus.google.com/communities/108112460238486371606](https://plus.google.com/communities/108112460238486371606)
+* [Install Instructions](docs/install.md)
+* [Add on Modules](docs/modules.md)
+* [Module Management](docs/command-install.md)
 
 ### Additional Modules
 
