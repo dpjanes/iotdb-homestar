@@ -42,7 +42,8 @@ var logger = bunyan.createLogger({
 /* raw interactor data - ideally this would be loaded
  * from IOTDB module data
  */
-var interactord = {
+var _interactord = {
+	"boolean": "../interactors/boolean",
 	"click": "../interactors/click",
 	"color": "../interactors/color",
 	"enumeration": "../interactors/enumeration",
@@ -51,18 +52,71 @@ var interactord = {
 
 var htmlsd = {}
 var htmld = {};
+var moduled = {};
 
+/**
+ */
+var assign_interactor_to_attribute = function(attributed) {
+    var bestd = null;
+
+    for (var interactor_key in moduled) {
+        var module = moduled[interactor_key];
+        if (!module.attribute) {
+            continue;
+        }
+
+        var overlayd = module.attribute(attributed)
+        if (overlayd === undefined) {
+            continue;
+        }
+
+        overlayd._interactor = interactor_key;
+        overlayd._q = overlayd._q || 0.75;
+
+        if (!bestd) {
+            bestd = overlayd;
+        } else if (overlayd._q > bestd._q) {
+            bestd = overlayd;
+        }
+    }
+
+    if (bestd) {
+        _.extend(attributed, bestd);
+    }
+};
+
+/**
+ */
 var setup = function () {
-    for (var interactor_key in interactord) {
-        var interactor_relative = interactord[interactor_key];
+    for (var interactor_key in _interactord) {
+        var interactor_relative = _interactord[interactor_key];
         var interactor_path = path.join(__dirname, interactor_relative);
 
         var files = fs.readdirSync(interactor_path);
         for (var fi in files) {
             var src_file = files[fi];
-            var src_ext = path.extname(src_file);
-            var src_core = path.basename(src_file, src_ext);
             var src_path = path.join(interactor_path, src_file);
+            if (src_file === "interactor.js") {
+                try {
+                    moduled[interactor_key] = require(src_path);
+                }
+                catch (x) {
+                    logger.error({
+                        method: "setup",
+                        interactor: interactor_key,
+                        path: interactor_path,
+                        x: x,
+                    }, "unexpected exception loading interactor.js");
+                }
+
+                continue;
+            }
+
+            var src_ext = path.extname(src_file);
+            if (src_ext.length === 0) {
+                continue
+            }
+            var src_core = path.basename(src_file, src_ext);
             var src_content = fs.readFileSync(src_path);
 
             if (src_file === "attribute.html") {
@@ -104,4 +158,5 @@ var setup = function () {
  */
 exports.setup = setup;
 exports.htmld = htmld;
-exports.interactors = _.keys(interactord);
+exports.interactors = _.keys(_interactord);
+exports.assign_interactor_to_attribute = assign_interactor_to_attribute;

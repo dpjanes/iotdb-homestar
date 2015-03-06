@@ -27,6 +27,7 @@ var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
 var homestar = require('../homestar');
+var interactors = require('./interactors');
 
 var fs = require('fs');
 var path = require('path');
@@ -89,6 +90,9 @@ var interactor = function(rd) {
         rd._group = "Ungrouped";
     }
 
+    interactors.assign_interactor_to_attribute(rd);
+
+    /*
     var values = rd.values;
     if (values) {
         rd._interactor = "enumeration";
@@ -139,6 +143,7 @@ var interactor = function(rd) {
     }
 
     rd._interactor = "otherwise";
+    */
 };
 
 /**
