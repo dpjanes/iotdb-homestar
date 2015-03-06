@@ -306,7 +306,6 @@ var init_recipe = function (reciped) {
         }
     }
 
-
     /* run: old name for onclick: */
     if ((reciped.run !== undefined) && (reciped.onclick === undefined)) {
         reciped.onclick = reciped.run;

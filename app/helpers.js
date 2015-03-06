@@ -133,6 +133,11 @@ var interactor = function(rd) {
         return;
     }
 
+    if (rd.onclick) {
+        rd._interactor = "click";
+        return;
+    }
+
     rd._interactor = "otherwise";
 };
 

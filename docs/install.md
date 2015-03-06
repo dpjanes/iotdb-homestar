@@ -1,11 +1,12 @@
-# Installation
+# Home☆Star Runner
+## Installation
 
-## Node.JS
+### Node.JS
 
 You'll need to have Node-JS installed on your computer,
 [in whatever the usual way for you is](http://nodejs.org/download/).
 
-## Initial setup
+### Install HomeStar and IOTDB
 
 Run:
 
@@ -15,14 +16,14 @@ Run:
 The <code>homestar</code> package provides all the management functions, the 
 <code>iotdb</code> package is the actual code.
 
-## Upgrading from a previous version
+### Upgrading from a previous version
 
 Run:
 
     $ npm upgrade -g homestar
     $ homestar iotdb
 
-## Configuration
+### Note
 
 This command
 
@@ -33,7 +34,17 @@ any IOTDB Modules needed.
 
 ## Integrate with HomeStar.io
 
-Then:
+### Why
+
+HomeStar.io provides several interesting functions:
+
+* authentication
+* allows other within your LAN to find your server
+* metadata management
+
+There is no requirement that you use HomeStar.io with your homestar installation though.
+
+### Instructions
 
 * go to: https://homestar.io
 * sign in / create an account
