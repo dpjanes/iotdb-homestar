@@ -1,0 +1,10 @@
+<div>
+    <span class="interactor-name text-primary">{{ a._name }}</span>
+    <span class="interactor-interactor">
+        <span class="wrapper" data-color={{ a.state[a._reading]|json|safe }}>
+            <span class="interactor-box">&nbsp;</span>
+        </span>
+    </span>
+    <span class="interactor-message text-warning"></span>
+    <span class="interactor-state text-muted"></span>
+</div>

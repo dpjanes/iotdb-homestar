@@ -50,6 +50,7 @@ var settings = require('./settings');
 var homestar = require('./homestar');
 var things = require('./things');
 var helpers = require('./helpers');
+var interactors = require('./interactors');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -230,69 +231,81 @@ var make_dynamic = function(template, mount) {
             user: request.user,
         }, "called");
 
-        var home_page = swig.renderFile(template, {
-            things: function() {
-                var ts = things.structured();
-                ts.map(helpers.interactor);
+        /*
+         *  We use two-phase rendering, to bring in
+         *  all the interactor data
+         *
+         *  The outer renderer uses different tags
+         *  and data, see the definition of swig_outer
+         */
+        var home_template = swig_outer.renderFile(template);
+        var home_page = swig.render(home_template, {
+            filename: template,
+            locals: {
+                things: function() {
+                    var ts = things.structured();
+                    ts.map(helpers.interactor);
 
-                return ts;
-            },
+                    return ts;
+                },
 
-            upnp: function() {
-                var ds = [];
-                var devices = iotdb.module('iotdb-upnp').devices();
-                for (var di in devices) {
-                    var device = devices[di];
-                    var d = {};
-                    for (var key in device) {
-                        var value = device[key];
-                        if (key.match(/^[^_]/) && (_.isNumber(value) || _.isString(value))) {
-                            d[key] = value;
+                upnp: function() {
+                    var ds = [];
+                    var devices = iotdb.module('iotdb-upnp').devices();
+                    for (var di in devices) {
+                        var device = devices[di];
+                        var d = {};
+                        for (var key in device) {
+                            var value = device[key];
+                            if (key.match(/^[^_]/) && (_.isNumber(value) || _.isString(value))) {
+                                d[key] = value;
+                            }
                         }
+
+                        ds.push(d);
                     }
 
-                    ds.push(d);
-                }
+                    ds.sort(function(a, b) {
+                        if (a.friendlyName < b.friendlyName) {
+                            return -1;
+                        } else if (a.friendlyName > b.friendlyName){
+                            return 1;
+                        } else {
+                            return 0;
+                        }
 
-                ds.sort(function(a, b) {
-                    if (a.friendlyName < b.friendlyName) {
-                        return -1;
-                    } else if (a.friendlyName > b.friendlyName){
-                        return 1;
-                    } else {
-                        return 0;
+                    });
+
+                    return {
+                        devices: ds
+                    };
+                },
+
+                cookbook: function() {
+                    var rds = [];
+                    var recipes = recipe.recipes()
+                    for (var ri in recipes) {
+                        var rd = _.clone(recipes[ri]);
+                        rd._context = undefined;
+                        rd._valued = undefined;
+                        rd.watch = undefined;
+                        helpers.interactor(rd);
+
+                        rds.push(rd);
                     }
 
-                });
+                    return rds;
+                },
+                settings: function() {
+                    var sd = _.smart_extend({}, settings.d);
+                    delete sd["secrets"];
+                    delete sd["keys"];
 
-                return {
-                    devices: ds
-                };
+                    return sd;
+                },
+                user: request.user,
+                homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
             },
-            cookbook: function() {
-                var rds = [];
-                var recipes = recipe.recipes()
-                for (var ri in recipes) {
-                    var rd = _.clone(recipes[ri]);
-                    rd._context = undefined;
-                    rd._valued = undefined;
-                    rd.watch = undefined;
-                    helpers.interactor(rd);
-
-                    rds.push(rd);
-                }
-
-                return rds;
-            },
-            settings: function() {
-                var sd = _.smart_extend({}, settings.d);
-                delete sd["secrets"];
-                delete sd["keys"];
-
-                return sd;
-            },
-            user: request.user,
-            homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
         });
 
         result
@@ -478,9 +491,28 @@ recipe.init_recipes();
 setup_recipe_mqtt();
 
 /**
- *  Setup the web server
+ *  Settings
  */
 settings.setup(process.argv);
+interactors.setup();
+
+/**
+ *  Special Swig renderer
+ */
+var swig_outer = new swig.Swig({
+    varControls: ['[[{', '}]]'],
+    tagControls: ['[[%', '%]]'],
+    cmtControls: ['[[#', '#]]'],
+    locals: {
+        htmld: interactors.htmld,
+        interactors: interactors.interactors,
+    }
+});
+
+/**
+ *  Setup the web server
+ */
+
 setup_passport();
 
 var app = express();

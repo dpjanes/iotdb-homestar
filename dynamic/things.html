@@ -3,12 +3,7 @@
     <script>var rdd = {};</script>
 {% endblock %}
 {% block content %}
-<!-- this should be bundle with interactor_enumeration somehow -->
-<style type="text/css">
-li.interactor-enumeration button.selected {
-    background-color: #666666;
-}
-</style>
+    [[{ htmld.header|safe }]]
 
     <h1>Things</h1>
     {% for thing in things()|groupBy('_group') %}
@@ -20,7 +15,8 @@ li.interactor-enumeration button.selected {
             {% endif %}
         </li>
         {% for a in thing %}
-<script>{% if loop.first %}
+<script>
+            {% if loop.first %}
 var state = {{ a.state|json(2)|safe }};
 var api = {
   url: "/api/things/{{ a._thing_id }}"
@@ -31,7 +27,8 @@ rdd[{{ a._thing_id|json|safe}}] = {
   api: api,
   name: {{ a._thing_name|json|safe }},
   state: state
-};{% endif %}
+};
+            {% endif %}
 rdd[{{ a._id|json|safe}}] = {
   section: "things",
   interactor: "{{ a._interactor }}",
@@ -44,47 +41,8 @@ rdd[{{ a._id|json|safe}}] = {
 };
 </script>
 <li class="list-group-item interactor interactor-{{ a._interactor }}" data-id="{{ a._id }}" data-in="{{ a._in }}" data-out="{{ a._out }}" onclick>
-    {% if a._interactor == "click" %}
-        <div>
-            <span class="interactor-name text-primary">{{ a._name }}</span>
-            <span class="interactor-message text-warning"></span>
-            <span class="interactor-state text-muted"></span>
-        </div>
-    {% endif %}
-    {% if a._interactor == "enumeration" %}
-        <div>
-            <span class="interactor-name text-primary">{{ a._name }}</span>
-            <span class="interactor-interactor">
-                <div class="btn-group btn-group-sm">
-                {% for vd in a._values %}
-                    <button type="button" class="btn btn-default interactor-item" data-id="{{ a._id}}" data-value="{{ vd.value }}">{{ vd.name }}</button>
-                {% endfor %}
-                </div>
-            </span>
-            <span class="interactor-message text-warning"></span>
-            <span class="interactor-state text-muted"></span>
-        </div>
-    {% endif %}
-    {% if a._interactor == "color" %}
-        <div>
-            <span class="interactor-name text-primary">{{ a._name }}</span>
-            <span class="interactor-interactor">
-                <span class="wrapper" data-color={{ a.state[a._reading]|json|safe }}>
-                    <span class="interactor-box">&nbsp;</span>
-                </span>
-            </span>
-            <span class="interactor-message text-warning"></span>
-            <span class="interactor-state text-muted"></span>
-        </div>
-    {% endif %}
-    {% if a._interactor == "otherwise" or a._interactor == "datetime" %}
-        <div>
-            <span class="interactor-name text-primary">{{ a._name }}</span>
-            <span class="interactor-message text-warning"></span>
-            <span class="interactor-state text-muted"></span>
-        </div>
-    {% endif %}
-    {# <div>interactor:{{ a._interactor }}</div> #}
+    <div>interactor:{{ a._interactor }}</div>
+    [[{ htmld.attribute|safe }]]
 </li>
         {% endfor %}
     </ul>
@@ -94,8 +52,5 @@ rdd[{{ a._id|json|safe}}] = {
     <script>var settingsd = {{ settings()|json(2)|safe }};</script>
     <script src="mqttws31.js"></script>
     <script src="index.js"></script>
-    <script src="interactor-color.js"></script>
-    <script src="interactor-click.js"></script>
-    <script src="interactor-enumeration.js"></script>
-    <script src="interactor-otherwise.js"></script>
+    [[{ htmld.footer|safe }]]
 {% endblock %}
