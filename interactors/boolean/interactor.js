@@ -48,7 +48,7 @@ exports.attribute = function(attributed) {
     for (var vi in values) {
         _values.push({
             name: values[vi],
-            value: values[vi],
+            value: vi,
         });
     }
 

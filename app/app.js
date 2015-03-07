@@ -244,7 +244,8 @@ var make_dynamic = function(template, mount) {
             locals: {
                 things: function() {
                     var ts = things.structured();
-                    ts.map(helpers.interactor);
+                    ts.map(helpers.assign_group);
+                    ts.map(helpers.assign_interactor);
 
                     return ts;
                 },
@@ -289,7 +290,9 @@ var make_dynamic = function(template, mount) {
                         rd._context = undefined;
                         rd._valued = undefined;
                         rd.watch = undefined;
-                        helpers.interactor(rd);
+
+                        helpers.assign_group(rd);
+                        helpers.assign_interactor(rd);
 
                         rds.push(rd);
                     }
@@ -526,16 +529,16 @@ setup_pages(app);
  *  Run the web server
  */
 var wsd = settings.d.webserver;
-app.listen(wsd.port, wsd.host);
+app.listen(wsd.port, wsd.host, function() {
+    logger.info({
+        method: "main",
+        url: settings.d.webserver.url,
+    }, "listening for connect");
 
-logger.info({
-    method: "main",
-    url: settings.d.webserver.url,
-}, "listening for connect");
-
-if (settings.d.browser) {
-    open(settings.d.webserver.url);
-}
+    if (settings.d.browser) {
+        open(settings.d.webserver.url);
+    }
+});
 
 /*
  *  Other servers

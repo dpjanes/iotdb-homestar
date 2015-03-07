@@ -77,9 +77,8 @@ var edit_add_cookbook_ids = function(filename) {
 };
 
 /**
- *  How the user interacts with this control
  */
-var interactor = function(rd) {
+var assign_group = function(rd) {
     if (rd._thing_group) {
         rd._group = rd._thing_group;
     } else if (rd._thing_name) {
@@ -89,8 +88,13 @@ var interactor = function(rd) {
     } else {
         rd._group = "Ungrouped";
     }
+};
 
+/**
+ */
+var assign_interactor = function(rd) {
     interactors.assign_interactor_to_attribute(rd);
+};
 
     /*
     var values = rd.values;
@@ -144,10 +148,10 @@ var interactor = function(rd) {
 
     rd._interactor = "otherwise";
     */
-};
 
 /**
  *  API
  */
 exports.edit_add_cookbook_ids = edit_add_cookbook_ids;
-exports.interactor = interactor;
+exports.assign_interactor = assign_interactor;
+exports.assign_group = assign_group;
