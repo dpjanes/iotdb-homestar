@@ -54,6 +54,7 @@ then
             --exclude "xx*" \
             --exclude "yy*" \
             --exclude ".iotdb" \
+            --exclude "node_modules" \
             README.md \
             LICENSE.txt \
             package.json \
