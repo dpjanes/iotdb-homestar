@@ -69,9 +69,9 @@ swig.setFilter('scrub', function (input) {
  *  Edit the permissions of a recipe - i.e. who can use it.
  *  We actually do all the editing on HomeStar
  */
-var webserver_cookbook = function (request, response) {
+var webserver_auth_cookbook = function (request, response) {
     logger.info({
-        method: "webserver_cookbook",
+        method: "webserver_auth_cookbook",
         metadata_id: request.params.metadata_id,
     }, "called");
 
@@ -80,9 +80,9 @@ var webserver_cookbook = function (request, response) {
     );
 };
 
-var webserver_thing = function (request, response) {
+var webserver_auth_thing = function (request, response) {
     logger.info({
-        method: "webserver_thing",
+        method: "webserver_auth_thing",
         metadata_id: request.params.metadata_id
     }, "called");
 
@@ -218,11 +218,77 @@ var setup_express = function (app) {
     }
 };
 
+var _template_things = function() {
+    return things.things();
+};
+
+var _template_upnp = function() {
+    var ds = [];
+    var devices = iotdb.module('iotdb-upnp').devices();
+    for (var di in devices) {
+        var device = devices[di];
+        var d = {};
+        for (var key in device) {
+            var value = device[key];
+            if (key.match(/^[^_]/) && (_.isNumber(value) || _.isString(value))) {
+                d[key] = value;
+            }
+        }
+
+        ds.push(d);
+    }
+
+    ds.sort(function(a, b) {
+        if (a.friendlyName < b.friendlyName) {
+            return -1;
+        } else if (a.friendlyName > b.friendlyName){
+            return 1;
+        } else {
+            return 0;
+        }
+
+    });
+
+    return {
+        devices: ds
+    };
+};
+
+var _template_cookbook = function() {
+    var rds = [];
+    var recipes = recipe.recipes()
+    for (var ri in recipes) {
+        var rd = _.clone(recipes[ri]);
+        rd._context = undefined;
+        rd._valued = undefined;
+        rd.watch = undefined;
+
+        helpers.assign_group(rd);
+        helpers.assign_interactor(rd);
+
+        rds.push(rd);
+    }
+
+    return rds;
+};
+
+var _template_cookbooks = function() {
+    return recipe.cookbooks();
+}
+
+var _template_settings = function() {
+    var sd = _.smart_extend({}, settings.d);
+    delete sd["secrets"];
+    delete sd["keys"];
+
+    return sd;
+};
+
 /**
  *  Dynamic pages - we decide at runtime
  *  what these are based on our paths
  */
-var make_dynamic = function(template, mount) {
+var make_dynamic = function(template, mount, content_type) {
     return function (request, result) {
         logger.info({
             method: "make_dynamic/(page)",
@@ -242,70 +308,11 @@ var make_dynamic = function(template, mount) {
         var home_page = swig.render(home_template, {
             filename: template,
             locals: {
-                things: function() {
-                    var ts = things.structured();
-                    ts.map(helpers.assign_group);
-                    ts.map(helpers.assign_interactor);
-
-                    return ts;
-                },
-
-                upnp: function() {
-                    var ds = [];
-                    var devices = iotdb.module('iotdb-upnp').devices();
-                    for (var di in devices) {
-                        var device = devices[di];
-                        var d = {};
-                        for (var key in device) {
-                            var value = device[key];
-                            if (key.match(/^[^_]/) && (_.isNumber(value) || _.isString(value))) {
-                                d[key] = value;
-                            }
-                        }
-
-                        ds.push(d);
-                    }
-
-                    ds.sort(function(a, b) {
-                        if (a.friendlyName < b.friendlyName) {
-                            return -1;
-                        } else if (a.friendlyName > b.friendlyName){
-                            return 1;
-                        } else {
-                            return 0;
-                        }
-
-                    });
-
-                    return {
-                        devices: ds
-                    };
-                },
-
-                cookbook: function() {
-                    var rds = [];
-                    var recipes = recipe.recipes()
-                    for (var ri in recipes) {
-                        var rd = _.clone(recipes[ri]);
-                        rd._context = undefined;
-                        rd._valued = undefined;
-                        rd.watch = undefined;
-
-                        helpers.assign_group(rd);
-                        helpers.assign_interactor(rd);
-
-                        rds.push(rd);
-                    }
-
-                    return rds;
-                },
-                settings: function() {
-                    var sd = _.smart_extend({}, settings.d);
-                    delete sd["secrets"];
-                    delete sd["keys"];
-
-                    return sd;
-                },
+                things: _template_things,
+                upnp: _template_upnp,
+                cookbook: _template_cookbook,
+                cookbooks: _template_cookbooks,
+                settings: _template_settings,
                 user: request.user,
                 homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
             },
@@ -327,24 +334,29 @@ var setup_dynamic = function (app) {
         var files = fs.readdirSync(folder) 
         for (var fi in files) {
             var file = files[fi];
-            var match = file.match(/^(.*)[.]html$/);
+            var match = file.match(/^(.*)[.](js|html)$/);
             if (!match) {
                 continue;
             }
 
             var base = match[1];
+            var ext = match[2];
+
             if (base === 'index') {
                 base = '';
             }
 
-            if (mapped[base] !== undefined) {
+            if (mapped[file] !== undefined) {
                 continue;
             }
 
             var template = node_path.join(folder, file);
-            var mount = '/' + base;
 
-            app.get(mount, make_dynamic(template, mount));
+            if (ext === "html") {
+                app.get(util.format("/%s", base), make_dynamic(template, base, "text/html"));
+            } else if (ext === "js") {
+                app.get(util.format("/%s.%s", base, ext), make_dynamic(template, file, "text/plain"));
+            }
         }
     }
 };
@@ -364,11 +376,19 @@ var setup_pages = function (app) {
     // app.use('/', express.static(node_path.join(__dirname, '..', 'client')));
     // app.use('/', express.static(node_path.join(__dirname, '..', 'client', 'flat-ui')));
 
+    /* cookbooks API */
     app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
-    app.put('/api/things/:thing_id', things.webserver_thing_update);
 
-    app.get('/auth/cookbooks/:metadata_id', webserver_cookbook);
-    app.get('/auth/things/:metadata_id', webserver_thing);
+    /* things API */
+    app.get('/api/things/:thing_id/istate', things.get_istate);
+    app.get('/api/things/:thing_id/ostate', things.get_ostate);
+    app.put('/api/things/:thing_id/ostate', things.put_ostate);
+    app.get('/api/things/:thing_id/meta', things.get_meta);
+    app.get('/api/things/:thing_id/model', things.get_model);
+
+    /* auth related */
+    app.get('/auth/cookbooks/:metadata_id', webserver_auth_cookbook);
+    app.get('/auth/things/:metadata_id', webserver_auth_thing);
 
     app.get('/auth/logout', function (request, response) {
         request.logout();

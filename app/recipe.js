@@ -28,6 +28,7 @@ var cfg = iotdb.cfg;
 
 var homestar = require('../homestar');
 var settings = require('./settings');
+var interactors = require('./interactors');
 
 var events = require('events');
 var util = require('util');
@@ -511,6 +512,58 @@ var archive = function() {
     });
 };
 
+var recipe_model = function(recipe) {
+    return {};
+};
+
+var cookbooks = function() {
+    var groups = [];
+
+    var group_name = null;
+    var attributes = null;
+    var in_recipies = recipes()
+    var out_recipes = [];
+
+    for (var ri in in_recipies) {
+        var in_recipe = in_recipies[ri];
+
+        if (in_recipe.group !== group_name) {
+            group_name = in_recipe.group;
+
+            var group = {};
+            groups.push(group);
+
+            group["_id"] = util.format("urn:iotdb:cookbook:%s", in_recipe.cookbook_id);
+            group["_name"] = in_recipe.group;
+            group["_section"] = "cookbooks";
+
+            out_recipes = [];
+            group["recipes"] = out_recipes;
+        }
+        
+        var out_recipe = {};
+        out_recipes.push(out_recipe);
+
+        out_recipe["@type"] = "iot:Recipe";
+        out_recipe["schema:name"] = in_recipe.name;
+        out_recipe["iot:type"] = in_recipe["iot:type"];
+        out_recipe["_id"] = in_recipe._id;
+        out_recipe["_code"] = "value";
+        out_recipe["_name"] = in_recipe.name;
+        out_recipe["model"] = recipe_model(in_recipe);
+        out_recipe["istate"] = in_recipe.state;
+        out_recipe["ostate"] = {
+            value: null
+        };
+        out_recipe["_control"] = true;
+        out_recipe["_reading"] = false;
+
+        interactors.assign_interactor_to_attribute(out_recipe);
+    }
+
+    return groups;
+};
+
 /**
  *  API
  */
@@ -522,3 +575,6 @@ exports.recipes = recipes;
 exports.group_recipes = group_recipes;
 exports.recipe_to_id = recipe_to_id;
 exports.recipe_by_id = recipe_by_id;
+
+exports.cookbooks = cookbooks;
+

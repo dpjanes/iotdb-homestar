@@ -1,9 +1,9 @@
 <div>
-    <span class="interactor-name text-primary">{{ a._name }}</span>
+    <span class="interactor-name text-primary">{{ attribute._name }}</span>
     <span class="interactor-interactor">
         <div class="btn-group btn-group-sm">
-        {% for vd in a._values %}
-            <button type="button" class="btn btn-default interactor-item" data-id="{{ a._id}}" data-value="{{ vd.value }}">{{ vd.name }}</button>
+        {% for vd in attribute._values %}
+            <button type="button" class="btn btn-default interactor-item" data-id="{{ attribute._id}}" data-value="{{ vd.value }}">{{ vd.name }}</button>
         {% endfor %}
         </div>
     </span>

@@ -29,6 +29,7 @@ var cfg = iotdb.cfg;
 var mqtt = require('./mqtt');
 var settings = require('./settings');
 var helpers = require('./helpers');
+var interactors = require('./interactors');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -89,7 +90,7 @@ var _structure_thing = function(thing) {
     }
 
     var meta = thing.meta();
-    var thing_name = meta.get('iot:name') || thing.name;
+    var thing_name = meta.get('schema:name') || thing.name;
 
     /*
      *  Do initial pre-processing on attributes
@@ -102,7 +103,7 @@ var _structure_thing = function(thing) {
         var cat = _.ld.compact(tat)
         cat._code = tat.get_code()
 
-        var name = _.ld.first(cat, 'iot:name')
+        var name = _.ld.first(cat, 'schema:name')
         cat['@id'] = "/api/things/" + thing.thing_id() + "/#" + cat._code;
         cat._name = name || cat._code;
         cat._thing_id = thing.thing_id();
@@ -184,7 +185,7 @@ var structured = function() {
     for (var ti = 0; ti < things.length; ti++) {
         var thing = things[ti];
         var meta = thing.meta();
-        var thing_name = meta.get('iot:name') || thing.name;
+        var thing_name = meta.get('schema:name') || thing.name;
         if (thing_name === undefined) {
             continue
         }
@@ -213,31 +214,139 @@ var structured = function() {
     return cats;
 };
 
+var _make_thing = function(f) {
+    return function (request, response) {
+        logger.info({
+            method: "_make_thing",
+            recipe_id: request.params.thing_id,
+            body: request.body,
+        }, "called");
+
+        var thing = _get_thing(request.params.thing_id);
+        if (!thing) {
+            response.set('Content-Type', 'application/json');
+            response.status(404).send(JSON.stringify({
+                error: "thing not found",
+                thing_id: request.params.thing_id
+            }, null, 2));
+        }
+
+        response.set('Content-Type', 'application/json');
+        response.send(JSON.stringify(f(thing, request, response), null, 2));
+    };
+};
+
 /**
  */
-var webserver_thing_update = function (request, result) {
-    logger.info({
-        method: "webserver_thing_update",
-        recipe_id: request.params.thing_id,
-        body: request.body,
-    }, "called");
+var thing_istate = function(thing) {
+    return thing.state({ istate: true, ostate: false });
+};
 
-    var thing = _get_thing(request.params.thing_id);
-    if (!thing) {
-        result.set('Content-Type', 'application/json');
-        result.status(404).send(JSON.stringify({
-            error: "thing not found",
-            thing_id: request.params.thing_id
-        }, null, 2));
+/**
+ */
+var thing_ostate = function(thing) {
+    return thing.state({ istate: false, ostate: true });
+};
+
+/**
+ */
+var thing_meta = function(thing) {
+    return _.ld.compact(thing.meta().state());
+};
+
+/**
+ */
+var thing_model = function(thing) {
+    var md = _.ld.compact(thing.jsonld({
+        // base: "/api/things/" + thing.thing_id() + "/model",
+    }));
+
+    var meta = thing.meta();
+    md._id = thing.thing_id();
+    md._name = meta.get("schema:name");
+
+    var ads = _.ld.list(md, "iot:attribute", []);
+    for (var adi in ads) {
+        var ad = ads[adi];
+        ad._code = ad["@id"].replace(/^.*#/, '');
+        ad._control = false;
+        ad._reading = false;
+        ad._name = _.ld.first(ad, "schema:name");
+
+        var roles = _.ld.list(ad, 'iot:role');
+        if (!roles) {
+            ad._control = true;
+            ad._reading = true;
+        } else {
+            for (var ri in roles) {
+                var role = roles[ri];
+                if (role === 'iot-attribute:role-control') {
+                    ad._control = true;
+                } else if (role === 'iot-attribute:role-reading') {
+                    ad._reading = true;
+                }
+            }
+        }
+
+        interactors.assign_interactor_to_attribute(ad);
     }
 
+    return md;
+};
+
+/*
+ */
+var things = function() {
+    var tds = [];
+    var things = iotdb.iot().things();
+
+    for (var ti = 0; ti < things.length; ti++) {
+        var thing = things[ti];
+        var td = {};
+        var tmodel = thing_model(thing);
+
+        td["_id"] = tmodel._id;
+        td["_name"] = tmodel._name;
+        td["_section"] = "things";
+        td["_model"] = tmodel;
+        td["_istate"] = thing_istate(thing);
+        td["_ostate"] = thing_ostate(thing);
+        td["_meta"] = thing_meta(thing);
+
+        tds.push(td);
+    }
+
+    return tds;
+};
+
+/**
+ *   get '/api/things/:thing_id/istate'
+ */
+var get_istate = _make_thing(thing_istate);
+
+/**
+ *   get '/api/things/:thing_id/ostate'
+ */
+var get_ostate = _make_thing(thing_ostate);
+
+/**
+ *   put '/api/things/:thing_id/ostate'
+ */
+var put_ostate = _make_thing(function(thing, request, response) {
     thing.update(request.body, { notify: true });
 
-    result.set('Content-Type', 'application/json');
-    result.send(JSON.stringify({
-        running: false
-    }, null, 2));
-}
+    return {};
+});
+
+/**
+ *   get '/api/things/:thing_id/meta'
+ */
+var get_meta = _make_thing(thing_meta);
+
+/**
+ *   get '/api/things/:thing_id/model'
+ */
+var get_model = _make_thing(thing_model);
 
 /**
  */
@@ -246,17 +355,19 @@ var setup = function() {
     var things = iot.connect();
 
     things.on_thing(function(thing) {
-        thing.on_change(function(thing) {
-            var topic = settings.d.mqttd.prefix + "api/things/" + thing.thing_id();
-            var payload = {
-                state: thing.state(),
-            };
+        thing.on("state", function(thing) {
+            var topic = settings.d.mqttd.prefix + "api/things/" + thing.thing_id() + "/istate";
+            var payload = thing_istate(thing);
 
             mqtt.publish(settings.d.mqttd, topic, payload);
         });
-        thing.on_meta(function(thing) {
-            _clear_structure(thing);
+        thing.on("meta", function(thing) {
+            var topic = settings.d.mqttd.prefix + "api/things/" + thing.thing_id() + "/meta";
+            var payload = thing_meta(thing);
 
+            mqtt.publish(settings.d.mqttd, topic, payload);
+            
+            // _clear_structure(thing);
             // someday publish a metadata change
         });
     });
@@ -265,6 +376,17 @@ var setup = function() {
 /**
  *  API
  */
-exports.structured = structured;
-exports.webserver_thing_update = webserver_thing_update;
 exports.setup = setup;
+
+exports.get_istate = get_istate;
+exports.get_ostate = get_ostate;
+exports.put_ostate = put_ostate;
+exports.get_meta = get_meta;
+exports.get_model = get_model;
+
+exports.thing_istate = thing_istate;
+exports.thing_ostate = thing_ostate;
+exports.thing_meta = thing_meta;
+exports.thing_model = thing_model;
+
+exports.things = things;

@@ -136,7 +136,7 @@ var send_cookbooks = function(retry) {
 
             cookbook = {
                 cookbook_id: r.cookbook_id,
-                'iot:name': r.group || r.cookbook_id,
+                'schema:name': r.group || r.cookbook_id,
             };
         }
 

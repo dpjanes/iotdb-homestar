@@ -1,7 +1,7 @@
 <div>
-    <span class="interactor-name text-primary">{{ a._name }}</span>
+    <span class="interactor-name text-primary">{{ attribute._name }}</span>
     <span class="interactor-interactor">
-        <span class="wrapper" data-color={{ a.state[a._reading]|json|safe }}>
+        <span class="wrapper" data-color={{ attribute.state[attribute._id]|json|safe }}>
             <span class="interactor-box">&nbsp;</span>
         </span>
     </span>

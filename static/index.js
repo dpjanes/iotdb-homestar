@@ -8,21 +8,10 @@ var js = {
         } else {
             $('body').addClass("desktop");
         }
-        js.actions.on_load();
-        js.mqtt.on_load();
 
-        // set up initial state
-        for (var rdi in rdd) {
-            var rd = rdd[rdi];
-            js.actions.on_message(rd.section || "cookbook", rd.id, {
-                running: rd.running,
-                message: rd.message,
-                state: rd.state
-            });
-        }
-
-        // setup interactors
         js.interactors.on_load();
+        js.transport.on_load();
+        js.mqtt.on_load();
     },
 
     interactors: {
@@ -146,24 +135,25 @@ var js = {
                 "local=", topic_local
             );
 
-            var parts = topic_local.match(/\/api\/(cookbook|things)\/(urn:[-$%_:0-9a-zA-Z]+)/);
+            var parts = topic_local.match(/\/api\/(cookbook|things)\/(urn:[-$%_:0-9a-zA-Z]+)\/(istate|ostate|meta|model)/);
             if (!parts) {
                 console.log("?no match?");
-            } else {
-                var payload = JSON.parse(message.payloadString);
-                js.actions.on_message(parts[1], parts[2], payload);
-
-                if ((parts[1] === "things") && payload.state) {
-                    for (var key in payload.state) {
-                        js.actions.on_message(parts[1], parts[2] + "/#" + key, payload);
-                    }
-                }
+                return;
             }
+
+            var payload = JSON.parse(message.payloadString);
+            var what = parts[1];
+            var thing_id = parts[2];
+            var band = parts[3];
+
+            console.log("+ mqtt", what, thing_id, band);
+            js.transport.updated(thing_id, band, payload);
         },	
 
         end: 0
     },
 
+    /*
     actions: {
         on_load: function() {
         },
@@ -255,6 +245,106 @@ var js = {
                 }
             }
 
+        },
+
+        end: 0
+    },
+    */
+    
+    /**
+     *  Implement the 'transport' pattern
+     */
+    transport: {
+        events: {},
+
+        on_load: function() {
+            for (var thing_id in thingdd) {
+                var td = thingdd[thing_id];
+
+                js.transport.updated(thing_id, "istate", td._istate);
+                js.transport.updated(thing_id, "ostate", td._ostate);
+                js.transport.updated(thing_id, "meta", td._meta);
+                js.transport.updated(thing_id, "model", td._model);
+            }
+        },
+
+        updated: function(thing_id, band, d) {
+            var td = thingdd[thing_id];
+            if (!td) {
+                td = {};
+                thingdd[thing_id];
+            }
+            
+            td[band] = d;
+
+            var event_id = thing_id + "/" + band;
+            var listeners = js.transport.events[event_id];
+            if (listeners) {
+                for (var li in listeners) {
+                    var listener = listeners[li];
+                    listener(d);
+                }
+            }
+
+            console.log("+ updated", thing_id, band);
+        },
+
+        connect: function(thing_id, band) {
+            return {
+                update: function(d) {
+                    $.ajax({
+                        type : 'PUT',
+                        url : '/api/things/' + thing_id + '/' + band,
+                        data: JSON.stringify(d),
+                        contentType: "application/json",
+                        dataType : 'json',
+                        error : function(xhr, status, error) {
+                            console.log(error);
+                            /*
+                            alert("" + rd.api.url + "\n" + status + ": " + error);
+                            $('li.interactor-item').removeClass('running');
+                             */
+                        },
+                        success : function(data, status, xhr) {
+                            console.log("success", data);
+                            /*
+                            if (!data.running) {
+                                $('li.interactor-item').removeClass('running');
+                            }
+                            */
+                        },
+                    });
+
+                    /*
+                    if (band === "ostate") {
+                        var istate = thingdd[thing_id]._istate;
+                        for (var key in d) {
+                            var value = d[key];
+                            if (value === null) {
+                                continue;
+                            }
+
+                            istate[key] = value;
+                        }
+
+                        js.transport.updated(thing_id, "istate", istate);
+                    }
+                     */
+                },
+
+                on_update: function(f) {
+                    var event_id = thing_id + "/" + band;
+                    var listeners = js.transport.events[event_id];
+                    if (listeners === undefined) {
+                        listeners = [];
+                        js.transport.events[event_id] = listeners;
+                    }
+
+                    listeners.push(f);
+                },
+
+                end: 0
+            };
         },
 
         end: 0

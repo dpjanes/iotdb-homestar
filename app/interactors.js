@@ -82,6 +82,7 @@ var assign_interactor_to_attribute = function(attributed) {
 
     if (bestd) {
         _.extend(attributed, bestd);
+        delete attributed._q;
     }
 };
 
@@ -120,7 +121,7 @@ var setup = function () {
             var src_content = fs.readFileSync(src_path);
 
             if (src_file === "attribute.html") {
-                var prefix = "{% if a._interactor == '" + interactor_key + "' %}";
+                var prefix = "{% if attribute._interactor == '" + interactor_key + "' %}";
                 var postfix = "{% endif %}";
 
                 src_content = prefix + src_content + postfix;

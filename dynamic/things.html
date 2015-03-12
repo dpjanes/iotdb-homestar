@@ -1,49 +1,23 @@
 {% extends 'template' %}
 {% block head_footer %}
-    <script>var rdd = {};</script>
+    <script src="/things.js"></script>
 {% endblock %}
 {% block content %}
     [[{ htmld.header|safe }]]
-
     <h1>Things</h1>
-    {% for thing in things()|groupBy('_group') %}
+    {% for thing in things() %}
     <ul class="list-group">
-        <li class="list-group-item active" id="{{ thing[0]._thing_id }}">
-            <span class="action-group">{{ thing[0]._thing_name }}</span>
+        <li class="list-group-item active" data-interactor="title" data-id="{{ thing._id }}">
+            <span class="action-group">{{ thing._name }}</span>
             {% if user.permissions.owner %}
-            <a href="/auth/things/{{ thing[0]._thing_id }}" class="pull-right action-edit-permission">☆</a>
+            <a href="/auth/things/{{ thing._id }}" class="pull-right action-edit-permission">☆</a>
             {% endif %}
         </li>
-        {% for a in thing %}
-<script>
-            {% if loop.first %}
-var state = {{ a.state|json(2)|safe }};
-var api = {
-  url: "/api/things/{{ a._thing_id }}"
-};
-rdd[{{ a._thing_id|json|safe}}] = {
-  section: "things",
-  id: {{ a._thing_id|json|safe }},
-  api: api,
-  name: {{ a._thing_name|json|safe }},
-  state: state
-};
-            {% endif %}
-rdd[{{ a._id|json|safe}}] = {
-  section: "things",
-  interactor: "{{ a._interactor }}",
-  id: {{ a._id|json|safe }},
-  api: api,
-  name: {{ a._name|json|safe }},
-  out: {{ a._out|json|safe }},
-  in: {{ a._in|json|safe }},
-  state: state
-};
-</script>
-<li class="list-group-item interactor interactor-{{ a._interactor }}" data-id="{{ a._id }}" data-in="{{ a._in }}" data-out="{{ a._out }}" onclick>
-    <div>interactor:{{ a._interactor }}</div>
-    [[{ htmld.attribute|safe }]]
-</li>
+        {% for attribute in thing._model["iot:attribute"] %}
+            <li class="list-group-item interactor" data-interactor="{{ attribute._interactor }}" data-thing="{{ thing._id }}" data-attribute="{{ attribute._code }}" onclick>
+                {# <div>interactor:{{ attribute._interactor }}</div> #}
+                [[{ htmld.attribute|safe }]]
+            </li>
         {% endfor %}
     </ul>
     {% endfor %}
