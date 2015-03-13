@@ -28,7 +28,7 @@
  *  will be merged later on if this is used.
  */
 exports.attribute = function(attributed) {
-    var values = attributed.values;
+    var values = attributed["iot:enumeration"]
     if (!values) {
         return;
     }
@@ -41,7 +41,7 @@ exports.attribute = function(attributed) {
         });
     }
 
-    return {
+    return{
         _values: _values,
     };
 };

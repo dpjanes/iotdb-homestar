@@ -297,15 +297,6 @@ var init_recipe = function (reciped) {
         } else {
             reciped['iot:type'] = 'iot:null';
         }
-    } else {
-        type = _.ld.compact(_.ld.expand(type, "iot:"))
-        if (type === "iot:boolean") {
-            reciped.values = [ "Off", "On", ]
-            reciped._valued = {
-                "Off": false,
-                "On": true,
-            };
-        }
     }
 
     /* run: old name for onclick: */
@@ -517,6 +508,18 @@ var recipe_model = function(recipe) {
     return {};
 };
 
+var recipe_istate = function(recipe) {
+    return _.defaults(in_recipe.state, {
+        value: null
+    });
+};
+
+var recipe_ostate = function(recipe) {
+    return {
+        value: null
+    };
+};
+
 var cookbooks = function() {
     var groups = [];
 
@@ -548,31 +551,17 @@ var cookbooks = function() {
         out_recipe["@type"] = "iot:Recipe";
         out_recipe["schema:name"] = in_recipe.name;
         out_recipe["iot:type"] = in_recipe["iot:type"];
+        if (in_recipe.values) {
+            out_recipe['iot:enumeration'] = in_recipe.values;
+        }
         out_recipe["_id"] = in_recipe._id;
         out_recipe["_code"] = "value";
         out_recipe["_name"] = in_recipe.name;
         out_recipe["_model"] = recipe_model(in_recipe);
-        out_recipe["_istate"] = in_recipe.state;
-        out_recipe["_ostate"] = {
-            value: null
-        };
+        out_recipe["_istate"] = recipe_istate(in_recipe);
+        out_recipe["_ostate"] = recipe_ostate(in_recipe);
         out_recipe["_control"] = true;
         out_recipe["_reading"] = false;
-
-        if (in_recipe.values) {
-            out_recipe['iot:type'] = 'iot:string';
-            out_recipe['values'] = in_recipe.values;
-
-            /*
-            var valued = {};
-            out_recipe['_values'] = valued;
-
-            for (var vi in in_recipe.values) {
-                var value = in_recipe.values[vi];
-                valued[value] = value;
-            }
-            */
-        }
 
         interactors.assign_interactor_to_attribute(out_recipe);
     }
