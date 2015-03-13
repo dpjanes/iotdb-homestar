@@ -597,6 +597,51 @@ var cookbooks = function() {
     return groups;
 };
 
+var _make_recipe = function(f) {
+    return function (request, response) {
+        logger.info({
+            method: "_make_recipe",
+            recipe_id: request.params.recipe_id,
+            body: request.body,
+        }, "called");
+
+        var recipe = recipe_by_id(request.params.recipe_id);
+        if (!recipe) {
+            response.set('Content-Type', 'application/json');
+            response.status(404).send(JSON.stringify({
+                error: "recipe not found",
+                recipe_id: request.params.recipe_id
+            }, null, 2));
+        }
+
+        response.set('Content-Type', 'application/json');
+        response.send(JSON.stringify(f(recipe, request, response), null, 2));
+    };
+};
+
+/**
+ *   get '/api/recipes/:recipe_id/istate'
+ */
+var get_istate = _make_recipe(recipe_istate);
+
+/**
+ *   get '/api/recipes/:recipe_id/ostate'
+ */
+var get_ostate = _make_recipe(recipe_ostate);
+
+/**
+ *   put '/api/recipes/:recipe_id/ostate'
+ */
+var put_ostate = _make_recipe(function(recipe, request, response) {
+    /* XXX DO STUFF */
+    return {};
+});
+
+/**
+ *   get '/api/recipes/:recipe_id/model'
+ */
+var get_model = _make_recipe(recipe_model);
+
 /**
  *  API
  */
@@ -608,5 +653,14 @@ exports.recipes = recipes;
 exports.group_recipes = group_recipes;
 exports.recipe_to_id = recipe_to_id;
 exports.recipe_by_id = recipe_by_id;
+
+exports.get_istate = get_istate;
+exports.get_ostate = get_ostate;
+exports.put_ostate = put_ostate;
+exports.get_model = get_model;
+
+exports.recipe_istate = recipe_istate;
+exports.recipe_ostate = recipe_ostate;
+exports.recipe_model = recipe_model;
 
 exports.cookbooks = cookbooks;

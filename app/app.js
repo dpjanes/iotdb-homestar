@@ -377,7 +377,11 @@ var setup_pages = function (app) {
     // app.use('/', express.static(node_path.join(__dirname, '..', 'client', 'flat-ui')));
 
     /* cookbooks API */
-    app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
+    // app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
+    app.get('/api/cookbook/:recipe_id/istate', recipe.get_istate);
+    app.get('/api/cookbook/:recipe_id/ostate', recipe.get_ostate);
+    app.put('/api/cookbook/:recipe_id/ostate', recipe.put_ostate);
+    app.get('/api/cookbook/:recipe_id/model', recipe.get_model);
 
     /* things API */
     app.get('/api/things/:thing_id/istate', things.get_istate);
