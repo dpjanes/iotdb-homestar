@@ -1,34 +1,27 @@
 {% extends 'template' %}
 {% block head_footer %}
-    <script>var rdd = {};</script>
+    <script src="/things.js"></script>
 {% endblock %}
 {% block content %}
     [[{ htmld.header|safe }]]
-    {% for recipes in cookbook()|groupBy('_group') %}
+    <h1>Cookbooks</h1>
+    {% for cookbook in cookbooks() %}
     <ul class="list-group">
-        <li class="list-group-item active" id="{{ recipes[0].cookbook_id }}">
-            <span class="interactor-group">{{ loop.key }}</span>
+        <li class="list-group-item active" data-interactor="title" data-id="{{ cookbook._id }}">
+            <span class="action-group">{{ cookbook._name }}</span>
             {% if user.permissions.owner %}
-            <a href="/auth/cookbooks/{{ recipes[0].cookbook_id }}" class="pull-right interactor-edit-permission">☆</a>
+            <a href="/auth/{{ cookbook._section }}/{{ cookbook._id }}" class="pull-right action-edit-permission">☆</a>
             {% endif %}
         </li>
-        {% for a in recipes %}
-<script>
-rdd[{{ a._id|json|safe}}] = {
-  id: {{ a._id|json|safe }},
-  api: { url: "/api/cookbook/{{ a._id }}" },
-  out: "value",
-  name: {{ a._name|json|safe }}{% if a.state %}, 
-  state: {{ a.state|json|safe }}{% endif %}
-};
-</script>
-<li class="list-group-item interactor interactor-{{ a._interactor }}" data-id="{{ a._id }}" onclick="">
-    <div>interactor:{{ a._interactor }}</div>
-    [[{ htmld.attribute|safe }]]
-</li>
+        {% for attribute in cookbook._recipes %}
+        <li class="list-group-item interactor" data-interactor="{{ attribute._interactor }}" data-thing="{{ attribute._id }}" data-attribute="{{ attribute._code }}" onclick>
+            [[{ htmld.attribute|safe }]]
+        </li>
         {% endfor %}
     </ul>
     {% endfor %}
+    <pre>{{ cookbooks()|json(2)|safe }}</pre>
+    <pre>{{ things()|json(2)|safe }}</pre>
 {% endblock %}
 {% block body_footer %}
     <script>var settingsd = {{ settings()|json(2)|safe }};</script>

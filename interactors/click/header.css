@@ -1,0 +1,8 @@
+li[data-interactor="click"]:hover {
+    background: #EEE;
+}
+li[data-interactor="click"]:active,
+li[data-interactor="click"].touched {
+    background: #DDD;
+}
+
