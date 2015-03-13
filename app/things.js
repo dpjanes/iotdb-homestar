@@ -224,11 +224,14 @@ var _make_thing = function(f) {
 
         var thing = _get_thing(request.params.thing_id);
         if (!thing) {
-            response.set('Content-Type', 'application/json');
-            response.status(404).send(JSON.stringify({
-                error: "thing not found",
-                thing_id: request.params.thing_id
-            }, null, 2));
+            return response
+                .set('Content-Type', 'application/json')
+                .status(404)
+                .send(JSON.stringify({
+                    error: "thing not found",
+                    thing_id: request.params.thing_id
+                }, null, 2))
+                ;
         }
 
         response.set('Content-Type', 'application/json');

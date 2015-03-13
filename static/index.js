@@ -331,7 +331,7 @@ var js = {
                 update: function(d) {
                     $.ajax({
                         type : 'PUT',
-                        url : '/api/things/' + thing_id + '/' + band,
+                        url : thingdd[thing_id]["_" + band]["@id"],
                         data: JSON.stringify(d),
                         contentType: "application/json",
                         dataType : 'json',
@@ -351,22 +351,6 @@ var js = {
                             */
                         },
                     });
-
-                    /*
-                    if (band === "ostate") {
-                        var istate = thingdd[thing_id]._istate;
-                        for (var key in d) {
-                            var value = d[key];
-                            if (value === null) {
-                                continue;
-                            }
-
-                            istate[key] = value;
-                        }
-
-                        js.transport.updated(thing_id, "istate", istate);
-                    }
-                     */
                 },
 
                 on_update: function(f) {

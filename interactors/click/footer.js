@@ -2,9 +2,11 @@ js.interactors.click = {
     name: "click",
 
     on_load: function() {
-        $('.interactor-click').on('click', js.interactors.click.on_click);
-        $('.interactor-click').on('touchstart', js.interactors.click.on_touchstart);
-        $('.interactor-click').on('touchend', js.interactors.click.on_touchend);
+        $('li[data-interactor="click"]')
+            .on('click', js.interactors.click.on_click)
+            .on('touchstart', js.interactors.click.on_touchstart)
+            .on('touchend', js.interactors.click.on_touchend)
+            ;
     },
 
     on_touchstart: function(e) {
@@ -16,7 +18,18 @@ js.interactors.click = {
     },
 
     on_click: function(e) {
-        js.actions.send($(this));
+        var e = $(this);
+
+        var thing_id = e.data("thing");
+        var attribute_code = e.data("attribute");
+
+        var transporter = js.transport.connect(thing_id, "ostate");
+        e.on("click", function() {
+            var value = $(this).data("value");
+            var thing_ostate = thingdd[thing_id]._ostate;
+            thing_ostate[attribute_code] = (new Date()).toISOString();
+            transporter.update(thing_ostate);
+        });
     },
 
     end: 0

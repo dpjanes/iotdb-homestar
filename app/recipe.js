@@ -514,7 +514,7 @@ var recipe_model = function(recipe) {
             "iot-attribute": _.ld.namespace["iot-attribute"],
             "schema": _.ld.namespace["schema"],
         },
-        "@id": "/api/cookbooks/" + recipe._id + "/model",
+        "@id": "/api/recipes/" + recipe._id + "/model",
         "@type": "iot:Model",
         "schema:name": recipe._name,
         "iot:attribute": {
@@ -533,7 +533,7 @@ var recipe_model = function(recipe) {
 var recipe_istate = function(recipe) {
     return _.defaults(recipe.state, {
         value: null,
-        "@id": "/api/cookbooks/" + recipe._id + "/istate",
+        "@id": "/api/recipes/" + recipe._id + "/istate",
     });
 };
 
@@ -542,7 +542,7 @@ var recipe_istate = function(recipe) {
 var recipe_ostate = function(recipe) {
     return {
         value: null,
-        "@id": "/api/cookbooks/" + recipe._id + "/ostate",
+        "@id": "/api/recipes/" + recipe._id + "/ostate",
     };
 };
 

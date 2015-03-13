@@ -378,10 +378,10 @@ var setup_pages = function (app) {
 
     /* cookbooks API */
     // app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
-    app.get('/api/cookbook/:recipe_id/istate', recipe.get_istate);
-    app.get('/api/cookbook/:recipe_id/ostate', recipe.get_ostate);
-    app.put('/api/cookbook/:recipe_id/ostate', recipe.put_ostate);
-    app.get('/api/cookbook/:recipe_id/model', recipe.get_model);
+    app.get('/api/recipes/:recipe_id/istate', recipe.get_istate);
+    app.get('/api/recipes/:recipe_id/ostate', recipe.get_ostate);
+    app.put('/api/recipes/:recipe_id/ostate', recipe.put_ostate);
+    app.get('/api/recipes/:recipe_id/model', recipe.get_model);
 
     /* things API */
     app.get('/api/things/:thing_id/istate', things.get_istate);

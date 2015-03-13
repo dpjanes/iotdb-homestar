@@ -2,7 +2,6 @@ js.interactors.boolean = {
     name: "boolean",
 
     on_load: function() {
-        console.log("+", "interactors.boolean", "called");
         $('li[data-interactor="boolean"]')
             .each(js.interactors.boolean.add_transporter)
             .each(js.interactors.boolean.add_click)
