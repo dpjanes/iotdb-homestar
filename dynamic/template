@@ -8,9 +8,6 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/css/flat-ui.min.css">
-    <link rel="stylesheet" href="/static/css.css">
     {% endblock %}
     {% block head_footer %}
     {% endblock %}
@@ -44,11 +41,16 @@
         </ul>
         {% endblock %}
     </div>
+    {% block css %}
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="/static/css/flat-ui.min.css">
+<link rel="stylesheet" href="/static/css.css">
+    {% endblock %}
     {% block javascript %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-    <script src="/static/js/flat-ui.min.js"></script>
-    <script src="/static/jquery.minicolors.min.js"></script> 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<script src="/static/js/flat-ui.min.js"></script>
+<script src="/static/jquery.minicolors.min.js"></script> 
     {% endblock %}
     {% block body_footer %}
     {% endblock %}
