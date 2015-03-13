@@ -367,7 +367,7 @@ var setup_pages = function (app) {
 
     /* static files - before internal dynamic pages */
     for (var fi in settings.d.webserver.folders.static) {
-        app.use('/', 
+        app.use('/static', 
             express.static(
                 cfg.cfg_expand(settings.envd, settings.d.webserver.folders.static[fi])
             )
@@ -548,6 +548,8 @@ exports.app = app;
 setup_express(app);
 setup_dynamic(app);
 setup_pages(app);
+
+interactors.setup_app(app);
 
 /*
  *  Run the web server

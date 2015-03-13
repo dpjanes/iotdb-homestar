@@ -3,7 +3,6 @@
     <script src="/cookbooks.js"></script>
 {% endblock %}
 {% block content %}
-    [[{ htmld.header|safe }]]
     <h1>Cookbooks</h1>
     {% for cookbook in cookbooks() %}
     <ul class="list-group">
@@ -26,8 +25,9 @@
     #}
 {% endblock %}
 {% block body_footer %}
-    <script>var settingsd = {{ settings()|json(2)|safe }};</script>
-    <script src="mqttws31.js"></script>
-    <script src="index.js"></script>
-    [[{ htmld.footer|safe }]]
+<script>var settingsd = {{ settings()|json(2)|safe }};</script>
+<script src="/static/mqttws31.js"></script>
+<script src="/static/index.js"></script>
+[[{ htmld.css|safe }]]
+[[{ htmld.js|safe }]]
 {% endblock %}

@@ -328,7 +328,10 @@ var js = {
 
         connect: function(thing_id, band) {
             return {
-                update: function(d) {
+                patch: function(d) {
+                },
+
+                put: function(d) {
                     $.ajax({
                         type : 'PUT',
                         url : thingdd[thing_id]["_" + band]["@id"],

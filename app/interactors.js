@@ -32,6 +32,7 @@ var events = require('events');
 var util = require('util');
 var path = require('path');
 var fs = require('fs');
+var express = require('express');
 
 var bunyan = require('bunyan');
 var logger = bunyan.createLogger({
@@ -87,6 +88,16 @@ var assign_interactor_to_attribute = function(attributed) {
 };
 
 /**
+ *  Setup static routes for ExpressJS
+ */
+var setup_app = function(app) {
+    for (var interactor_key in moduled) {
+        var module = moduled[interactor_key];
+        app.use('/static/interactors/' + module.name, express.static(module.path));
+    }
+}
+
+/**
  */
 var setup = function () {
     for (var interactor_key in _interactord) {
@@ -97,9 +108,21 @@ var setup = function () {
         for (var fi in files) {
             var src_file = files[fi];
             var src_path = path.join(interactor_path, src_file);
+            var src_ext = path.extname(src_file);
+            if (src_ext.length === 0) {
+                continue
+            }
+            var src_core = path.basename(src_file, src_ext);
+            var src_content = "";
+
             if (src_file === "interactor.js") {
+                /* not included */
                 try {
-                    moduled[interactor_key] = require(src_path);
+                    module = require(src_path);
+                    module.path = interactor_path;
+                    module.name = interactor_key;
+
+                    moduled[interactor_key] = module;
                 }
                 catch (x) {
                     logger.error({
@@ -111,31 +134,20 @@ var setup = function () {
                 }
 
                 continue;
-            }
-
-            var src_ext = path.extname(src_file);
-            if (src_ext.length === 0) {
-                continue
-            }
-            var src_core = path.basename(src_file, src_ext);
-            var src_content = fs.readFileSync(src_path);
-
-            if (src_file === "attribute.html") {
+            } else if (src_file === "attribute.html") {
                 var prefix = "{% if attribute._interactor == '" + interactor_key + "' %}";
                 var postfix = "{% endif %}";
 
+                src_content = fs.readFileSync(src_path);
                 src_content = prefix + src_content + postfix;
             } else if (src_ext === ".js") {
-                var prefix = "<script>";
-                var postfix = "</script>";
-
-                src_content = prefix + src_content + postfix;
+                src_core = "js";
+                src_content = "<script src='/static/interactors/" + interactor_key + "/" + src_file + "'></script>";
             } else if (src_ext === ".css") {
-                var prefix = "<style type='text/css'>";
-                var postfix = "</style>"
-
-                src_content = prefix + src_content + postfix;
+                src_core = "css";
+                src_content = "<link rel='stylesheet' href='/static/interactors/" + interactor_key + "/" + src_file + "' />";
             } else {
+                continue;
             }
 
             var htmls = htmlsd[src_core];
@@ -158,6 +170,7 @@ var setup = function () {
  *  API
  */
 exports.setup = setup;
+exports.setup_app = setup_app;
 exports.htmld = htmld;
 exports.interactors = _.keys(_interactord);
 exports.assign_interactor_to_attribute = assign_interactor_to_attribute;
