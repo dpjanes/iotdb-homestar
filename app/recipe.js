@@ -206,6 +206,7 @@ var load_recipes = function (initd) {
         // this resets the groups and ID for every file
         homestar.cookbook();
     });
+
     // console.log("HERE:BBBB ----------");
     // process.exit(0)
 };
@@ -538,7 +539,7 @@ var cookbooks = function() {
             group["_section"] = "cookbooks";
 
             out_recipes = [];
-            group["recipes"] = out_recipes;
+            group["_recipes"] = out_recipes;
         }
         
         var out_recipe = {};
@@ -550,13 +551,28 @@ var cookbooks = function() {
         out_recipe["_id"] = in_recipe._id;
         out_recipe["_code"] = "value";
         out_recipe["_name"] = in_recipe.name;
-        out_recipe["model"] = recipe_model(in_recipe);
-        out_recipe["istate"] = in_recipe.state;
-        out_recipe["ostate"] = {
+        out_recipe["_model"] = recipe_model(in_recipe);
+        out_recipe["_istate"] = in_recipe.state;
+        out_recipe["_ostate"] = {
             value: null
         };
         out_recipe["_control"] = true;
         out_recipe["_reading"] = false;
+
+        if (in_recipe.values) {
+            out_recipe['iot:type'] = 'iot:string';
+            out_recipe['values'] = in_recipe.values;
+
+            /*
+            var valued = {};
+            out_recipe['_values'] = valued;
+
+            for (var vi in in_recipe.values) {
+                var value = in_recipe.values[vi];
+                valued[value] = value;
+            }
+            */
+        }
 
         interactors.assign_interactor_to_attribute(out_recipe);
     }

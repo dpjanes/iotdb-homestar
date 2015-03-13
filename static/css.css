@@ -57,12 +57,3 @@ body.desktop li.interactor-item.running {
 .interactor-edit-permission {
     color: white;
 }
-
-/* -- */
-.interactor-click:hover {
-    background: #EEE;
-}
-.interactor-click:active,
-.interactor-click.touched {
-    background: #DDD;
-}
