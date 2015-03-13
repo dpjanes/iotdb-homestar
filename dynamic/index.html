@@ -1,6 +1,6 @@
 {% extends 'template' %}
 {% block head_footer %}
-    <script src="/things.js"></script>
+    <script src="/cookbooks.js"></script>
 {% endblock %}
 {% block content %}
     [[{ htmld.header|safe }]]
@@ -20,8 +20,10 @@
         {% endfor %}
     </ul>
     {% endfor %}
+    {#
     <pre>{{ cookbooks()|json(2)|safe }}</pre>
     <pre>{{ things()|json(2)|safe }}</pre>
+    #}
 {% endblock %}
 {% block body_footer %}
     <script>var settingsd = {{ settings()|json(2)|safe }};</script>

@@ -250,6 +250,41 @@ var js = {
         end: 0
     },
     */
+
+    general: {
+        updated: function(td, id, band) {
+            if (band !== "istate") {
+                return;
+            }
+
+            var d = td._istate;
+            var e_li = $('li[data-thing="' + id + '"]');
+
+
+            if (d._message !== undefined) {
+                e_li.find(".interactor-message").text(d._message);
+            }
+
+            if (d._running !== undefined) {
+                if (d._running) {
+                    e_li.addClass('running');
+                } else {
+                    e_li.removeClass('running');
+                    e_li.find(".interactor-message").text("");
+                }
+            } 
+
+            if (d._text) {
+                e_li.find(".interactor-state").text(d._text || "");
+            } else if (d._html) {
+                e_li.find(".interactor-state").text(d._html);
+            } else if (d._number) {
+                e_li.find(".interactor-state").text("" + d._number);
+            }
+        },
+
+        end: 0
+    },
     
     /**
      *  Implement the 'transport' pattern
@@ -287,6 +322,8 @@ var js = {
             }
 
             console.log("+ updated", thing_id, band);
+
+            js.general.updated(td, thing_id, band);
         },
 
         connect: function(thing_id, band) {
