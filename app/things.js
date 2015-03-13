@@ -239,19 +239,34 @@ var _make_thing = function(f) {
 /**
  */
 var thing_istate = function(thing) {
-    return thing.state({ istate: true, ostate: false });
+    return _.extend(
+        thing.state({ istate: true, ostate: false }),
+        {
+            "@id": "/api/things/" + thing.thing_id() + "/istate",
+        }
+    );
 };
 
 /**
  */
 var thing_ostate = function(thing) {
-    return thing.state({ istate: false, ostate: true });
+    return _.extend(
+        thing.state({ istate: false, ostate: true }),
+        {
+            "@id": "/api/things/" + thing.thing_id() + "/ostate",
+        }
+    );
 };
 
 /**
  */
 var thing_meta = function(thing) {
-    return _.ld.compact(thing.meta().state());
+    return _.ld.compact(
+        thing.meta().state(),
+        {
+            "@id": "/api/things/" + thing.thing_id() + "/meta",
+        }
+    );
 };
 
 /**
@@ -260,6 +275,14 @@ var thing_model = function(thing) {
     var md = _.ld.compact(thing.jsonld({
         // base: "/api/things/" + thing.thing_id() + "/model",
     }));
+
+    md["@context"] = {
+        "iot": _.ld.namespace["iot"],
+        "iot-unit": _.ld.namespace["iot-unit"],
+        "iot-attribute": _.ld.namespace["iot-attribute"],
+        "schema": _.ld.namespace["schema"],
+    },
+    md["@id"] = "/api/things/" + thing.thing_id() + "/model";
 
     var meta = thing.meta();
     md._id = thing.thing_id();

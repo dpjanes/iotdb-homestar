@@ -504,22 +504,50 @@ var archive = function() {
     });
 };
 
+/**
+ */
 var recipe_model = function(recipe) {
-    return {};
-};
-
-var recipe_istate = function(recipe) {
-    return _.defaults(in_recipe.state, {
-        value: null
-    });
-};
-
-var recipe_ostate = function(recipe) {
     return {
-        value: null
+        "@context": {
+            "iot": _.ld.namespace["iot"],
+            "iot-unit": _.ld.namespace["iot-unit"],
+            "iot-attribute": _.ld.namespace["iot-attribute"],
+            "schema": _.ld.namespace["schema"],
+        },
+        "@id": "/api/cookbooks/" + recipe._id + "/model",
+        "@type": "iot:Model",
+        "schema:name": recipe._name,
+        "iot:attribute": {
+            "@type": "iot:Attribute",
+            "@id": "#value",
+            "iot:purpose": recipe["iot:purpose"],
+            "schema:name": "value",
+            "iot:type": recipe["iot:type"],
+            "iot:role": [ "iot-attribute:role-control", "iot-attribute:role-reading", ],
+        },
     };
 };
 
+/**
+ */
+var recipe_istate = function(recipe) {
+    return _.defaults(recipe.state, {
+        value: null,
+        "@id": "/api/cookbooks/" + recipe._id + "/istate",
+    });
+};
+
+/**
+ */
+var recipe_ostate = function(recipe) {
+    return {
+        value: null,
+        "@id": "/api/cookbooks/" + recipe._id + "/ostate",
+    };
+};
+
+/**
+ */
 var cookbooks = function() {
     var groups = [];
 
@@ -582,4 +610,3 @@ exports.recipe_to_id = recipe_to_id;
 exports.recipe_by_id = recipe_by_id;
 
 exports.cookbooks = cookbooks;
-
