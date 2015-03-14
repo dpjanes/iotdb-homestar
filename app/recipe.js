@@ -144,6 +144,7 @@ Context.prototype.done = function (timeout) {
 
     setTimeout(function () {
         self.running = false;
+        self.emit("message", self.id, self.reciped, "");
         self.emit("running", self.id, self.reciped);
     }, timeout * 1000);
 
@@ -530,9 +531,14 @@ var recipe_model = function(recipe) {
 
 /**
  */
-var recipe_istate = function(recipe) {
+var recipe_istate = function(recipe, context) {
+    if (!context) {
+        context = make_context(recipe);
+    }
+
     return _.defaults(recipe.state, {
         value: null,
+        _running: context.running,
         "@id": "/api/recipes/" + recipe._id + "/istate",
     });
 };
@@ -607,15 +613,34 @@ var _make_recipe = function(f) {
 
         var recipe = recipe_by_id(request.params.recipe_id);
         if (!recipe) {
-            response.set('Content-Type', 'application/json');
-            response.status(404).send(JSON.stringify({
-                error: "recipe not found",
-                recipe_id: request.params.recipe_id
-            }, null, 2));
+            return response
+                .set('Content-Type', 'application/json')
+                .status(404)
+                .send(JSON.stringify({
+                    error: "recipe not found",
+                    recipe_id: request.params.recipe_id
+                }, null, 2));
+        }
+
+        var context = make_context(recipe);
+        if (context.running) {
+            logger.error({
+                method: "webserver_recipe_update",
+                recipe_id: request.params.recipe_id,
+                cause: "user sent the request before a previous version finished",
+            }, "recipe is still running");
+
+            return response
+                .set('Content-Type', 'application/json')
+                .status(409)
+                .send(JSON.stringify({
+                    error: "recipe is still running",
+                    recipe_id: request.params.recipe_id
+                }, null, 2));
         }
 
         response.set('Content-Type', 'application/json');
-        response.send(JSON.stringify(f(recipe, request, response), null, 2));
+        response.send(JSON.stringify(f(recipe, context, request, response), null, 2));
     };
 };
 
@@ -632,9 +657,11 @@ var get_ostate = _make_recipe(recipe_ostate);
 /**
  *   put '/api/recipes/:recipe_id/ostate'
  */
-var put_ostate = _make_recipe(function(recipe, request, response) {
-    /* XXX DO STUFF */
-    return {};
+var put_ostate = _make_recipe(function(recipe, context, request, response) {
+    context.onclick(request.body.value);
+    return {
+        _running: context.running,
+    };
 });
 
 /**

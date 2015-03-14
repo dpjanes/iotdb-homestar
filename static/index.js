@@ -135,7 +135,7 @@ var js = {
                 "local=", topic_local
             );
 
-            var parts = topic_local.match(/\/api\/(cookbook|things)\/(urn:[-$%_:0-9a-zA-Z]+)\/(istate|ostate|meta|model)/);
+            var parts = topic_local.match(/\/api\/(recipes|things)\/(urn:[-$%_:0-9a-zA-Z]+)\/(istate|ostate|meta|model)/);
             if (!parts) {
                 console.log("?no match?");
                 return;
@@ -253,19 +253,21 @@ var js = {
 
     general: {
         updated: function(td, id, band) {
+            console.log("HERE:AAA");
             if (band !== "istate") {
                 return;
             }
 
             var d = td._istate;
+            console.log("HERE:BBB", d);
             var e_li = $('li[data-thing="' + id + '"]');
-
 
             if (d._message !== undefined) {
                 e_li.find(".interactor-message").text(d._message);
             }
 
             if (d._running !== undefined) {
+                console.log("HERE:CCC.1", d._running);
                 if (d._running) {
                     e_li.addClass('running');
                 } else {
@@ -275,10 +277,13 @@ var js = {
             } 
 
             if (d._text) {
+                console.log("HERE:CCC.1", d._text);
                 e_li.find(".interactor-state").text(d._text || "");
             } else if (d._html) {
+                console.log("HERE:CCC.1", d._html);
                 e_li.find(".interactor-state").text(d._html);
             } else if (d._number) {
+                console.log("HERE:CCC.1", d._number);
                 e_li.find(".interactor-state").text("" + d._number);
             }
         },
@@ -310,7 +315,17 @@ var js = {
                 thingdd[thing_id];
             }
             
-            td[band] = d;
+            /* this needs to be revisited - we expect all the state? */
+            /* td[band] = d; */
+            var bd = td["_" + band];
+            if (!bd) {
+                bd = {};
+                td[band] = bd;
+            }
+            for (var dkey in d) {
+                var dvalue = d[dkey];
+                bd[dkey] = dvalue;
+            }
 
             var event_id = thing_id + "/" + band;
             var listeners = js.transport.events[event_id];

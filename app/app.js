@@ -151,25 +151,23 @@ var setup_recipe_mqtt = function() {
         var context = recipe.make_context(reciped);
 
         context.on("message", function (id, reciped, message) {
-            var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
+            var topic = settings.d.mqttd.prefix + "api/recipes/" + id + "/istate";
             var payload = {
-                message: message
+                _text: message
             };
 
             mqtt.publish(settings.d.mqttd, topic, payload);
         });
         context.on("state", function (id, state) {
-            var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
-            var payload = {
-                state: state,
-            };
+            var topic = settings.d.mqttd.prefix + "api/recipes/" + id + "/istate";
+            var payload = state;
 
-            mqtt.publish(settings.d.mqttd, topic, payload);
+            mqtt.publish(settings.d.mqttd, topic, state);
         });
         context.on("running", function (id, reciped) {
-            var topic = settings.d.mqttd.prefix + "api/cookbook/" + id;
+            var topic = settings.d.mqttd.prefix + "api/recipes/" + id + "/istate";
             var payload = {
-                running: context.running
+                _running: context.running
             };
 
             mqtt.publish(settings.d.mqttd, topic, payload);
