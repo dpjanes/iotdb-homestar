@@ -591,11 +591,11 @@ var cookbooks = function() {
         out_recipe["_id"] = in_recipe._id;
         out_recipe["_code"] = "value";
         out_recipe["_name"] = in_recipe.name;
-        out_recipe["_model"] = recipe_model(in_recipe);
-        out_recipe["_istate"] = recipe_istate(in_recipe);
-        out_recipe["_ostate"] = recipe_ostate(in_recipe);
         out_recipe["_control"] = true;
         out_recipe["_reading"] = false;
+        out_recipe["model"] = recipe_model(in_recipe);
+        out_recipe["istate"] = recipe_istate(in_recipe);
+        out_recipe["ostate"] = recipe_ostate(in_recipe);
 
         interactors.assign_interactor_to_attribute(out_recipe);
     }

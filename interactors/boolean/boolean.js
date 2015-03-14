@@ -43,9 +43,11 @@ js.interactors.boolean = {
         e.find("button")
             .on("click", function() {
                 var value = $(this).data("value");
-                var thing_ostate = thingdd[thing_id]._ostate;
-                thing_ostate[attribute_code] = ((value === 1) || (value === "1")) ? true : false;
-                transporter.update(thing_ostate);
+
+                var updated = {};
+                updated[attribute_code] = ((value === 1) || (value === "1")) ? true : false;
+
+                transporter.patch(updated);
             });
     },
 

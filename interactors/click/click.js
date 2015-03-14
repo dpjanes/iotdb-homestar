@@ -26,10 +26,11 @@ js.interactors.click = {
 
         e.on("click", function() {
             var value = $(this).data("value");
-            var thing_ostate = thingdd[thing_id]._ostate;
-            thing_ostate[attribute_code] = (new Date()).toISOString();
 
-            transporter.update(thing_ostate);
+            var updated = {};
+            updated[attribute_code] = (new Date()).toISOString();
+
+            transporter.patch(updated);
         });
     },
 

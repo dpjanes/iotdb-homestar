@@ -12,7 +12,7 @@
             <a href="/auth/{{ cookbook._section }}/{{ cookbook._id }}" class="pull-right action-edit-permission">☆</a>
             {% endif %}
         </li>
-        {% for attribute in cookbook._recipes %}
+        {% for attribute in cookbook.recipes %}
         <li class="list-group-item interactor" data-interactor="{{ attribute._interactor }}" data-thing="{{ attribute._id }}" data-attribute="{{ attribute._code }}" onclick>
             [[{ htmld.attribute|safe }]]
         </li>

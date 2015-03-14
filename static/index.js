@@ -258,7 +258,7 @@ var js = {
                 return;
             }
 
-            var d = td._istate;
+            var d = td.istate;
             console.log("HERE:BBB", d);
             var e_li = $('li[data-thing="' + id + '"]');
 
@@ -297,31 +297,43 @@ var js = {
     transport: {
         events: {},
 
-        on_load: function() {
-            for (var thing_id in thingdd) {
-                var td = thingdd[thing_id];
-
-                js.transport.updated(thing_id, "istate", td._istate);
-                js.transport.updated(thing_id, "ostate", td._ostate);
-                js.transport.updated(thing_id, "meta", td._meta);
-                js.transport.updated(thing_id, "model", td._model);
-            }
-        },
-
-        updated: function(thing_id, band, d) {
+        bandd: function(thing_id, band) {
             var td = thingdd[thing_id];
             if (!td) {
                 td = {};
                 thingdd[thing_id];
             }
             
-            /* this needs to be revisited - we expect all the state? */
-            /* td[band] = d; */
-            var bd = td["_" + band];
+            var bd = td[band];
             if (!bd) {
                 bd = {};
                 td[band] = bd;
             }
+
+            return bd;
+        },
+
+        on_load: function() {
+            for (var thing_id in thingdd) {
+                var td = thingdd[thing_id];
+
+                js.transport.updated(thing_id, "istate", td.istate);
+                js.transport.updated(thing_id, "ostate", td.ostate);
+                js.transport.updated(thing_id, "meta", td.meta);
+                js.transport.updated(thing_id, "model", td.model);
+                js.transport.updated(thing_id, "status", td.status);
+            }
+        },
+
+        updated: function(thing_id, band, d) {
+            if (d === undefined) {
+                return;
+            }
+
+            var bd = js.transport.bandd(thing_id, band)
+
+            /* this needs to be revisited - we expect all the state? */
+            /* td[band] = d; */
             for (var dkey in d) {
                 var dvalue = d[dkey];
                 bd[dkey] = dvalue;
@@ -338,48 +350,79 @@ var js = {
 
             console.log("+ updated", thing_id, band);
 
-            js.general.updated(td, thing_id, band);
+            // js.general.updated(td, thing_id, band);
         },
 
         connect: function(thing_id, band) {
-            return {
-                update: function(d) {
-                    $.ajax({
-                        type : 'PUT',
-                        url : thingdd[thing_id]["_" + band]["@id"],
-                        data: JSON.stringify(d),
-                        contentType: "application/json",
-                        dataType : 'json',
-                        error : function(xhr, status, error) {
-                            console.log(error);
-                            /*
-                            alert("" + rd.api.url + "\n" + status + ": " + error);
-                            $('li.interactor-item').removeClass('running');
-                             */
-                        },
-                        success : function(data, status, xhr) {
-                            console.log("success", data);
-                            /*
-                            if (!data.running) {
-                                $('li.interactor-item').removeClass('running');
-                            }
-                            */
-                        },
-                    });
-                },
+            var _send = function(bd) {
+                $.ajax({
+                    type : 'PUT',
+                    url: bd["@id"],
+                    data: JSON.stringify(bd),
+                    contentType: "application/json",
+                    dataType : 'json',
+                    error : function(xhr, status, error) {
+                        console.log(error);
+                    },
+                    success : function(data, status, xhr) {
+                        console.log("success", data);
+                    },
+                });
+            };
 
-                on_update: function(f) {
-                    var event_id = thing_id + "/" + band;
-                    var listeners = js.transport.events[event_id];
-                    if (listeners === undefined) {
-                        listeners = [];
-                        js.transport.events[event_id] = listeners;
+            var _patch = function(d) {
+                var bd = js.transport.bandd(thing_id, band)
+
+                for (var dkey in d) {
+                    if (dkey.match(/^@/)) {
+                        continue;
                     }
 
-                    listeners.push(f);
-                },
+                    var dvalue = d[dkey];
+                    bd[dkey] = dvalue;
+                }
 
-                end: 0
+                _send(bd);
+            };
+
+            var _update = function(d) {
+                var bd = js.transport.bandd(thing_id, band)
+
+                for (var bkey in bd) {
+                    if (bkey.match(/^@/)) {
+                        continue;
+                    }
+
+                    delete bd[bkey];
+                }
+
+                for (var dkey in d) {
+                    if (dkey.match(/^@/)) {
+                        continue;
+                    }
+
+                    var dvalue = d[dkey];
+                    bd[dkey] = dvalue;
+                }
+
+                _send(bd);
+            };
+
+            var _on_update = function(f) {
+                var event_id = thing_id + "/" + band;
+                var listeners = js.transport.events[event_id];
+                if (listeners === undefined) {
+                    listeners = [];
+                    js.transport.events[event_id] = listeners;
+                }
+
+                listeners.push(f);
+            };
+
+            return {
+                patch: _patch,
+                update: _update,
+                on_update: _on_update
             };
         },
 

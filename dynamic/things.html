@@ -12,7 +12,7 @@
             <a href="/auth/things/{{ thing._id }}" class="pull-right action-edit-permission">☆</a>
             {% endif %}
         </li>
-        {% for attribute in thing._model["iot:attribute"] %}
+        {% for attribute in thing.model["iot:attribute"] %}
             <li class="list-group-item interactor" data-interactor="{{ attribute._interactor }}" data-thing="{{ thing._id }}" data-attribute="{{ attribute._code }}" onclick>
                 {# <div>interactor:{{ attribute._interactor }}</div> #}
                 [[{ htmld.attribute|safe }]]

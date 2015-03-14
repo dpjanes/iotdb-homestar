@@ -334,10 +334,10 @@ var things = function() {
         td["_id"] = tmodel._id;
         td["_name"] = tmodel._name;
         td["_section"] = "things";
-        td["_model"] = tmodel;
-        td["_istate"] = thing_istate(thing);
-        td["_ostate"] = thing_ostate(thing);
-        td["_meta"] = thing_meta(thing);
+        td["model"] = tmodel;
+        td["istate"] = thing_istate(thing);
+        td["ostate"] = thing_ostate(thing);
+        td["meta"] = thing_meta(thing);
 
         tds.push(td);
     }
