@@ -333,6 +333,7 @@ var things = function() {
 
         td["_id"] = tmodel._id;
         td["_name"] = tmodel._name;
+        td["_sort"] = tmodel._name + "@@" + tmodel._id;
         td["_section"] = "things";
         td["model"] = tmodel;
         td["istate"] = thing_istate(thing);
@@ -341,6 +342,16 @@ var things = function() {
 
         tds.push(td);
     }
+
+    tds.sort(function(a, b) {
+        if (a._sort < b._sort) {
+            return -1;
+        } else if (a._sort > b._sort) {
+            return 1
+        } else {
+            return 0;
+        }
+    });
 
     return tds;
 };
