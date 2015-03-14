@@ -10,6 +10,7 @@ var js = {
         }
 
         js.interactors.on_load();
+        js.general.on_load();
         js.transport.on_load();
         js.mqtt.on_load();
     },
@@ -135,7 +136,7 @@ var js = {
                 "local=", topic_local
             );
 
-            var parts = topic_local.match(/\/api\/(recipes|things)\/(urn:[-$%_:0-9a-zA-Z]+)\/(istate|ostate|meta|model)/);
+            var parts = topic_local.match(/\/api\/(recipes|things)\/(urn:[-$%_:0-9a-zA-Z]+)\/(istate|ostate|meta|model|status)/);
             if (!parts) {
                 console.log("?no match?");
                 return;
@@ -252,40 +253,39 @@ var js = {
     */
 
     general: {
-        updated: function(td, id, band) {
-            console.log("HERE:AAA");
-            if (band !== "istate") {
-                return;
+        on_load: function() {
+            for (var thing_id in thingdd) {
+                var td = thingdd[thing_id];
+
+                js.general._updater(thing_id, js.transport.connect(thing_id, "status"));
             }
+        },
 
-            var d = td.istate;
-            console.log("HERE:BBB", d);
-            var e_li = $('li[data-thing="' + id + '"]');
+        _updater: function(thing_id, transporter) {
+            transporter.on_update(function(status) {
+                var e_li = $('li[data-thing="' + thing_id + '"]');
 
-            if (d._message !== undefined) {
-                e_li.find(".interactor-message").text(d._message);
-            }
-
-            if (d._running !== undefined) {
-                console.log("HERE:CCC.1", d._running);
-                if (d._running) {
-                    e_li.addClass('running');
-                } else {
-                    e_li.removeClass('running');
-                    e_li.find(".interactor-message").text("");
+                if (status._message !== undefined) {
+                    e_li.find(".interactor-message").text(status._message);
                 }
-            } 
 
-            if (d._text) {
-                console.log("HERE:CCC.1", d._text);
-                e_li.find(".interactor-state").text(d._text || "");
-            } else if (d._html) {
-                console.log("HERE:CCC.1", d._html);
-                e_li.find(".interactor-state").text(d._html);
-            } else if (d._number) {
-                console.log("HERE:CCC.1", d._number);
-                e_li.find(".interactor-state").text("" + d._number);
-            }
+                if (status._running !== undefined) {
+                    if (status._running) {
+                        e_li.addClass('running');
+                    } else {
+                        e_li.removeClass('running');
+                        e_li.find(".interactor-message").text("");
+                    }
+                } 
+
+                if (status._text) {
+                    e_li.find(".interactor-state").text(status._text || "");
+                } else if (status._html) {
+                    e_li.find(".interactor-state").text(status._html);
+                } else if (status._number) {
+                    e_li.find(".interactor-state").text("" + status._number);
+                }
+            });
         },
 
         end: 0
@@ -349,8 +349,6 @@ var js = {
             }
 
             console.log("+ updated", thing_id, band);
-
-            // js.general.updated(td, thing_id, band);
         },
 
         connect: function(thing_id, band) {

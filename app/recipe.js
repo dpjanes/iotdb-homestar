@@ -56,6 +56,14 @@ var Context = function (reciped) {
     self.reciped._context = self;
     self.reciped.state = {};
 
+    self.status = {
+        _running: false,
+        _text: null,
+        _html: null,
+        _number: null,
+        _message: null,
+    };
+
     events.EventEmitter.call(self);
 };
 
@@ -74,52 +82,55 @@ var make_context = function (reciped) {
 
 /*
  *  Format and emit a message (this will be picked up by MQTT elsewhere)
+ *  This message should reflect the running state.
  */
-Context.prototype.message = function () {
+Context.prototype.message = function (first) {
     var self = this;
 
-    self.running = true;
+    if (first === undefined) {
+        self.status._running = false;
+        self.status._message = null;
+    } else {
+        self.status._running = true;
+        self.status._message = util.format.apply(util.apply, Array.prototype.slice.call(arguments));
+    }
 
-    self.emit("message", self.id, self.reciped,
-        util.format.apply(util.apply, Array.prototype.slice.call(arguments)));
+    self.emit("status");
 };
 
 /*
- *  Change (and emit) the state of this recipe
+ *  Change (and emit) the state of this recipe. Typically
+ *  this will be a string or whatever. It does not
+ *  change the running state.
  */
 Context.prototype.state = function (state) {
     var self = this;
 
     if ((state === undefined) || (state === null)) {
-        self.reciped.state._text = null;
-        self.reciped.state._html = null;
-        self.reciped.state._number = null;
+        self.status._text = null;
+        self.status._html = null;
+        self.status._number = null;
     } else if (_.isString(state)) {
-        self.reciped.state._text = state;
-        self.reciped.state._html = null;
-        self.reciped.state._number = null;
+        self.status._text = state;
+        self.status._html = null;
+        self.status._number = null;
     } else if (_.isBoolean(state)) {
-        self.reciped.state._text = null;
-        self.reciped.state._html = null;
-        self.reciped.state._number = state ? 1 : 0;
+        self.status._text = null;
+        self.status._html = null;
+        self.status._number = state ? 1 : 0;
     } else if (_.isNumber(state)) {
-        self.reciped.state._text = null;
-        self.reciped.state._html = null;
-        self.reciped.state._number = state;
+        self.status._text = null;
+        self.status._html = null;
+        self.status._number = state;
     } else if (!_.isObject(state)) {
-        self.reciped.state._text = null;
-        self.reciped.state._html = null;
-        self.reciped.state._number = null;
-
-        self.reciped._logger.error({
-            method: "state",
-        }, "don't know what to do with this state");
-        return;
+        self.status._text = null;
+        self.status._html = null;
+        self.status._number = null;
     } else if (state) {
-        _.extend(self.reciped.state, state);
+        _.extend(self.status, state);
     }
 
-    self.emit("state", self.id, self.reciped.state);
+    self.emit("status");
 };
 
 /*
@@ -135,6 +146,11 @@ Context.prototype.validate = function () {
     }
 };
 
+/**
+ *  Finished. The message is sent to empty
+ *  and the running state is set to false.
+ *  All after a short delay.
+ */
 Context.prototype.done = function (timeout) {
     var self = this;
 
@@ -143,11 +159,8 @@ Context.prototype.done = function (timeout) {
     }
 
     setTimeout(function () {
-        self.running = false;
-        self.emit("message", self.id, self.reciped, "");
-        self.emit("running", self.id, self.reciped);
+        self.message();
     }, timeout * 1000);
-
 };
 
 Context.prototype.onclick = function (value) {
@@ -576,7 +589,7 @@ var cookbooks = function() {
             group["_section"] = "cookbooks";
 
             out_recipes = [];
-            group["_recipes"] = out_recipes;
+            group["recipes"] = out_recipes;
         }
         
         var out_recipe = {};

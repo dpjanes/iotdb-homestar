@@ -95,6 +95,7 @@ var webserver_auth_thing = function (request, response) {
  *  Run a particular recipe. This is always
  *  the eesult of a PUT
  */
+/*
 var webserver_recipe_update = function (request, response) {
     logger.info({
         method: "webserver_recipe_update",
@@ -140,38 +141,25 @@ var webserver_recipe_update = function (request, response) {
         running: context.running
     }, null, 2));
 };
+ */
 
 /**
  *  Set up all the events around connecting events to MQTT
  */
 var setup_recipe_mqtt = function() {
+    var _handle_status = function(context) {
+        context.on("status", function () {
+            var topic = settings.d.mqttd.prefix + "api/recipes/" + context.id + "/status";
+            mqtt.publish(settings.d.mqttd, topic, context.status);
+        });
+    };
+
     var recipeds = recipe.recipes();
     for (var ri in recipeds) {
         var reciped = recipeds[ri];
         var context = recipe.make_context(reciped);
 
-        context.on("message", function (id, reciped, message) {
-            var topic = settings.d.mqttd.prefix + "api/recipes/" + id + "/istate";
-            var payload = {
-                _text: message
-            };
-
-            mqtt.publish(settings.d.mqttd, topic, payload);
-        });
-        context.on("state", function (id, state) {
-            var topic = settings.d.mqttd.prefix + "api/recipes/" + id + "/istate";
-            var payload = state;
-
-            mqtt.publish(settings.d.mqttd, topic, state);
-        });
-        context.on("running", function (id, reciped) {
-            var topic = settings.d.mqttd.prefix + "api/recipes/" + id + "/istate";
-            var payload = {
-                _running: context.running
-            };
-
-            mqtt.publish(settings.d.mqttd, topic, payload);
-        });
+        _handle_status(context);
     }
 };
 
