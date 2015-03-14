@@ -14,22 +14,22 @@ body.desktop .interactor-interactor {
 .interactor-state {
     display: block;
 }
-li.interactor-item {
+li.interactor {
     -webkit-user-select: none;
 }
-li.interactor-item .interactor-name {
+li.interactor .interactor-name {
 }
 
-body.desktop li.interactor-item:hover {
+body.desktop li.interactor:hover {
     background: #EEE;
 }
-body.desktop li.interactor-item:active,
-body.mobile li.interactor-item.touched {
+body.desktop li.interactor:active,
+body.mobile li.interactor.touched {
     background: #DDD;
 }
 
-body.mobile li.interactor-item.running,
-body.desktop li.interactor-item.running {
+body.mobile li.interactor.running,
+body.desktop li.interactor.running {
     background: #fcf8e3;
 }
 
