@@ -45,6 +45,7 @@ var logger = bunyan.createLogger({
 var boolean = [
     "global",
 ];
+var defaults = {};
 
 var commandd = {
 };
@@ -94,6 +95,9 @@ var setup_commands = function() {
 
         if (module.boolean) {
             boolean = boolean.concat(module.boolean);
+        }
+        if (module.defaults) {
+            _.extend(defaults, module.defaults);
         }
 
         commandd[module.command] = module;
@@ -152,6 +156,7 @@ var iotdb_initd = {
 var run_cli = function()  {
     var ad = require('minimist')(process.argv.slice(2), {
         boolean: boolean,
+        default: defaults,
     });
 
     try {

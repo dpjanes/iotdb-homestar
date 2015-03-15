@@ -3,7 +3,20 @@ js.interactors.color = {
     supress: false,
     
     on_load: function() {
-        $('.interactor-color .interactor-interactor .wrapper')
+        var e = $(this);
+        var thing_id = e.data("thing");
+        var attribute_code = e.data("attribute")
+            .each(js.interactors.boolean.add_wrapper)
+            ;
+    },
+
+    add_wrapper: function() {
+        var e = $(this);
+        var thing_id = e.data("thing");
+        var attribute_code = e.data("attribute");
+
+        e
+            .find('.wrapper')
             .minicolors({
                 position: js.is_mobile ? 'top left': 'bottom right',
                 changeDelay: 60,
@@ -18,7 +31,8 @@ js.interactors.color = {
                         .data("value", hex)
                         .attr("data-value", hex)
                         .each(function(index, element) {
-                            js.actions.send($(element));
+                            console.log("HERE:COLOR", thing_id, attribute_code, hex);
+                            // js.actions.send($(element));
                         })
                     },
             });

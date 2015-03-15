@@ -3,7 +3,7 @@ js.interactors.click = {
 
     on_load: function() {
         $('li[data-interactor="click"]')
-            .each(js.interactors.click.setup_click)
+            .each(js.interactors.click.add_click)
             .on('touchstart', js.interactors.click.on_touchstart)
             .on('touchend', js.interactors.click.on_touchend)
             ;
@@ -17,7 +17,7 @@ js.interactors.click = {
         $(this).removeClass("touched");
     },
 
-    setup_click: function(e) {
+    add_click: function(e) {
         var e = $(this);
 
         var thing_id = e.data("thing");
