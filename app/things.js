@@ -241,6 +241,19 @@ var _make_thing = function(f) {
 
 /**
  */
+var thing_thing = function(thing) {
+    var base = "/api/things/" + thing.thing_id();
+    return {
+        "@id": base,
+        "istate": base + "/ibase",
+        "ostate": base + "/obase",
+        "model": base + "/model",
+        "meta": base + "/meta",
+    };
+};
+
+/**
+ */
 var thing_istate = function(thing) {
     return _.extend(
         thing.state({ istate: true, ostate: false }),
@@ -357,6 +370,31 @@ var things = function() {
 };
 
 /**
+ *   get '/api/things'
+ */
+var get_things = function(request, response) {
+    var d = {
+        "@id": "/api/things",
+        thing: []
+    };
+
+    var things = iotdb.iot().things();
+    for (var ti = 0; ti < things.length; ti++) {
+        d.thing.push("/api/things/" + things[ti].thing_id());
+    };
+
+    response
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(d, null, 2))
+        ;
+};
+
+/**
+ *   get '/api/things/:thing_id'
+ */
+var get_thing = _make_thing(thing_thing);
+
+/**
  *   get '/api/things/:thing_id/istate'
  */
 var get_istate = _make_thing(thing_istate);
@@ -415,6 +453,8 @@ var setup = function() {
  */
 exports.setup = setup;
 
+exports.get_things = get_things;
+exports.get_thing = get_thing;
 exports.get_istate = get_istate;
 exports.get_ostate = get_ostate;
 exports.put_ostate = put_ostate;

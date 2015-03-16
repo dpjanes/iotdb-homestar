@@ -92,58 +92,6 @@ var webserver_auth_thing = function (request, response) {
 };
 
 /**
- *  Run a particular recipe. This is always
- *  the eesult of a PUT
- */
-/*
-var webserver_recipe_update = function (request, response) {
-    logger.info({
-        method: "webserver_recipe_update",
-        recipe_id: request.params.recipe_id
-    }, "called");
-
-    var reciped = recipe.recipe_by_id(request.params.recipe_id);
-    if (!reciped) {
-        logger.error({
-            method: "webserver_recipe_update",
-            recipe_id: request.params.recipe_id
-        }, "recipe not found");
-
-        response.set('Content-Type', 'application/json');
-        response.status(404).send(JSON.stringify({
-            error: "recipe not found",
-            recipe_id: request.params.recipe_id
-        }, null, 2));
-        return;
-    }
-
-    var context = recipe.make_context(reciped);
-    if (context.running) {
-        logger.error({
-            method: "webserver_recipe_update",
-            recipe_id: request.params.recipe_id,
-            cause: "user sent the request before a previous version finished",
-        }, "recipe is still running");
-
-        response.set('Content-Type', 'application/json');
-        response.status(409).send(JSON.stringify({
-            error: "recipe is still running",
-            recipe_id: request.params.recipe_id
-        }, null, 2));
-
-        return;
-    }
-
-    context.onclick(request.body.value);
-
-    response.set('Content-Type', 'application/json');
-    response.send(JSON.stringify({
-        running: context.running
-    }, null, 2));
-};
- */
-
-/**
  *  Set up all the events around connecting events to MQTT
  */
 var setup_recipe_mqtt = function() {
@@ -347,11 +295,37 @@ var setup_dynamic = function (app) {
     }
 };
 
-var setup_pages = function (app) {
-    /* _the_ home page - always dynamic */
-    // app.get('/', webserver_home);
+/**
+ */
+var get_api = function(request, response) {
+    var d = {
+        "@message": "JSON-LD/Hydra Framing Wanted",
+        "@id": "/api",
+        /*
+        "@context": {
+            "@vocab": "/api#",
+            "@base": "/api",
+            "things": {
+                "@type": "@id"
+            },
+            "coobooks": {
+                "@type": "@id"
+            },
+        },
+        */
+        "things": "/api/things",
+        "cookbooks": "/api/cookbooks",
+    };
 
-    /* static files - before internal dynamic pages */
+    response
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(d, null, 2))
+        ;
+};
+
+/**
+ */
+var setup_static = function (app) {
     for (var fi in settings.d.webserver.folders.static) {
         app.use('/static', 
             express.static(
@@ -359,24 +333,31 @@ var setup_pages = function (app) {
             )
         );
     }
-    // app.use('/', express.static(node_path.join(__dirname, '..', 'client')));
-    // app.use('/', express.static(node_path.join(__dirname, '..', 'client', 'flat-ui')));
+};
 
-    /* cookbooks API */
-    // app.put('/api/cookbook/:recipe_id', webserver_recipe_update);
+/**
+ */
+var setup_api = function (app) {
+    app.get('/api/', get_api);
+    
+    //
     app.get('/api/recipes/:recipe_id/istate', recipe.get_istate);
     app.get('/api/recipes/:recipe_id/ostate', recipe.get_ostate);
     app.put('/api/recipes/:recipe_id/ostate', recipe.put_ostate);
     app.get('/api/recipes/:recipe_id/model', recipe.get_model);
 
-    /* things API */
+    app.get('/api/things', things.get_things);
+    app.get('/api/things/:thing_id', things.get_thing);
     app.get('/api/things/:thing_id/istate', things.get_istate);
     app.get('/api/things/:thing_id/ostate', things.get_ostate);
     app.put('/api/things/:thing_id/ostate', things.put_ostate);
     app.get('/api/things/:thing_id/meta', things.get_meta);
     app.get('/api/things/:thing_id/model', things.get_model);
+};
 
-    /* auth related */
+/**
+ */
+var setup_auth = function (app) {
     app.get('/auth/cookbooks/:metadata_id', webserver_auth_cookbook);
     app.get('/auth/things/:metadata_id', webserver_auth_thing);
 
@@ -391,7 +372,6 @@ var setup_pages = function (app) {
             failureRedirect: '/'
         })
     );
-
 };
 
 /**
@@ -533,7 +513,9 @@ exports.app = app;
 
 setup_express(app);
 setup_dynamic(app);
-setup_pages(app);
+setup_static(app);
+setup_api(app);
+setup_auth(app);
 
 interactors.setup_app(app);
 
