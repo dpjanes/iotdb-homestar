@@ -340,7 +340,8 @@ var setup_static = function (app) {
 var setup_api = function (app) {
     app.get('/api/', get_api);
     
-    //
+    app.get('/api/recipes', recipe.get_recipes);
+    app.get('/api/recipes/:recipe_id', recipe.get_recipe);
     app.get('/api/recipes/:recipe_id/istate', recipe.get_istate);
     app.get('/api/recipes/:recipe_id/ostate', recipe.get_ostate);
     app.put('/api/recipes/:recipe_id/ostate', recipe.put_ostate);

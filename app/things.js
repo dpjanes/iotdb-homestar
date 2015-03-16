@@ -243,8 +243,10 @@ var _make_thing = function(f) {
  */
 var thing_thing = function(thing) {
     var base = "/api/things/" + thing.thing_id();
+
     return {
         "@id": base,
+        "schema:name": thing.meta().get("schema:name"),
         "istate": base + "/ibase",
         "ostate": base + "/obase",
         "model": base + "/model",

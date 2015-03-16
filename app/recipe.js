@@ -544,6 +544,20 @@ var recipe_model = function(recipe) {
 
 /**
  */
+var recipe_recipe = function(recipe) {
+    var base = "/api/recipes/" + recipe._id;
+    return {
+        "@id": base,
+        "schema:name": recipe._name,
+        "cookbook": recipe.group,
+        "istate": base + "/ibase",
+        "ostate": base + "/obase",
+        "model": base + "/model",
+    };
+};
+
+/**
+ */
 var recipe_istate = function(recipe, context) {
     if (!context) {
         context = make_context(recipe);
@@ -658,6 +672,47 @@ var _make_recipe = function(f) {
 };
 
 /**
+ *   get '/api/recipes'
+ */
+var get_recipes = function(request, response) {
+    var d = {
+        "@id": "/api/recipes",
+        cookbook: []
+    };
+
+    var group_name = null;
+    var cookbook = null;
+    var in_recipies = recipes()
+
+    for (var ri in in_recipies) {
+        var in_recipe = in_recipies[ri];
+
+        if (in_recipe.group !== group_name) {
+            group_name = in_recipe.group;
+
+            cookbook = {
+                name: in_recipe.group,
+                id: util.format("urn:iotdb:cookbook:%s", in_recipe.cookbook_id),
+                recipe: [],
+            };
+            d.cookbook.push(cookbook);
+        }
+
+        cookbook.recipe.push("/api/recipes/" + in_recipe._id);
+    }
+
+    response
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(d, null, 2))
+        ;
+};
+
+/**
+ *   get '/api/recipes/:recipe_id'
+ */
+var get_recipe = _make_recipe(recipe_recipe);
+
+/**
  *   get '/api/recipes/:recipe_id/istate'
  */
 var get_istate = _make_recipe(recipe_istate);
@@ -694,6 +749,8 @@ exports.group_recipes = group_recipes;
 exports.recipe_to_id = recipe_to_id;
 exports.recipe_by_id = recipe_by_id;
 
+exports.get_recipes = get_recipes;
+exports.get_recipe = get_recipe;
 exports.get_istate = get_istate;
 exports.get_ostate = get_ostate;
 exports.put_ostate = put_ostate;
