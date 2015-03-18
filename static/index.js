@@ -265,12 +265,12 @@ var js = {
             transporter.on_update(function(status) {
                 var e_li = $('li[data-thing="' + thing_id + '"]');
 
-                if (status._message !== undefined) {
-                    e_li.find(".interactor-message").text(status._message);
+                if (status.message !== undefined) {
+                    e_li.find(".interactor-message").text(status.message);
                 }
 
-                if (status._running !== undefined) {
-                    if (status._running) {
+                if (status.running !== undefined) {
+                    if (status.running) {
                         e_li.addClass('running');
                     } else {
                         e_li.removeClass('running');
@@ -278,12 +278,12 @@ var js = {
                     }
                 } 
 
-                if (status._text) {
-                    e_li.find(".interactor-state").text(status._text || "");
-                } else if (status._html) {
-                    e_li.find(".interactor-state").text(status._html);
-                } else if (status._number) {
-                    e_li.find(".interactor-state").text("" + status._number);
+                if (status.text) {
+                    e_li.find(".interactor-state").text(status.text || "");
+                } else if (status.html) {
+                    e_li.find(".interactor-state").text(status.html);
+                } else if (status.number) {
+                    e_li.find(".interactor-state").text("" + status.number);
                 }
             });
         },

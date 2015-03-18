@@ -49,7 +49,6 @@ var logger = bunyan.createLogger({
 var Context = function (reciped) {
     var self = this;
 
-    self.running = false;
     self.reciped = reciped;
     self.id = recipe_to_id(reciped);
 
@@ -57,11 +56,11 @@ var Context = function (reciped) {
     self.reciped.state = {};
 
     self.status = {
-        _running: false,
-        _text: null,
-        _html: null,
-        _number: null,
-        _message: null,
+        running: false,
+        text: null,
+        html: null,
+        number: null,
+        message: null,
     };
 
     events.EventEmitter.call(self);
@@ -88,11 +87,11 @@ Context.prototype.message = function (first) {
     var self = this;
 
     if (first === undefined) {
-        self.status._running = false;
-        self.status._message = null;
+        self.status.running = false;
+        self.status.message = null;
     } else {
-        self.status._running = true;
-        self.status._message = util.format.apply(util.apply, Array.prototype.slice.call(arguments));
+        self.status.running = true;
+        self.status.message = util.format.apply(util.apply, Array.prototype.slice.call(arguments));
     }
 
     self.emit("status");
@@ -107,25 +106,25 @@ Context.prototype.state = function (state) {
     var self = this;
 
     if ((state === undefined) || (state === null)) {
-        self.status._text = null;
-        self.status._html = null;
-        self.status._number = null;
+        self.status.text = null;
+        self.status.html = null;
+        self.status.number = null;
     } else if (_.isString(state)) {
-        self.status._text = state;
-        self.status._html = null;
-        self.status._number = null;
+        self.status.text = state;
+        self.status.html = null;
+        self.status.number = null;
     } else if (_.isBoolean(state)) {
-        self.status._text = null;
-        self.status._html = null;
-        self.status._number = state ? 1 : 0;
+        self.status.text = null;
+        self.status.html = null;
+        self.status.number = state ? 1 : 0;
     } else if (_.isNumber(state)) {
-        self.status._text = null;
-        self.status._html = null;
-        self.status._number = state;
+        self.status.text = null;
+        self.status.html = null;
+        self.status.number = state;
     } else if (!_.isObject(state)) {
-        self.status._text = null;
-        self.status._html = null;
-        self.status._number = null;
+        self.status.text = null;
+        self.status.html = null;
+        self.status.number = null;
     } else if (state) {
         _.extend(self.status, state);
     }
@@ -166,7 +165,8 @@ Context.prototype.done = function (timeout) {
 Context.prototype.onclick = function (value) {
     var self = this;
 
-    self.running = false;
+    self.status.running = false;
+
     if (self.reciped.onclick) {
         if (self.reciped._valued !== undefined) {
             value = self.reciped._valued[value];
@@ -560,13 +560,8 @@ var recipe_recipe = function(recipe) {
 /**
  */
 var recipe_istate = function(recipe, context) {
-    if (!context) {
-        context = make_context(recipe);
-    }
-
     return _.defaults(recipe.state, {
         value: null,
-        _running: context.running,
         "@id": "/api/recipes/" + recipe._id + "/istate",
     });
 };
@@ -750,7 +745,7 @@ var get_status = _make_recipe(recipe_status);
 var put_ostate = _make_recipe(function(recipe, context, request, response) {
     context.onclick(request.body.value);
     return {
-        _running: context.running,
+        running: context.running,
     };
 });
 
