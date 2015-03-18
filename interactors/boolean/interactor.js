@@ -34,6 +34,9 @@ exports.attribute = function(attributed) {
     }
 
     /* XXX - CHECK HERE TO MAKE SURE IT'S A CONTROL */
+    if (!attributed._control) {
+        return;
+    }
 
     // names ... add away
     var values = [ "0", "1" ];

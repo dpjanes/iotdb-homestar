@@ -553,6 +553,7 @@ var recipe_recipe = function(recipe) {
         "istate": base + "/ibase",
         "ostate": base + "/obase",
         "model": base + "/model",
+        "status": base + "/status",
     };
 };
 
@@ -572,11 +573,26 @@ var recipe_istate = function(recipe, context) {
 
 /**
  */
-var recipe_ostate = function(recipe) {
+var recipe_ostate = function(recipe, context) {
     return {
         value: null,
         "@id": "/api/recipes/" + recipe._id + "/ostate",
     };
+};
+
+/**
+ */
+var recipe_status = function(recipe, context) {
+    var self = this;
+
+    if (!context) {
+        context = make_context(recipe);
+    }
+
+    var d = _.deepCopy(context.status);
+    d["@id"] = "/api/recipes/" + recipe._id + "/status";
+
+    return d;
 };
 
 /**
@@ -623,6 +639,7 @@ var cookbooks = function() {
         out_recipe["model"] = recipe_model(in_recipe);
         out_recipe["istate"] = recipe_istate(in_recipe);
         out_recipe["ostate"] = recipe_ostate(in_recipe);
+        out_recipe["status"] = recipe_status(in_recipe);
 
         interactors.assign_interactor_to_attribute(out_recipe);
     }
@@ -723,6 +740,11 @@ var get_istate = _make_recipe(recipe_istate);
 var get_ostate = _make_recipe(recipe_ostate);
 
 /**
+ *   get '/api/recipes/:recipe_id/status'
+ */
+var get_status = _make_recipe(recipe_status);
+
+/**
  *   put '/api/recipes/:recipe_id/ostate'
  */
 var put_ostate = _make_recipe(function(recipe, context, request, response) {
@@ -754,10 +776,12 @@ exports.get_recipe = get_recipe;
 exports.get_istate = get_istate;
 exports.get_ostate = get_ostate;
 exports.put_ostate = put_ostate;
+exports.get_status = get_status;
 exports.get_model = get_model;
 
 exports.recipe_istate = recipe_istate;
 exports.recipe_ostate = recipe_ostate;
 exports.recipe_model = recipe_model;
+exports.recipe_status = recipe_status;
 
 exports.cookbooks = cookbooks;

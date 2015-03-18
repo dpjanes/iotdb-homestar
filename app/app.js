@@ -314,7 +314,7 @@ var get_api = function(request, response) {
         },
         */
         "things": "/api/things",
-        "cookbooks": "/api/cookbooks",
+        "recipes": "/api/recipes",
     };
 
     response
@@ -346,6 +346,7 @@ var setup_api = function (app) {
     app.get('/api/recipes/:recipe_id/ostate', recipe.get_ostate);
     app.put('/api/recipes/:recipe_id/ostate', recipe.put_ostate);
     app.get('/api/recipes/:recipe_id/model', recipe.get_model);
+    app.get('/api/recipes/:recipe_id/status', recipe.get_status);
 
     app.get('/api/things', things.get_things);
     app.get('/api/things/:thing_id', things.get_thing);
