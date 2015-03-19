@@ -28,36 +28,64 @@
  *  will be merged later on if this is used.
  */
 exports.attribute = function(attributed) {
-    /*
-    var type = attributed['iot:type'];
-
-    if (type !== "iot:slider") {
-        return;
-    }
-
+    // must be a control
     if (!attributed._control) {
         return;
     }
 
-    // names ... add away
-    var values = [ "0", "1" ];
-    var purpose = attributed['iot:purpose'];
-    if (purpose === "iot-attribute:on") {
-        values = [ "Off", "On" ];
-    } else if (purpose === "iot-attribute:open") {
-        values = [ "Close", "Open" ];
+    // must be a number or an integer
+    var type = attributed['iot:type'];
+    if (type === "iot:number") {
+    } else if (type === "iot:integer") {
+    } else {
+        return;
     }
 
-    var _values = [];
-    for (var vi in values) {
-        _values.push({
-            name: values[vi],
-            value: vi,
-        });
+    // these like being sliders
+    var strong = false;
+    var unit = attributed['iot:unit'];
+    if (unit === "iot-unit:math.fraction.unit") {
+        strong = true;
+    } else if (unit === "iot-unit:math.fraction.percent") {
+        strong = true;
     }
 
-    return {
-        _values: _values,
+    var minimum = attributed["iot:minimum"];
+    if (minimum === undefined) {
+        return;
+    }
+    minimum = parseFloat(minimum);
+
+    var maximum = attributed["iot:maximum"];
+    if (maximum === undefined) {
+        return;
+    }
+    maximum = parseFloat(maximum);
+
+    if (minimum >= maximum) {
+        return;
+    }
+
+    var d = {
+        _minimum: minimum,
+        _maximum: maximum,
     };
-    */
+
+    if (type === "iot:integer") {
+        var steps = maximum - minimum;
+        if (steps > 100) {
+            steps = 100;
+        }
+
+        d._steps = steps;
+    } else {
+        d._steps = 25;
+    }
+    d._step = (maximum - minimum) / d._steps;
+
+    if (strong) {
+        d._q = .75;
+    }
+
+    return d;
 };

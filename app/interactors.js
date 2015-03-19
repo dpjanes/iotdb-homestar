@@ -48,6 +48,7 @@ var _interactord = {
 	"click": "../interactors/click",
 	"color": "../interactors/color",
 	"enumeration": "../interactors/enumeration",
+	"slider": "../interactors/slider",
 	"otherwise": "../interactors/otherwise",
 };
 
