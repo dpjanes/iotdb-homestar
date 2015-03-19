@@ -380,7 +380,10 @@ var js = {
                     bd[dkey] = dvalue;
                 }
 
-                _send(bd);
+
+                /* NOTE: not send 'bd' */
+                d["@id"] = bd["@id"];
+                _send(d);
             };
 
             var _update = function(d) {
