@@ -1,0 +1,11 @@
+li[data-interactor="select"] .select2-container {
+    background: #bdc3c7;
+    border-radius: 4px;
+}
+li[data-interactor="select"] .select2-container a.select2-choice {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+li[data-interactor="select"] .select2-container * {
+    color: white;
+}

@@ -13,6 +13,7 @@ js.interactors.select = {
         var attribute_code = e.data("attribute");
 
         var e_select = e.find("select");
+        e_select.select2();
 
         // listen for external changes to the select
         var istate_transporter = js.transport.connect(thing_id, "istate");
