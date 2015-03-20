@@ -48,6 +48,7 @@ var _interactord = {
 	"click": "../interactors/click",
 	"color": "../interactors/color",
 	"enumeration": "../interactors/enumeration",
+	"select": "../interactors/select",
 	"slider": "../interactors/slider",
 	"otherwise": "../interactors/otherwise",
 };
@@ -73,7 +74,7 @@ var assign_interactor_to_attribute = function(attributed) {
         }
 
         overlayd._interactor = interactor_key;
-        overlayd._q = overlayd._q || 0.75;
+        overlayd._q = overlayd._q || ( 0.66 + (overlayd._qd || 0));
 
         if (!bestd) {
             bestd = overlayd;
@@ -85,6 +86,7 @@ var assign_interactor_to_attribute = function(attributed) {
     if (bestd) {
         _.extend(attributed, bestd);
         delete attributed._q;
+        delete attributed._qd;
     }
 };
 

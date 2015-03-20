@@ -36,6 +36,10 @@ exports.attribute = function(attributed) {
         return;
     }
 
+    if (values.length <= 6) {
+        return;
+    }
+
     var _values = [];
     for (var vi in values) {
         var value = values[vi];
@@ -53,7 +57,8 @@ exports.attribute = function(attributed) {
         });
     }
 
-    return{
+    return {
+        _qd: 0.1,
         _values: _values,
     };
 };
