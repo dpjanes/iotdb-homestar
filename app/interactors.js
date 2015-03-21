@@ -40,19 +40,6 @@ var logger = bunyan.createLogger({
     module: 'interactors',
 });
 
-/* raw interactor data - ideally this would be loaded
- * from IOTDB module data
- */
-var _interactord = {
-	"boolean": "../interactors/boolean",
-	"click": "../interactors/click",
-	"color": "../interactors/color",
-	"enumeration": "../interactors/enumeration",
-	"select": "../interactors/select",
-	"slider": "../interactors/slider",
-	"otherwise": "../interactors/otherwise",
-};
-
 var htmlsd = {}
 var htmld = {};
 var moduled = {};
@@ -100,67 +87,104 @@ var setup_app = function(app) {
     }
 }
 
+var _add_interactor = function (interactor_key, interactor_path) {
+    var files = fs.readdirSync(interactor_path);
+    for (var fi in files) {
+        var src_file = files[fi];
+        var src_path = path.join(interactor_path, src_file);
+        var src_ext = path.extname(src_file);
+        if (src_ext.length === 0) {
+            continue
+        }
+        var src_core = path.basename(src_file, src_ext);
+        var src_content = "";
+
+        if (src_file === "interactor.js") {
+            /* not included */
+            try {
+                module = require(src_path);
+                module.path = interactor_path;
+                module.name = interactor_key;
+
+                moduled[interactor_key] = module;
+            }
+            catch (x) {
+                logger.error({
+                    method: "setup",
+                    interactor: interactor_key,
+                    path: interactor_path,
+                    x: x,
+                }, "unexpected exception loading interactor.js");
+            }
+
+            continue;
+        } else if (src_file === "attribute.html") {
+            var prefix = "{% if attribute._interactor == '" + interactor_key + "' %}";
+            var postfix = "{% endif %}";
+
+            src_content = fs.readFileSync(src_path);
+            src_content = prefix + src_content + postfix;
+        } else if (src_ext === ".js") {
+            src_core = "js";
+            src_content = "<script src='/static/interactors/" + interactor_key + "/" + src_file + "'></script>";
+        } else if (src_ext === ".css") {
+            src_core = "css";
+            src_content = "<link rel='stylesheet' href='/static/interactors/" + interactor_key + "/" + src_file + "' />";
+        } else {
+            continue;
+        }
+
+        var htmls = htmlsd[src_core];
+        if (htmls === undefined) {
+            htmls = [];
+            htmlsd[src_core] = htmls;
+        }
+
+        htmls.push(src_content);
+    }
+};
+
+var _interactord = {};
+
+/**
+ *  These come with iotdb-homestar. 
+ */
+var _setup_builtin_interactors = function() {
+    var interactor_root = path.join(__dirname, "../interactors");
+    var interactor_folders = fs.readdirSync(interactor_root);
+    for (var ifi in interactor_folders) {
+        var interactor_relative = interactor_folders[ifi];
+        var interactor_path = path.join(interactor_root, interactor_relative);
+        try {
+            if (!fs.lstatSync(interactor_path).isDirectory()) {
+                continue;
+            }  
+        } catch (x) {
+            console.log(x);
+            continue;
+        }
+
+        var interactor_key = path.basename(interactor_relative);
+
+        _interactord[interactor_key] = interactor_path;
+    }
+}
+
+/**
+ *  These are loaded by the user via "homestar install"
+ */
+var _setup_module_interactors = function() {
+}
+
 /**
  */
 var setup = function () {
+    _setup_builtin_interactors();
+    _setup_module_interactors();
+
     for (var interactor_key in _interactord) {
-        var interactor_relative = _interactord[interactor_key];
-        var interactor_path = path.join(__dirname, interactor_relative);
-
-        var files = fs.readdirSync(interactor_path);
-        for (var fi in files) {
-            var src_file = files[fi];
-            var src_path = path.join(interactor_path, src_file);
-            var src_ext = path.extname(src_file);
-            if (src_ext.length === 0) {
-                continue
-            }
-            var src_core = path.basename(src_file, src_ext);
-            var src_content = "";
-
-            if (src_file === "interactor.js") {
-                /* not included */
-                try {
-                    module = require(src_path);
-                    module.path = interactor_path;
-                    module.name = interactor_key;
-
-                    moduled[interactor_key] = module;
-                }
-                catch (x) {
-                    logger.error({
-                        method: "setup",
-                        interactor: interactor_key,
-                        path: interactor_path,
-                        x: x,
-                    }, "unexpected exception loading interactor.js");
-                }
-
-                continue;
-            } else if (src_file === "attribute.html") {
-                var prefix = "{% if attribute._interactor == '" + interactor_key + "' %}";
-                var postfix = "{% endif %}";
-
-                src_content = fs.readFileSync(src_path);
-                src_content = prefix + src_content + postfix;
-            } else if (src_ext === ".js") {
-                src_core = "js";
-                src_content = "<script src='/static/interactors/" + interactor_key + "/" + src_file + "'></script>";
-            } else if (src_ext === ".css") {
-                src_core = "css";
-                src_content = "<link rel='stylesheet' href='/static/interactors/" + interactor_key + "/" + src_file + "' />";
-            } else {
-                continue;
-            }
-
-            var htmls = htmlsd[src_core];
-            if (htmls === undefined) {
-                htmls = [];
-                htmlsd[src_core] = htmls;
-            }
-
-            htmls.push(src_content);
-        }
+        var interactor_path = _interactord[interactor_key];
+        _add_interactor(interactor_key, interactor_path);
     }
 
     for (var key in htmlsd) {
