@@ -43,7 +43,7 @@
     "main": "homestar.js", 
     "name": "homestar", 
     "peerDependencies": {
-        "iotdb": ">=0.5.5"
+        "iotdb": ">=0.5.6"
     }, 
     "private": false, 
     "repository": {
@@ -53,5 +53,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.0.60"
+    "version": "0.0.61"
 }
