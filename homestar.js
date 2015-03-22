@@ -107,6 +107,7 @@ exports.bunyan = require('bunyan')
 /*
  *  For recipes: PROBABLY WILL BE DELETED
  */
+/*
 exports.value = {
     "boolean": {
         "type": "iot:boolean",
@@ -175,3 +176,4 @@ exports.value = {
         "iot:format": "iot:color",
     },
 };
+*/

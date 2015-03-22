@@ -43,7 +43,8 @@
     "main": "homestar.js", 
     "name": "homestar", 
     "peerDependencies": {
-        "iotdb": ">=0.5.6"
+        "iotdb": ">=0.5.6",
+        "iotdb-transport-firebase": ""
     }, 
     "private": false, 
     "repository": {
