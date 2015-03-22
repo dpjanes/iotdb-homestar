@@ -1,6 +1,5 @@
 js.interactors.color = {
     name: "color",
-    supress: false,
     
     on_load: function() {
         $('li[data-interactor="color"]')
@@ -15,6 +14,7 @@ js.interactors.color = {
 
         var ostate_transporter = js.transport.connect(thing_id, "ostate");
         var control_visible = false;
+        var control_initial = true;
 
         var e_minicolors = e.find('.wrapper');
         e_minicolors
@@ -28,8 +28,8 @@ js.interactors.color = {
                     control_visible = false;
                 },
                 change: function(hex, opactity) {
-                    if (js.interactors.color.supress) {
-                        js.interactors.color.supress = false;
+                    if (control_initial) {
+                        control_initial = false;
                         return;
                     }
 
