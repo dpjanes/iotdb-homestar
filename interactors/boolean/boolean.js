@@ -3,19 +3,18 @@ js.interactors.boolean = {
 
     on_load: function() {
         $('li[data-interactor="boolean"]')
-            .each(js.interactors.boolean.add_transporter)
-            .each(js.interactors.boolean.add_click)
+            .each(js.interactors.boolean.add)
             ;
     },
 
-    /* this listens for updates */
-    add_transporter: function() {
+    add: function() {
         var e = $(this);
         var thing_id = e.data("thing");
         var attribute_code = e.data("attribute");
 
-        var transporter = js.transport.connect(thing_id, "istate");
-        transporter.on_update(function(d) {
+        /* this listens for updates */
+        var istate_transporter = js.transport.connect(thing_id, "istate");
+        istate_transporter.on_update(function(d) {
             var value = d[attribute_code];
             if (value === undefined) {
                 return;
@@ -32,16 +31,9 @@ js.interactors.boolean = {
                 console.log("#", "interactors.boolean", x);
             }
         });
-    },
 
-    /* this sets up the click handler */
-    add_click: function(e) {
-        var e = $(this);
-
-        var thing_id = e.data("thing");
-        var attribute_code = e.data("attribute");
-
-        var transporter = js.transport.connect(thing_id, "ostate");
+        /* this sets up the click handler */
+        var ostate_transporter = js.transport.connect(thing_id, "ostate");
         e.find("button")
             .on("click", function() {
                 var value = $(this).data("value");
@@ -49,7 +41,7 @@ js.interactors.boolean = {
                 var updated = {};
                 updated[attribute_code] = ((value === 1) || (value === "1")) ? true : false;
 
-                transporter.patch(updated);
+                ostate_transporter.patch(updated);
             });
     },
 

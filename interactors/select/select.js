@@ -14,13 +14,11 @@ js.interactors.select = {
 
         var e_select = e.find("select");
         e_select.select2();
-        console.log("HERE:AAA.1");
 
         // listen for external changes to the select
         var istate_transporter = js.transport.connect(thing_id, "istate");
         istate_transporter.on_update(function(d) {
             var value = d[attribute_code];
-            console.log("HERE:AAA.2", value);
             if (value === undefined) {
                 return;
             }
