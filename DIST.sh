@@ -62,7 +62,7 @@ then
             app/*js \
             bin/homestar \
             bin/commands \
-            dynamic static \
+            dynamic static interactors \
         | ( cd "${NPM_DST}" && tar xvf - )
 
         ## cp dist/*.* "${NPM_DST}" || exit 1

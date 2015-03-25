@@ -27,6 +27,12 @@ _Note not working yet_
 
 	$ homestar install homestar-lg-smart-tv
 
+### LittleBits
+
+Talk to LittleBits. Not quite working yet.
+
+	$ homestar install homestar-rest
+
 ### LIFX 
 
 	$ homestar install homestar-lifx
@@ -35,6 +41,12 @@ _Note not working yet_
 
 	$ homestar install homestar-hue
 	$ homestar configure homestar-hue
+
+### REST
+
+Talk to REST interfaces
+
+	$ homestar install homestar-rest
 
 ### SmartThings
 
