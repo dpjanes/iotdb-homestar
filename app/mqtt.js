@@ -22,10 +22,9 @@ var mows = require('mows');
 
 var settings = require('./settings');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
+var logger = iotdb.logger({
     name: 'iotdb-homestar',
-    module: 'mqtt',
+    module: 'app/mqtt',
 });
 
 var serverd = {};
@@ -59,7 +58,7 @@ var server_client = function (client) {
         logger.info({
             method: "server_client/on(publish)",
             topic: packet.topic,
-            payload: packet.payload,
+            // payload: packet.payload,
         }, "called");
         for (var k in self.clients) {
             self.clients[k].publish({

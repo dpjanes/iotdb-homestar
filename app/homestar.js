@@ -29,15 +29,13 @@ var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
 var unirest = require('unirest');
-var FirebaseTransport = require('iotdb-transport-firebase').Transport;
 
 var settings = require('./settings');
 var recipe = require('./recipe');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
-    name: 'iotdb-runner',
-    module: 'web',
+var logger = iotdb.logger({
+    name: 'iotdb-homestar',
+    module: 'app/homestar',
 });
 
 var bearer;
@@ -303,32 +301,6 @@ var profile = function () {
         });
 };
 
-/**
- *  Also: There'll probably be a transport for each individual client
- *  out on the web so we can encrypt the packets
- */
-var _setup_firebase_transport = function () {
-    /*
-     *  This transporter is for metadata editing.
-     */
-    var homestar_transporter = new FirebaseTransport({
-        channel_prefix: settings.d.keys.homestar.key + "/homestar",
-    });
-
-    var iot = iotdb.iot()
-    iotdb.transport(homestar_transporter, iot.things(), {
-        istate: false,
-        ostate: false,
-        verbose: true,
-    });
-    /*
-    iotdb.transport(transporter, recipe.recipes(), {
-        istate: false,
-        ostate: false,
-    });
-     */
-};
-
 var setup = function () {
     if (!settings.d.keys.homestar.bearer) {
         logger.error({
@@ -364,7 +336,6 @@ var setup = function () {
     send_cookbooks(10);
     send_things();
      */
-    _setup_firebase_transport();
 };
 
 /*

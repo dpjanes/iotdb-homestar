@@ -33,10 +33,9 @@ var interactors = require('./interactors');
 var events = require('events');
 var util = require('util');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
-    name: 'iotdb-runner',
-    module: 'context',
+var logger = iotdb.logger({
+    name: 'iotdb-homestar',
+    module: 'app/recipe',
 });
 
 /**

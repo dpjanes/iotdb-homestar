@@ -34,10 +34,9 @@ var path = require('path');
 var fs = require('fs');
 var express = require('express');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
-    name: 'iotdb-runner',
-    module: 'interactors',
+var logger = iotdb.logger({
+    name: 'iotdb-homestar',
+    module: 'app/interactors',
 });
 
 var htmlsd = {}

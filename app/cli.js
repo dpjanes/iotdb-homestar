@@ -30,10 +30,9 @@ var prompt = require('prompt');
 var data = require('./data');
 var runner = require('./runner');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
-    name: 'iotdb-runner',
-    module: 'Runner',
+var logger = iotdb.logger({
+    name: 'iotdb-homestar',
+    module: 'app/cli',
 });
 
 var iot = iotdb.iot();

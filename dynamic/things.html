@@ -6,10 +6,10 @@
     <h1>Things</h1>
     {% for thing in things() %}
     <ul class="list-group">
-        <li class="list-group-item active" data-interactor="title" data-id="{{ thing._id }}">
+        <li class="list-group-item active" data-interactor="title" data-id="{{ thing._id }}" id="{{ thing._id }}">
             <span class="action-group">{{ thing._name }}</span>
-            {% if user.permissions.owner %}
-            <a href="/auth/things/{{ thing._id }}" class="pull-right action-edit-permission">☆</a>
+            {% if metadata_editor and user.permissions.owner %}
+            <a href="/admin/things/{{ thing._id }}/meta" class="pull-right action-edit-permission">☆</a>
             {% endif %}
         </li>
         {% for attribute in thing.model["iot:attribute"] %}

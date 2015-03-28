@@ -35,10 +35,9 @@ var util = require('util');
 
 var uuid = require('uuid');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
-    name: 'iotdb-runner',
-    module: 'helpers',
+var logger = iotdb.logger({
+    name: 'iotdb-homestar',
+    module: 'app/helpers',
 });
 
 /**

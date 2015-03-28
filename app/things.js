@@ -26,21 +26,24 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
+var path = require('path');
+
 var mqtt = require('./mqtt');
 var settings = require('./settings');
 var helpers = require('./helpers');
 var interactors = require('./interactors');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
-    name: 'iotdb-runner',
-    module: 'things',
+var MQTTTransport = require('iotdb-transport-mqtt').Transport;
+
+var logger = iotdb.logger({
+    name: 'iotdb-homestar',
+    module: 'app/things',
 });
 
 /**
  *  Returns a Thing by thing_id
  */
-var _get_thing = function(thing_id) {
+var _thing_by_id = function(thing_id) {
     var iot = iotdb.iot();
     var things = iot.things()
     for (var ti = 0; ti < things.length; ti++) {
@@ -50,7 +53,7 @@ var _get_thing = function(thing_id) {
         }
     }
 
-    console.log("# _get_thing: thing not found", thing_id)
+    console.log("# _thing_by_id: thing not found", thing_id)
     return null
 }
 
@@ -222,7 +225,7 @@ var _make_thing = function(f) {
             body: request.body,
         }, "called");
 
-        var thing = _get_thing(request.params.thing_id);
+        var thing = _thing_by_id(request.params.thing_id);
         if (!thing) {
             return response
                 .set('Content-Type', 'application/json')
@@ -426,10 +429,32 @@ var get_meta = _make_thing(thing_meta);
 var get_model = _make_thing(thing_model);
 
 /**
+ *  The Transporter will brodcast all istate/meta
+ *  changes to Things to MQTT path 
+ *  the same as 
  */
 var setup = function() {
     var iot = iotdb.iot();
     var things = iot.connect();
+    
+    var transporter = new MQTTTransport({
+        prefix: path.join(settings.d.mqttd.prefix, "api", "things"),
+        host: settings.d.mqttd.host,
+        port: settings.d.mqttd.port,
+    })
+
+    iotdb.transport(transporter, things, {
+        meta: true,
+        model: false,
+        istate: true,
+        ostate: false,
+        verbose: true,
+        send: true,
+        receive: false, // DO NOT TURN ON RECEIVE UNLESS USING @timestamp, otherwise loooops!
+    });
+
+
+    /*
 
     things.on_thing(function(thing) {
         thing.on("state", function(thing) {
@@ -448,12 +473,15 @@ var setup = function() {
             // someday publish a metadata change
         });
     });
+    */
 };
 
 /**
  *  API
  */
 exports.setup = setup;
+
+exports.thing_by_id = _thing_by_id;
 
 exports.get_things = get_things;
 exports.get_thing = get_thing;

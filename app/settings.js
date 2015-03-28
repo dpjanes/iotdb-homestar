@@ -32,10 +32,9 @@ var path = require('path');
 var util = require('util');
 var fs = require('fs');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
-    name: 'iotdb-runner',
-    module: 'settings',
+var logger = iotdb.logger({
+    name: 'iotdb-homestar',
+    module: 'app/settings',
 });
 
 var settings = {

@@ -44,7 +44,7 @@ module.exports = function (grunt) {
         },
         jsbeautifier: {
             files: [
-                'server/*.js'
+                'app/app.js'
             ],
             options: {
                 js: {

@@ -8,8 +8,8 @@
     <ul class="list-group">
         <li class="list-group-item active" data-interactor="title" data-id="{{ cookbook._id }}">
             <span class="action-group">{{ cookbook._name }}</span>
-            {% if user.permissions.owner %}
-            <a href="/auth/{{ cookbook._section }}/{{ cookbook._id }}" class="pull-right action-edit-permission">☆</a>
+            {% if metadata_editor and user.permissions.owner %}
+            <a href="/admin/cookbooks/{{ cookbook._id }}/meta" class="pull-right action-edit-permission">☆</a>
             {% endif %}
         </li>
         {% for attribute in cookbook.recipes %}

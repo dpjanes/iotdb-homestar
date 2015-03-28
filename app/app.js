@@ -39,7 +39,7 @@ var passport_twitter = require('passport-twitter').Strategy;
 
 var os = require('os');
 var open = require('open');
-var node_path = require('path');
+var path = require('path');
 var util = require('util');
 var fs = require('fs');
 
@@ -48,14 +48,14 @@ var recipe = require('./recipe');
 var data = require('./data');
 var settings = require('./settings');
 var homestar = require('./homestar');
+var transport = require('./transport');
 var things = require('./things');
 var helpers = require('./helpers');
 var interactors = require('./interactors');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
-    name: 'iotdb-runner',
-    module: 'web',
+var logger = iotdb.logger({
+    name: 'iotdb-homestar',
+    module: 'app/app',
 });
 
 /*
@@ -64,6 +64,58 @@ var logger = bunyan.createLogger({
 swig.setFilter('scrub', function (input) {
     return _.scrub_circular(input);
 });
+
+/*
+ *  Custom loader
+ *  Base on https://raw.githubusercontent.com/paularmstrong/swig/v1.4.2/lib/loaders/filesystem.js
+ */
+var swig_loader = function () {
+    var encoding = 'utf8';
+    var basepath = path.join(__dirname, "..", "dynamic");
+    var loader = {
+        resolve: function (to, from) {
+            if (to.match(/^\//)) {
+                return to;
+            }
+
+            if (from) {
+                var candidate = path.join(path.dirname(from), to);
+                if (fs.existsSync(candidate)) {
+                    return candidate;
+                }
+            }
+
+            if (basepath) {
+                from = basepath;
+            } else {
+                from = (from) ? path.dirname(from) : process.cwd();
+            }
+            return path.resolve(from, to);
+        },
+
+        load: function (identifier, cb) {
+            if (!fs || (cb && !fs.readFile) || !fs.readFileSync) {
+                throw new Error('Unable to find file ' + identifier + ' because there is no filesystem to read from.');
+            }
+
+            identifier = loader.resolve(identifier);
+
+            if (cb) {
+                fs.readFile(identifier, encoding, cb);
+                return;
+            }
+            return fs.readFileSync(identifier, encoding);
+        },
+    };
+
+    return loader;
+};
+
+swig.setDefaults({
+    loader: swig_loader(path.join(__dirname, "..", "dynamic")),
+    cache: false,
+});
+
 
 /**
  *  Edit the permissions of a recipe - i.e. who can use it.
@@ -94,8 +146,8 @@ var webserver_auth_thing = function (request, response) {
 /**
  *  Set up all the events around connecting events to MQTT
  */
-var setup_recipe_mqtt = function() {
-    var _handle_status = function(context) {
+var setup_recipe_mqtt = function () {
+    var _handle_status = function (context) {
         context.on("status", function () {
             var topic = settings.d.mqttd.prefix + "api/recipes/" + context.id + "/status";
             mqtt.publish(settings.d.mqttd, topic, context.status);
@@ -152,11 +204,11 @@ var setup_express = function (app) {
     }
 };
 
-var _template_things = function() {
+var _template_things = function () {
     return things.things();
 };
 
-var _template_upnp = function() {
+var _template_upnp = function () {
     var ds = [];
     var devices = iotdb.module('iotdb-upnp').devices();
     for (var di in devices) {
@@ -172,10 +224,10 @@ var _template_upnp = function() {
         ds.push(d);
     }
 
-    ds.sort(function(a, b) {
+    ds.sort(function (a, b) {
         if (a.friendlyName < b.friendlyName) {
             return -1;
-        } else if (a.friendlyName > b.friendlyName){
+        } else if (a.friendlyName > b.friendlyName) {
             return 1;
         } else {
             return 0;
@@ -188,7 +240,7 @@ var _template_upnp = function() {
     };
 };
 
-var _template_cookbook = function() {
+var _template_cookbook = function () {
     var rds = [];
     var recipes = recipe.recipes()
     for (var ri in recipes) {
@@ -206,11 +258,11 @@ var _template_cookbook = function() {
     return rds;
 };
 
-var _template_cookbooks = function() {
+var _template_cookbooks = function () {
     return recipe.cookbooks();
 }
 
-var _template_settings = function() {
+var _template_settings = function () {
     var sd = _.smart_extend({}, settings.d);
     delete sd["secrets"];
     delete sd["keys"];
@@ -222,12 +274,17 @@ var _template_settings = function() {
  *  Dynamic pages - we decide at runtime
  *  what these are based on our paths
  */
-var make_dynamic = function(template, mount, content_type) {
-    return function (request, result) {
+var make_dynamic = function (paramd) {
+    return function (request, response) {
+        paramd = _.defaults(paramd, {
+            mount: null,
+            content_type: "text/html",
+        });
+
         logger.info({
             method: "make_dynamic/(page)",
-            template: template,
-            mount: mount,
+            template: paramd.template,
+            mount: paramd.mount,
             user: request.user,
         }, "called");
 
@@ -238,66 +295,136 @@ var make_dynamic = function(template, mount, content_type) {
          *  The outer renderer uses different tags
          *  and data, see the definition of swig_outer
          */
-        var home_template = swig_outer.renderFile(template);
-        var home_page = swig.render(home_template, {
-            filename: template,
-            locals: {
-                things: _template_things,
-                upnp: _template_upnp,
-                cookbook: _template_cookbook,
-                cookbooks: _template_cookbooks,
-                settings: _template_settings,
-                user: request.user,
-                homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
-            },
+        var locals = {
+            things: _template_things,
+            upnp: _template_upnp,
+            cookbook: _template_cookbook,
+            cookbooks: _template_cookbooks,
+            settings: _template_settings,
+            user: request.user,
+            homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
+        };
+        _.extend(locals, _modules_locals);
+
+        if (paramd.customize) {
+            /* if customize returns anything, the response is handled */
+            if (paramd.customize(request, response, locals)) {
+                return;
+            }
+        }
+
+        var page_template = swig_outer.renderFile(paramd.template);
+        var page_content = swig.render(page_template, {
+            filename: paramd.template,
+            locals: locals,
         });
 
-        result
-            .set('Content-Type', 'text/html')
-            .send(home_page);
+        response
+            .set('Content-Type', paramd.content_type)
+            .send(page_content);
     };
 };
 
-var setup_dynamic = function (app) {
-    var mapped = {};
+/**
+ *  Installed modules can add pages by declaring "web"
+ */
+var _modules_locals = {};
 
+var setup_express_modules = function (app) {
+    var modules = iotdb.modules().modules();
+    for (var mi in modules) {
+        var module = modules[mi];
+        if (!module.web) {
+            continue;
+        }
+
+        /*
+         *  This is the most general way of using a plug-in
+         *  extension. The function 'setup' is called with
+         *  two arguments: the app, and a dictionary
+         *  of useful functions. We are picking exactly
+         *  what we want to send to the plugin to
+         *  "future-proof" ourselves from maintaining
+         *  code we don't want to.
+         */
+        if (module.web.setup) {
+            module.web.setup(app, {
+                make_dynamic: make_dynamic,
+                things: {
+                    thing_by_id: things.thing_by_id,
+                },
+                recipes: {
+                    recipe_by_id: recipe.recipe_by_id,
+                },
+            });
+        }
+
+        /* autogenerated dynamic files -- should be a folder */
+        if (module.web.dynamic) {
+            _setup_express_dynamic_folder(app, module.web.dynamic);
+        }
+
+        /* autogenerated static files -- should be a folder */
+        if (module.web.static) {
+            app.use('/static', express.static(module.web.static));
+        }
+
+        /* local variables - NOTE: shared to _all pages_ */
+        if (module.web.locals) {
+            _.extend(_modules_locals, module.web.locals);
+        }
+    }
+}
+
+/**
+ *  Built-in pages
+ */
+var setup_express_dynamic = function (app) {
     for (var fi in settings.d.webserver.folders.dynamic) {
         var folder = settings.d.webserver.folders.dynamic[fi];
         folder = cfg.cfg_expand(settings.envd, folder)
 
-        var files = fs.readdirSync(folder) 
-        for (var fi in files) {
-            var file = files[fi];
-            var match = file.match(/^(.*)[.](js|html)$/);
-            if (!match) {
-                continue;
-            }
+        _setup_express_dynamic_folder(app, folder);
+    }
+};
 
-            var base = match[1];
-            var ext = match[2];
+var _setup_express_dynamic_folder = function (app, folder) {
+    var files = fs.readdirSync(folder)
+    for (var fi in files) {
+        var file = files[fi];
+        var match = file.match(/^(.*)[.](js|html)$/);
+        if (!match) {
+            continue;
+        }
 
-            if (base === 'index') {
-                base = '';
-            }
+        var base = match[1];
+        var ext = match[2];
 
-            if (mapped[file] !== undefined) {
-                continue;
-            }
+        if (base === 'index') {
+            base = '';
+        }
 
-            var template = node_path.join(folder, file);
+        var template = path.join(folder, file);
 
-            if (ext === "html") {
-                app.get(util.format("/%s", base), make_dynamic(template, base, "text/html"));
-            } else if (ext === "js") {
-                app.get(util.format("/%s.%s", base, ext), make_dynamic(template, file, "text/plain"));
-            }
+        if (ext === "html") {
+            app.get(util.format("/%s", base), make_dynamic({
+                template: template,
+                mount: base,
+                content_type: "text/html",
+            }));
+        } else if (ext === "js") {
+            app.get(util.format("/%s.%s", base, ext), make_dynamic({
+                template: template,
+                mount: file,
+                content_type: "text/plain",
+            }));
         }
     }
 };
 
 /**
  */
-var get_api = function(request, response) {
+var get_api = function (request, response) {
     var d = {
         "@message": "JSON-LD/Hydra Framing Wanted",
         "@id": "/api",
@@ -319,15 +446,14 @@ var get_api = function(request, response) {
 
     response
         .set('Content-Type', 'application/json')
-        .send(JSON.stringify(d, null, 2))
-        ;
+        .send(JSON.stringify(d, null, 2));
 };
 
 /**
  */
-var setup_static = function (app) {
+var setup_express_static = function (app) {
     for (var fi in settings.d.webserver.folders.static) {
-        app.use('/static', 
+        app.use('/static',
             express.static(
                 cfg.cfg_expand(settings.envd, settings.d.webserver.folders.static[fi])
             )
@@ -337,9 +463,9 @@ var setup_static = function (app) {
 
 /**
  */
-var setup_api = function (app) {
+var setup_express_api = function (app) {
     app.get('/api/', get_api);
-    
+
     app.get('/api/recipes', recipe.get_recipes);
     app.get('/api/recipes/:recipe_id', recipe.get_recipe);
     app.get('/api/recipes/:recipe_id/istate', recipe.get_istate);
@@ -359,7 +485,7 @@ var setup_api = function (app) {
 
 /**
  */
-var setup_auth = function (app) {
+var setup_express_auth = function (app) {
     app.get('/auth/cookbooks/:metadata_id', webserver_auth_cookbook);
     app.get('/auth/things/:metadata_id', webserver_auth_thing);
 
@@ -388,9 +514,9 @@ var setup_passport = function () {
 
     if (!settings.d.keys.homestar.key || !settings.d.keys.homestar.secret || !settings.d.homestar.url) {
         logger.info({
-            key: settings.d.keys.homestar.key ? "ok": "missing",
-            secret: settings.d.keys.homestar.secret ? "ok": "missing",
-            url: settings.d.homestar.url ? "ok": "missing",
+            key: settings.d.keys.homestar.key ? "ok" : "missing",
+            secret: settings.d.keys.homestar.secret ? "ok" : "missing",
+            url: settings.d.homestar.url ? "ok" : "missing",
         }, "HomeStar.io is not configured");
         return;
     }
@@ -406,7 +532,7 @@ var setup_passport = function () {
                 userProfileURL: server_url + '/api/1.0/profile'
             },
             function (token, token_secret, profile, done) {
-                
+
                 var user = {
                     id: profile.id,
                     username: profile.username,
@@ -418,7 +544,7 @@ var setup_passport = function () {
                 };
 
                 // fetch user's permissions
-                homestar.permissions(user, function(error, permissions) {
+                homestar.permissions(user, function (error, permissions) {
                     user.permissions = permissions;
                     /*
                     console.log("-------------");
@@ -439,7 +565,7 @@ var setup_passport = function () {
 
         /* rehash ID just in case */
         var id_hash = _.md5_hash(user.id);
-        var user_path = node_path.join(settings.d.folders.users, id_hash + ".json");
+        var user_path = path.join(settings.d.folders.users, id_hash + ".json");
 
         fs.writeFileSync(user_path, JSON.stringify(user, null, 2) + "\n");
 
@@ -448,7 +574,7 @@ var setup_passport = function () {
 
     passport.deserializeUser(function (user_id, done) {
         var id_hash = _.md5_hash(user_id);
-        var user_path = node_path.join(settings.d.folders.users, id_hash + ".json");
+        var user_path = path.join(settings.d.folders.users, id_hash + ".json");
 
         try {
             var user = JSON.parse(fs.readFileSync(user_path));
@@ -514,10 +640,11 @@ var app = express();
 exports.app = app;
 
 setup_express(app);
-setup_dynamic(app);
-setup_static(app);
-setup_api(app);
-setup_auth(app);
+setup_express_modules(app);
+setup_express_dynamic(app);
+setup_express_static(app);
+setup_express_api(app);
+setup_express_auth(app);
 
 interactors.setup_app(app);
 
@@ -525,7 +652,7 @@ interactors.setup_app(app);
  *  Run the web server
  */
 var wsd = settings.d.webserver;
-app.listen(wsd.port, wsd.host, function() {
+app.listen(wsd.port, wsd.host, function () {
     logger.info({
         method: "main",
         url: settings.d.webserver.url,
@@ -542,3 +669,4 @@ app.listen(wsd.port, wsd.host, function() {
 mqtt.setup();
 things.setup();
 homestar.setup();
+transport.setup();

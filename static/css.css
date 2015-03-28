@@ -54,6 +54,6 @@ body.desktop li.interactor.running {
     padding: 0px;
     border-radius: 4px;
 }
-.interactor-edit-permission {
+a.action-edit-permission {
     color: white;
 }
