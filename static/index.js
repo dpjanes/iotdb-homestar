@@ -55,6 +55,9 @@ var js = {
     },
 
     mqtt: {
+        connected: null,
+        notify_lost: null,
+
         topic_prefix: "",
         host: settingsd.mqttd.host,
         port: settingsd.mqttd.port,
@@ -118,6 +121,24 @@ var js = {
             var topic = js.mqtt.topic_prefix + "/api/#";
             console.log("- js.mqtt.onConnect", topic);
             js.mqtt.client.subscribe(topic);
+
+            if (js.mqtt.connected === false) {
+                if (js.mqtt.notify_lost) {
+                    js.mqtt.notify_lost.close();
+                    js.mqtt.notify_lost = null;
+                }
+
+                $.notify({
+                    message: 'Connection Restored'
+                }, {
+                    delay: 3000,
+                    placement: {
+                        align: 'center'
+                    }
+                });
+            }
+
+            js.mqtt.connected = true;
         },
 
         onConnectionLost : function(responseObject) {
@@ -126,6 +147,25 @@ var js = {
                 console.log("# js.mqtt.onConnectionLost", responseObject.errorMessage);
             }
             js.mqtt.reconnect();
+
+            if (js.mqtt.connected) {
+                if (js.mqtt.notify_lost) {
+                    js.mqtt.notify_lost.close();
+                    js.mqtt.notify_lost = null;
+                }
+
+                js.mqtt.connected = false
+                js.mqtt.notify_lost = $.notify({
+                    title: 'Connection Error',
+                    message: 'Connect to server seems to be interrupted - possible network error?',
+                }, {
+                    type: 'danger',
+                    delay: 0,
+                    placement: {
+                        align: 'center'
+                    }
+                });
+            }
         },
 
         onMessageArrived : function(message) {

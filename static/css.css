@@ -57,3 +57,14 @@ body.desktop li.interactor.running {
 a.action-edit-permission {
     color: white;
 }
+div[data-notify="container"] span {
+    display: block;
+}
+div[data-notify="container"] span[data-notify="icon"] {
+    display: none;
+}
+div[data-notify="container"] .progress {
+    display: none;
+}
+    display: none;
+}

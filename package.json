@@ -43,9 +43,9 @@
     "main": "homestar.js", 
     "name": "homestar", 
     "peerDependencies": {
-        "iotdb": ">=0.5.8", 
-        "iotdb-transport-mqtt": "",
-        "iotdb-transport-firebase": ">=0.0.4"
+        "iotdb": ">=0.5.11", 
+        "iotdb-transport-firebase": ">=0.0.6", 
+        "iotdb-transport-mqtt": ">=0.0.1"
     }, 
     "private": false, 
     "repository": {
@@ -55,5 +55,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.0.62"
+    "version": "0.0.63"
 }
