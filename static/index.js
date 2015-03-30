@@ -133,7 +133,7 @@ var js = {
                 }, {
                     delay: 3000,
                     placement: {
-                        align: 'center'
+                        align: 'left'
                     }
                 });
             }
@@ -162,7 +162,7 @@ var js = {
                     type: 'danger',
                     delay: 0,
                     placement: {
-                        align: 'center'
+                        align: 'left'
                     }
                 });
             }

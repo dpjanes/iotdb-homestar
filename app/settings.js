@@ -208,6 +208,11 @@ var setup = function (av) {
         settings.d.webserver.host = settings.d.ip;
     }
 
+    // so we don't have to hardcode a local testing URL
+    if (settings.d.homestar && settings.d.homestar.url) {
+        settings.d.homestar.url = settings.d.homestar.url.replace(/^http:\/\/0[.]0[.]0[.]0/, "http://" + settings.d.ip);
+    }
+
     if (!settings.d.webserver.url) {
         if (((settings.d.webserver.scheme === "https") && (settings.d.webserver.port === 443)) ||
             ((settings.d.webserver.scheme === "http") && (settings.d.webserver.port === 80))) {
