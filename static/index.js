@@ -393,9 +393,14 @@ var js = {
 
         connect: function(thing_id, band) {
             var _send = function(bd) {
+                var url = bd["@id"];
+                bd = _.clone(bd);
+                delete bd["@id"];
+                delete bd["@context"];
+
                 $.ajax({
                     type : 'PUT',
-                    url: bd["@id"],
+                    url: url,
                     data: JSON.stringify(bd),
                     contentType: "application/json",
                     dataType : 'json',
@@ -409,43 +414,44 @@ var js = {
             };
 
             var _patch = function(d) {
-                var bd = js.transport.bandd(thing_id, band)
+                var bd = js.transport.bandd(thing_id, band);
 
+                /* this keeps our data up-to-date */
                 for (var dkey in d) {
-                    if (dkey.match(/^@/)) {
+                    if ((dkey === "@id") || (dkey === "@context")) {
                         continue;
                     }
 
-                    var dvalue = d[dkey];
-                    bd[dkey] = dvalue;
+                    bd[dkey] = d[dkey];
                 }
 
-
-                /* NOTE: not send 'bd' */
+                /* NOTE: NOT send 'bd' - we are just sending the updated data */
                 d["@id"] = bd["@id"];
                 _send(d);
             };
 
             var _update = function(d) {
-                var bd = js.transport.bandd(thing_id, band)
+                var bd = js.transport.bandd(thing_id, band);
 
+                /* remove all existing data from our database */
                 for (var bkey in bd) {
-                    if (bkey.match(/^@/)) {
+                    if ((dkey === "@id") || (dkey === "@context")) {
                         continue;
                     }
 
                     delete bd[bkey];
                 }
 
+                /* add the new data to our database */
                 for (var dkey in d) {
-                    if (dkey.match(/^@/)) {
+                    if ((dkey === "@id") || (dkey === "@context")) {
                         continue;
                     }
 
-                    var dvalue = d[dkey];
-                    bd[dkey] = dvalue;
+                    bd[dkey] = d[dkey];
                 }
 
+                /* send the _whole_ record */
                 _send(bd);
             };
 

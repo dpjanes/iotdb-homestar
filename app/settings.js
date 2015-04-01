@@ -57,23 +57,33 @@ var settings = {
             ping: true,
             profile: true,
         },
+        urls: {
+            login: "/auth/homestar",
+            logout: "/auth/homestar",
+            userid: "/auth/homestar",
+            homestar: {
+                login: "/auth/homestar",
+            },
+        },
         webserver: {
             secret: null,
             scheme: "http",
             host: null,
             port: 3000,
+            require_login: null,
             folders: {
                 static: [
                     path.join('$HOMESTAR_INSTALL', 'static'),
                     path.join('$HOMESTAR_INSTALL', 'static', 'flat-ui'),
                     path.join('$HOMESTAR_INSTALL', 'static', 'bootstrap-notify'),
+                    path.join('$HOMESTAR_INSTALL', 'static', 'underscore'),
                     // path.join('$HOMESTAR_INSTALL', 'static', 'bootstrap-colorpicker'),
                     // path.join('$HOMESTAR_INSTALL', 'static', 'jquery-minicolors'),
                 ],
                 dynamic: [
                     path.join('$HOMESTAR_INSTALL', 'dynamic'),
                 ]
-            }
+            },
         },
         secrets: {
             host: null,     // not really a secret, as published on MQTT

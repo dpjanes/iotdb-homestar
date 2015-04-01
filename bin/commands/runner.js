@@ -31,6 +31,8 @@ var cfg = iotdb.cfg;
 var settings = require("../../app/settings");
 
 var fs = require('fs');
+var path = require('path');
+var child_process = require('child_process')
 
 exports.command = "runner";
 exports.summary = "start your local Home☆Star Runner";
@@ -42,6 +44,7 @@ exports.help = function () {
 };
 
 exports.run = function (ad) {
+    /*
     iotdb.iot({
         envd: {
             IOTDB_PROJECT: process.cwd()
@@ -49,4 +52,12 @@ exports.run = function (ad) {
     });
 
     require("../../app/app");
+    */
+
+    var node_path = process.execPath;
+    var app_path = path.join(__dirname, "..", "..", "app", "app.js");
+
+    child_process.spawn(node_path, [ app_path, ], {
+        stdio: 'inherit'
+    });
 };

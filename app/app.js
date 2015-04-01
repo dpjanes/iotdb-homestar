@@ -279,6 +279,7 @@ var make_dynamic = function (paramd) {
         paramd = _.defaults(paramd, {
             mount: null,
             content_type: "text/html",
+            require_login: settings.d.webserver.require_login ? true : false,
         });
 
         logger.info({
@@ -287,6 +288,27 @@ var make_dynamic = function (paramd) {
             mount: paramd.mount,
             user: request.user,
         }, "called");
+
+        /*
+         *  This is 'require_login' is true, 
+         *  and the user isn't logged in, we redirect
+         *  to the login page. If that's not specified
+         *  basically we don't allow access to the
+         *  server.
+         *
+         *  Typically homestar-access will force these values.
+         */
+        if (paramd.require_login && !request.user) {
+            var url = settings.d.webserver.urls.login;
+            if (!url) {
+                return response
+                    .status(403)
+                    .set('Content-Type', 'text/plain')
+                    .send("this page requires login, but no login URL set - maybe 'homestar install homestar-access'?");
+            } else {
+                return response.redirect(url);
+            }
+        }
 
         /*
          *  We use two-phase rendering, to bring in
@@ -350,6 +372,7 @@ var setup_express_modules = function (app) {
         if (module.web.setup) {
             module.web.setup(app, {
                 make_dynamic: make_dynamic,
+                settings: settings.d,
                 things: {
                     thing_by_id: things.thing_by_id,
                 },
