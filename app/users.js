@@ -30,7 +30,7 @@ var cfg = iotdb.cfg;
 
 var homestar = require('../homestar');
 
-var FSTransport = require('iotdb-transport-fs').Transport;
+var FSTransport = require('iotdb-transport-fs');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -41,6 +41,7 @@ var transporter;
 var band = "user";
 
 /**
+ *  Retrieve a user record
  */
 var get = function(identity, paramd, callback) {
     if (callback === undefined) {
@@ -52,8 +53,8 @@ var get = function(identity, paramd, callback) {
         create: true,
     });
 
-    var id = _hash_identity(identity);
-    transport.get(id, band, function(_id, _band, d) {
+    var identity_hash = _hash_identity(identity);
+    transporter.get(identity_hash, band, function(_id, _band, d) {
         if ((d === null) && paramd.create) {
             d = {
                 identity: identity
@@ -65,21 +66,35 @@ var get = function(identity, paramd, callback) {
 };
 
 /**
+ *  Save a user record
  */
 var update = function(userd) {
-    var id = _hash_identity(userd.identity);
+    if (!_.isObject(userd)) {
+        throw new Error("expecting an object");
+    }
+    if (!userd.identity) {
+        throw new Error("expecting userd.identity");
+    }
 
-    transporter.update(id, band, userd);
+    var identity_hash = _hash_identity(userd.identity);
+
+    transporter.update(identity_hash, band, userd);
 };
 
 /**
+ *  Users are stored in ".iotdb/users"
  */
 var setup = function() {
-    transporter = new FSTransport({
+    transporter = new FSTransport.Transport({
         prefix: ".iotdb/users",
+        channel: FSTransport.flat_channel,
+        unchannel: FSTransport.flat_unchannel,
     });
 };
 
+/**
+ *  Maybe this should be formally defined?
+ */
 var _hash_identity = function(identity) {
     return "urn:iotdb:identity:md5:" + _.md5_hash(identity);
 }
@@ -88,9 +103,5 @@ var _hash_identity = function(identity) {
  *  API
  */
 exports.setup = setup;
-
-setup();
-update({
-    identity: "https://homestar.io/identities/0000000000000000",
-    a: "B"
-})
+exports.update = update;
+exports.get = get;

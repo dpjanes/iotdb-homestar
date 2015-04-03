@@ -563,6 +563,7 @@ var setup_passport = function () {
                     is_owner: user_identity === owner_identity ? true : false,
                     id: profile.id,
                     username: profile.username,
+                    /* hoping everything below here can be deleted */
                     service: "homestar",
                     oauth: {
                         token: token,
@@ -570,54 +571,49 @@ var setup_passport = function () {
                     },
                 };
 
-                /* extend with additional users info */
-                users.get(user_identity, function(userd) {
-                    if (userd.groups) {
-                        user.groups = userd.groups;
+                /* extend with additional info from the database */
+                users.get(user.identity, function(userd) {
+                    if (userd && userd.groups) {
+                        user.acl_groups = userd.acl_groups;
                     } else {
-                        user.groups = [];
+                        user.acl_groups = [];
                     }
 
+                    /*
                     console.log("-------------");
                     console.log("profile", profile);
                     console.log("user", user);
                     console.log("-------------");
+                     */
                     done(null, user);
                 });
             })
     );
 
     passport.serializeUser(function (user, done) {
-        logger.debug({
+        logger.info({
             user: user,
-        }, "passport/serialize");
+        }, "passport/serializeUser");
 
-        /* rehash ID just in case */
-        var id_hash = _.md5_hash(user.id);
-        var user_path = path.join(settings.d.folders.users, id_hash + ".json");
-
-        fs.writeFileSync(user_path, JSON.stringify(user, null, 2) + "\n");
-
-        done(null, user.id);
+        users.update(user);
+        done(null, user.identity);
     });
 
-    passport.deserializeUser(function (user_id, done) {
-        var id_hash = _.md5_hash(user_id);
-        var user_path = path.join(settings.d.folders.users, id_hash + ".json");
+    passport.deserializeUser(function (user_identity, done) {
+        logger.info({
+            user_identity: user_identity,
+        }, "passport/deserializeUser");
 
-        try {
-            var user = JSON.parse(fs.readFileSync(user_path));
-            logger.debug({
-                user: user,
-                user_id: user_id,
-            }, "passport/deserialize");
+        users.get(user_identity, { create: false }, function(user) {
+            if (!user) {
+                return done(null, null);
+            }
+
+            var owner_identity = settings.d.keys.homestar && settings.d.keys.homestar.owner;
+            user.is_owner = user.identity === owner_identity ? true : false;
 
             done(null, user);
-        } catch (x) {
-            // console.log("HERE:A", x);
-            // process.exit(0);
-            done(null, null);
-        }
+        });
     });
 };
 
