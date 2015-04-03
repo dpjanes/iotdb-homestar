@@ -52,6 +52,7 @@ var transport = require('./transport');
 var things = require('./things');
 var helpers = require('./helpers');
 var interactors = require('./interactors');
+var users = require('./users');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -299,7 +300,7 @@ var make_dynamic = function (paramd) {
          *  Typically homestar-access will force these values.
          */
         if (paramd.require_login && !request.user) {
-            var url = settings.d.webserver.urls.login;
+            var url = settings.d.urls.login;
             if (!url) {
                 return response
                     .status(403)
@@ -555,8 +556,11 @@ var setup_passport = function () {
                 userProfileURL: server_url + '/api/1.0/profile'
             },
             function (token, token_secret, profile, done) {
-
+                var user_identity = profile._json.identity;
+                var owner_identity = settings.d.keys.homestar && settings.d.keys.homestar.owner;
                 var user = {
+                    identity: user_identity,
+                    is_owner: user_identity === owner_identity ? true : false,
                     id: profile.id,
                     username: profile.username,
                     service: "homestar",
@@ -566,23 +570,25 @@ var setup_passport = function () {
                     },
                 };
 
-                // fetch user's permissions
-                homestar.permissions(user, function (error, permissions) {
-                    user.permissions = permissions;
-                    /*
-                    console.log("-------------");
-                    console.log(profile);
-                    console.log(permissions);
-                    console.log("-------------");
-                     */
+                /* extend with additional users info */
+                users.get(user_identity, function(userd) {
+                    if (userd.groups) {
+                        user.groups = userd.groups;
+                    } else {
+                        user.groups = [];
+                    }
 
+                    console.log("-------------");
+                    console.log("profile", profile);
+                    console.log("user", user);
+                    console.log("-------------");
                     done(null, user);
                 });
             })
     );
 
     passport.serializeUser(function (user, done) {
-        logger.info({
+        logger.debug({
             user: user,
         }, "passport/serialize");
 
@@ -601,7 +607,7 @@ var setup_passport = function () {
 
         try {
             var user = JSON.parse(fs.readFileSync(user_path));
-            logger.info({
+            logger.debug({
                 user: user,
                 user_id: user_id,
             }, "passport/deserialize");
@@ -687,9 +693,10 @@ app.listen(wsd.port, wsd.host, function () {
 });
 
 /*
- *  Other servers
+ *  Other services
  */
 mqtt.setup();
+users.setup();
 things.setup();
 homestar.setup();
 transport.setup();

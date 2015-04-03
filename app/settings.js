@@ -59,7 +59,7 @@ var settings = {
         },
         urls: {
             login: "/auth/homestar",
-            logout: "/auth/homestar",
+            logout: "/auth/logout",
             userid: "/auth/homestar",
             homestar: {
                 login: "/auth/homestar",

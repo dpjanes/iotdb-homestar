@@ -17,6 +17,7 @@
         "iotdb-timers": ">=0.0.9", 
         "iotdb-transport-firebase": ">=0.0.6", 
         "iotdb-transport-mqtt": ">=0.0.1", 
+        "iotdb-transport-fs": ">=0.0.1", 
         "minimist": "~1.1.1", 
         "mows": "~0.0.6", 
         "mqtt": "~1.1.2", 
