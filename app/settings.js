@@ -61,6 +61,7 @@ var settings = {
             login: "/auth/homestar",
             logout: "/auth/logout",
             userid: "/auth/homestar",
+            admin: "/admin",
             homestar: {
                 login: "/auth/homestar",
             },

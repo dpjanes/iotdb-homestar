@@ -82,6 +82,43 @@ var update = function(userd) {
 };
 
 /**
+ *  List all user records
+ *
+ *  Callback will be called with user records,
+ *  and null when all done.
+ *
+ *  Horrifying callback code here
+ */
+var users = function(callback) {
+    var pending = 1;
+    var _increment = function() {
+        pending++;
+    };
+    var _decrement = function() {
+        if (--pending === 0) {
+            callback(null);
+        }
+    };
+
+    transporter.list(function(ids) {
+        if (ids === null) {
+            _decrement();
+        } else {
+            for (var ii in ids) {
+                var id = ids[ii];
+                _increment();
+                transporter.get(id, band, function(_id, _band, user) {
+                    if (user) {
+                        callback(user);
+                    }
+                    _decrement();
+                });
+            }
+        }
+    });
+};
+
+/**
  *  Users are stored in ".iotdb/users"
  */
 var setup = function() {
@@ -105,3 +142,4 @@ var _hash_identity = function(identity) {
 exports.setup = setup;
 exports.update = update;
 exports.get = get;
+exports.users = users;

@@ -324,27 +324,45 @@ var make_dynamic = function (paramd) {
             cookbook: _template_cookbook,
             cookbooks: _template_cookbooks,
             settings: _template_settings,
+            urls: settings.d.urls,
             user: request.user,
             homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
         };
         _.extend(locals, _modules_locals);
 
-        if (paramd.customize) {
-            /* if customize returns anything, the response is handled */
-            if (paramd.customize(request, response, locals)) {
-                return;
-            }
+        if (paramd.locals) {
+            _.extend(locals, paramd.locals);
+        }
+        if (paramd.status) {
+            locals.status = paramd.status;
         }
 
-        var page_template = swig_outer.renderFile(paramd.template);
-        var page_content = swig.render(page_template, {
-            filename: paramd.template,
-            locals: locals,
-        });
+        var customize = paramd.customize;
+        if (!customize) {
+            customize = function(request, response, locals, done) {
+                done(null);
+            };
+        }
 
-        response
-            .set('Content-Type', paramd.content_type)
-            .send(page_content);
+        customize(request, response, locals, function(error, _rendered) {
+            if (_rendered) {
+                return;
+            }
+
+            var page_template = swig_outer.renderFile(paramd.template);
+            var page_content = swig.render(page_template, {
+                filename: paramd.template,
+                locals: locals,
+            });
+
+            if (paramd.status) {
+                response.status(paramd.status);
+            }
+
+            response
+                .set('Content-Type', paramd.content_type)
+                .send(page_content);
+        });
     };
 };
 
@@ -374,6 +392,9 @@ var setup_express_modules = function (app) {
             module.web.setup(app, {
                 make_dynamic: make_dynamic,
                 settings: settings.d,
+                users: {
+                    users: users.users,
+                },
                 things: {
                     thing_by_id: things.thing_by_id,
                 },
@@ -517,7 +538,20 @@ var setup_express_auth = function (app) {
         request.logout();
         response.redirect('/');
     });
-    app.get('/auth/homestar', passport.authenticate('twitter'));
+    app.get('/auth/homestar', 
+        passport.authenticate('twitter'),
+        function(error, request, response, next) {
+            make_dynamic({
+                template: path.join(__dirname, "..", "dynamic", "500.html"),
+                require_login: false,
+                status: 500,
+                locals: {
+                    error: "HomeStar.io is not available right now - try again later",
+                },
+                content_type: "text/html",
+            })(request, response);
+        }
+    );
     app.get('/auth/homestar/callback',
         passport.authenticate('twitter', {
             successRedirect: '/',
@@ -564,27 +598,24 @@ var setup_passport = function () {
                     id: profile.id,
                     username: profile.username,
                     /* hoping everything below here can be deleted */
+                    /*
                     service: "homestar",
                     oauth: {
                         token: token,
                         token_secret: token_secret,
                     },
+                    */
                 };
 
                 /* extend with additional info from the database */
-                users.get(user.identity, function(userd) {
-                    if (userd && userd.groups) {
+                users.get(user.identity, { create: true }, function(userd) {
+                    if (userd.acl_groups !== undefined) {
                         user.acl_groups = userd.acl_groups;
+                        user.is_known = true;
                     } else {
-                        user.acl_groups = [];
+                        user.is_known = false;
                     }
 
-                    /*
-                    console.log("-------------");
-                    console.log("profile", profile);
-                    console.log("user", user);
-                    console.log("-------------");
-                     */
                     done(null, user);
                 });
             })
@@ -611,6 +642,7 @@ var setup_passport = function () {
 
             var owner_identity = settings.d.keys.homestar && settings.d.keys.homestar.owner;
             user.is_owner = user.identity === owner_identity ? true : false;
+            user.is_known = (user.acl_groups !== undefined) ? true : false;
 
             done(null, user);
         });
