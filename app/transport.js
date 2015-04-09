@@ -76,7 +76,16 @@ var setup = function () {
         return;
     }
 
-    _setup_firebase_transport();
+    try {
+        _setup_firebase_transport();
+    } catch (x) {
+        logger.error({
+            method: "setup",
+            cause: "likely not configured",
+            error: x,
+        }, "Firebase setup failed");
+        return;
+    }
 };
 
 /*
