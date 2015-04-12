@@ -31,9 +31,10 @@ var settings = require("../../app/settings");
 
 var fs = require('fs');
 var uuid = require('uuid');
+var unirest = require('unirest');
 
 exports.command = "jsonld";
-exports.boolean = [ "stdout", "compact", ];
+exports.boolean = [ "stdout", "compact", "upload", ];
 exports.defaults = {
     compact: true
 }
@@ -76,18 +77,58 @@ exports.run = function (ad) {
         jsonld_paramd.base = ad.url;
     }
 
-    var jsonld = null;
+    var jsonld = model.jsonld(jsonld_paramd);
+    var jsonld$ = null;
     if (ad.compact) {
-        jsonld = JSON.stringify(_.ld.compact(model.jsonld(jsonld_paramd)), null, 2) + "\n";
+        jsonld$ = JSON.stringify(_.ld.compact(jsonld), null, 2) + "\n";
     } else {
-        jsonld = JSON.stringify(model.jsonld(jsonld_paramd), null, 2) + "\n";
+        jsonld$ = JSON.stringify(jsonld, null, 2) + "\n";
     }
 
-    if (ad.stdout) {
-        process.stdout.write(jsonld);
+    if (ad.upload) {
+        settings.setup();
+        if (!settings.d.keys.homestar.bearer) {
+            console.log({
+                method: "setup",
+                cause: "no bearer token",
+            }, "cannot talk to HomeStar");
+            return;
+        }
+
+        var URL_MODELS = settings.d.homestar.url + '/api/1.0/models';
+        
+        unirest
+            .post(URL_MODELS)
+            .headers({
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + settings.d.keys.homestar.bearer,
+            })
+            .json(jsonld)
+            .type('json')
+            .end(function (result) {
+                if (result.error) {
+                    console.log({
+                        url: URL_MODELS,
+                        error: result.error,
+                    }, "upload failed");
+                    process.exit(1);
+                } else if (result.body) {
+                    process.stdout.write(result.body.model_url);
+                    process.stdout.write("\n");
+                    process.exit(0);
+                } else {
+                    console.log({
+                        status: result.statusCode,
+                        url: URL_MODELS,
+                    }, "upload failed");
+                    process.exit(1);
+                }
+            });
+    } else if (ad.stdout) {
+        process.stdout.write(jsonld$);
     } else {
         var filename = model_code + ".jsonld";
-        fs.writeFile(filename, jsonld, function(error) {
+        fs.writeFile(filename, jsonld$, function(error) {
             if (error) {
                 console.log("+ ERROR writing file:", filename, error);
             } else {
