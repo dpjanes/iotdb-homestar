@@ -384,7 +384,7 @@ var recipe_to_id = function (reciped) {
     if (reciped.group_id) {
         return "urn:iotdb:recipe:" + reciped.group_id;
     } else {
-        return "urn:iotdb:recipe:" + _.md5_hash("2014-12-13T06:34:00", reciped.group, reciped.name);
+        return "urn:iotdb:recipe:" + _.hash.md5("2014-12-13T06:34:00", reciped.group, reciped.name);
     }
 };
 
