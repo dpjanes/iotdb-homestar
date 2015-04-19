@@ -30,6 +30,7 @@ var cfg = iotdb.cfg;
 
 var unirest = require('unirest');
 var FirebaseTransport = require('iotdb-transport-firebase').Transport;
+var IOTDBTransport = require('iotdb-transport-iotdb').Transport;
 
 var settings = require('./settings');
 var recipe = require('./recipe');

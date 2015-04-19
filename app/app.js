@@ -339,12 +339,12 @@ var make_dynamic = function (paramd) {
 
         var customize = paramd.customize;
         if (!customize) {
-            customize = function(request, response, locals, done) {
+            customize = function (request, response, locals, done) {
                 done(null);
             };
         }
 
-        customize(request, response, locals, function(error, _rendered) {
+        customize(request, response, locals, function (error, _rendered) {
             if (_rendered) {
                 return;
             }
@@ -498,11 +498,10 @@ var get_api = function (request, response) {
  */
 var setup_express_static = function (app) {
     for (var fi in settings.d.webserver.folders.static) {
-        app.use('/static',
-            express.static(
-                cfg.cfg_expand(settings.envd, settings.d.webserver.folders.static[fi])
-            )
-        );
+        var folder = settings.d.webserver.folders.static[fi];
+        var expanded = cfg.cfg_expand(settings.envd, folder);
+
+        app.use('/static', express.static(expanded));
     }
 };
 
@@ -519,6 +518,7 @@ var setup_express_api = function (app) {
     app.get('/api/recipes/:recipe_id/model', recipe.get_model);
     app.get('/api/recipes/:recipe_id/status', recipe.get_status);
 
+    /*
     app.get('/api/things', things.get_things);
     app.get('/api/things/:thing_id', things.get_thing);
     app.get('/api/things/:thing_id/istate', things.get_istate);
@@ -526,6 +526,7 @@ var setup_express_api = function (app) {
     app.put('/api/things/:thing_id/ostate', things.put_ostate);
     app.get('/api/things/:thing_id/meta', things.get_meta);
     app.get('/api/things/:thing_id/model', things.get_model);
+     */
 };
 
 /**
@@ -538,9 +539,9 @@ var setup_express_auth = function (app) {
         request.logout();
         response.redirect('/');
     });
-    app.get('/auth/homestar', 
+    app.get('/auth/homestar',
         passport.authenticate('twitter'),
-        function(error, request, response, next) {
+        function (error, request, response, next) {
             make_dynamic({
                 template: path.join(__dirname, "..", "dynamic", "500.html"),
                 require_login: false,
@@ -608,7 +609,9 @@ var setup_passport = function () {
                 };
 
                 /* extend with additional info from the database */
-                users.get(user.identity, { create: true }, function(userd) {
+                users.get(user.identity, {
+                    create: true
+                }, function (userd) {
                     if (userd.acl_groups !== undefined) {
                         user.acl_groups = userd.acl_groups;
                         user.is_known = true;
@@ -635,7 +638,9 @@ var setup_passport = function () {
             user_identity: user_identity,
         }, "passport/deserializeUser");
 
-        users.get(user_identity, { create: false }, function(user) {
+        users.get(user_identity, {
+            create: false
+        }, function (user) {
             if (!user) {
                 return done(null, null);
             }
@@ -725,6 +730,6 @@ app.listen(wsd.port, wsd.host, function () {
  */
 mqtt.setup();
 users.setup();
-things.setup();
+things.setup(app);
 homestar.setup();
 transport.setup();

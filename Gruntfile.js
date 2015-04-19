@@ -57,5 +57,5 @@ module.exports = function (grunt) {
     });
 
     // Default task.
-    grunt.registerTask('default', ['jsbeautifier', 'jshint', 'nodeunit']);
+    grunt.registerTask('default', ['jsbeautifier', 'jshint']);
 };

@@ -34,6 +34,8 @@ var helpers = require('./helpers');
 var interactors = require('./interactors');
 
 var MQTTTransport = require('iotdb-transport-mqtt').Transport;
+var RESTTransport = require('iotdb-transport-rest').Transport;
+var IOTDBTransport = require('iotdb-transport-iotdb').Transport;
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -431,19 +433,36 @@ var get_model = _make_thing(thing_model);
 /**
  *  The Transporter will brodcast all istate/meta
  *  changes to Things to MQTT path 
- *  the same as 
+ *  the same as the REST API
  */
-var setup = function() {
+var setup = function(app) {
     var iot = iotdb.iot();
     var things = iot.connect();
     
-    var transporter = new MQTTTransport({
+    var iotdb_transporter = new IOTDBTransport({}, things);
+
+    /* MQTT messages */
+    var mqtt_transporter = new MQTTTransport({
         prefix: path.join(settings.d.mqttd.prefix, "api", "things"),
         host: settings.d.mqttd.host,
         port: settings.d.mqttd.port,
-    })
+    });
+    iotdb.transporter.bind(iotdb_transporter, mqtt_transporter, {
+        bands: [ "meta", "istate", ],
+    });
 
-    iotdb.transport(transporter, things, {
+    /* REST interface */
+    var rest_transporter = new RESTTransport({
+        prefix: path.join("/", "api", "things"),
+    }, app);
+    iotdb.transporter.bind(iotdb_transporter, rest_transporter, {
+        bands: [ "meta", "istate", "ostate", "model", ],
+        updated: [ "meta", "ostate", ],
+    });
+
+
+    /*
+    iotdb.transporter.transport(mqtt_transporter, things, {
         meta: true,
         model: false,
         istate: true,
@@ -452,6 +471,7 @@ var setup = function() {
         send: true,
         receive: false, // DO NOT TURN ON RECEIVE UNLESS USING @timestamp, otherwise loooops!
     });
+    */
 
 
     /*
