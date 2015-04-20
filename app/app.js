@@ -517,16 +517,6 @@ var setup_express_api = function (app) {
     app.put('/api/recipes/:recipe_id/ostate', recipe.put_ostate);
     app.get('/api/recipes/:recipe_id/model', recipe.get_model);
     app.get('/api/recipes/:recipe_id/status', recipe.get_status);
-
-    /*
-    app.get('/api/things', things.get_things);
-    app.get('/api/things/:thing_id', things.get_thing);
-    app.get('/api/things/:thing_id/istate', things.get_istate);
-    app.get('/api/things/:thing_id/ostate', things.get_ostate);
-    app.put('/api/things/:thing_id/ostate', things.put_ostate);
-    app.get('/api/things/:thing_id/meta', things.get_meta);
-    app.get('/api/things/:thing_id/model', things.get_model);
-     */
 };
 
 /**

@@ -377,60 +377,6 @@ var things = function() {
 };
 
 /**
- *   get '/api/things'
- */
-var get_things = function(request, response) {
-    var d = {
-        "@id": "/api/things",
-        thing: []
-    };
-
-    var things = iotdb.iot().things();
-    for (var ti = 0; ti < things.length; ti++) {
-        d.thing.push("/api/things/" + things[ti].thing_id());
-    };
-
-    response
-        .set('Content-Type', 'application/json')
-        .send(JSON.stringify(d, null, 2))
-        ;
-};
-
-/**
- *   get '/api/things/:thing_id'
- */
-var get_thing = _make_thing(thing_thing);
-
-/**
- *   get '/api/things/:thing_id/istate'
- */
-var get_istate = _make_thing(thing_istate);
-
-/**
- *   get '/api/things/:thing_id/ostate'
- */
-var get_ostate = _make_thing(thing_ostate);
-
-/**
- *   put '/api/things/:thing_id/ostate'
- */
-var put_ostate = _make_thing(function(thing, request, response) {
-    thing.update(request.body, { notify: true });
-
-    return {};
-});
-
-/**
- *   get '/api/things/:thing_id/meta'
- */
-var get_meta = _make_thing(thing_meta);
-
-/**
- *   get '/api/things/:thing_id/model'
- */
-var get_model = _make_thing(thing_model);
-
-/**
  *  The Transporter will brodcast all istate/meta
  *  changes to Things to MQTT path 
  *  the same as the REST API
@@ -441,7 +387,7 @@ var setup = function(app) {
     
     var iotdb_transporter = new IOTDBTransport({}, things);
 
-    /* MQTT messages */
+    /* MQTT messages - notifications, only on ISTATE and META */
     var mqtt_transporter = new MQTTTransport({
         prefix: path.join(settings.d.mqttd.prefix, "api", "things"),
         host: settings.d.mqttd.host,
@@ -451,7 +397,7 @@ var setup = function(app) {
         bands: [ "meta", "istate", ],
     });
 
-    /* REST interface */
+    /* REST interface - get & put. Put only on META and OSTATE */
     var rest_transporter = new RESTTransport({
         prefix: path.join("/", "api", "things"),
     }, app);
@@ -459,41 +405,6 @@ var setup = function(app) {
         bands: [ "meta", "istate", "ostate", "model", ],
         updated: [ "meta", "ostate", ],
     });
-
-
-    /*
-    iotdb.transporter.transport(mqtt_transporter, things, {
-        meta: true,
-        model: false,
-        istate: true,
-        ostate: false,
-        verbose: true,
-        send: true,
-        receive: false, // DO NOT TURN ON RECEIVE UNLESS USING @timestamp, otherwise loooops!
-    });
-    */
-
-
-    /*
-
-    things.on_thing(function(thing) {
-        thing.on("state", function(thing) {
-            var topic = settings.d.mqttd.prefix + "api/things/" + thing.thing_id() + "/istate";
-            var payload = thing_istate(thing);
-
-            mqtt.publish(settings.d.mqttd, topic, payload);
-        });
-        thing.on("meta", function(thing) {
-            var topic = settings.d.mqttd.prefix + "api/things/" + thing.thing_id() + "/meta";
-            var payload = thing_meta(thing);
-
-            mqtt.publish(settings.d.mqttd, topic, payload);
-            
-            // _clear_structure(thing);
-            // someday publish a metadata change
-        });
-    });
-    */
 };
 
 /**
@@ -502,18 +413,4 @@ var setup = function(app) {
 exports.setup = setup;
 
 exports.thing_by_id = _thing_by_id;
-
-exports.get_things = get_things;
-exports.get_thing = get_thing;
-exports.get_istate = get_istate;
-exports.get_ostate = get_ostate;
-exports.put_ostate = put_ostate;
-exports.get_meta = get_meta;
-exports.get_model = get_model;
-
-exports.thing_istate = thing_istate;
-exports.thing_ostate = thing_ostate;
-exports.thing_meta = thing_meta;
-exports.thing_model = thing_model;
-
 exports.things = things;

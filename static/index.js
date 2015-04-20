@@ -176,7 +176,7 @@ var js = {
                 "local=", topic_local
             );
 
-            var parts = topic_local.match(/\/api\/(recipes|things)\/(urn:[-$%_:0-9a-zA-Z]+)\/(istate|ostate|meta|model|status)/);
+            var parts = topic_local.match(/\/api\/(recipes|things)\/(urn:[^\/]+)\/(istate|ostate|meta|model|status)/);
             if (!parts) {
                 console.log("?no match?");
                 return;
