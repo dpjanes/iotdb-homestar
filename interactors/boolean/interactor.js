@@ -33,7 +33,6 @@ exports.attribute = function(attributed) {
         return;
     }
 
-    /* XXX - CHECK HERE TO MAKE SURE IT'S A CONTROL */
     if (!attributed._control) {
         return;
     }

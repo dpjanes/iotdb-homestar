@@ -39,16 +39,17 @@ var folder = "node_modules";
 
 exports.command = "install";
 exports.summary = "install a bridge";
-exports.boolean = [ "update", "global" ]
+exports.boolean = [ "update", "global", "update-all", ]
 
 exports.help = function () {
-    console.log("usage: homestar install [--global] [--update] <npm-module>|<tarball>|etc.");
+    console.log("usage: homestar install [--global] [--update] [--update-all] <npm-module>|<tarball>|etc.");
     console.log("");
     console.log("Install a node package for use with HomeStar");
     console.log("Always use this in preference to 'npm install' or 'npm update'");
     console.log("");
     console.log("--global will install in your home directory (otherwise: the current folder)");
     console.log("--update will do 'npm update'");
+    console.log("--update-all will update all installed packages");
 };
 
 var update_install = "install";
@@ -56,23 +57,56 @@ var completed = [
     "iotdb"
 ];
 exports.run = function (ad) {
-    if (ad._.length != 2) {
-        console.log("error: homestar install takes a single argument");
+    if (ad.global) {
+        process.chdir(process.env['HOME']);
+    }
+
+    var modules = [];
+    if (ad['update-all']) {
+        ad.update = true;
+        var module_root = "node_modules";
+        var names = fs.readdirSync(module_root);
+        for (var ni in names) {
+            var name = names[ni];
+            if (!name.match(/^(homestar-|iotdb-|node-iotdb)/)) {
+                continue;
+            }
+
+            var module_folder = path.join(module_root, name);
+            var stbuf = fs.lstatSync(module_folder);
+            if (!stbuf.isDirectory()) {
+                continue;
+            }
+
+            modules.push(name);
+        }
+    } else if (ad._.length < 2) {
+        console.log("error: homestar install takes one or more package names as arguments");
         console.log("");
         exports.help();
         process.exit(1);
-    }
-
-    if (ad.global) {
-        process.chdir(process.env['HOME']);
+    } else {
+        modules = ad._.slice(1);
     }
 
     update_install = ad.update ? "update" : "install";
 
     _make_node_modules();
-    _install(ad._[1], function(error) {
-        console.log("- finished");
-    });
+
+    var _pop = function() {
+        if (modules.length === 0) {
+            console.log("- finished");
+            return;
+        }
+
+        var module = modules.pop();
+        _install(module, function(error) {
+            console.log("- installed", module);
+            _pop();
+        });
+    };
+
+    _pop();
 }
 
 /*
