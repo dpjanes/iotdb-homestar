@@ -42,7 +42,7 @@ exports.attribute = function(attributed) {
         var name = value;
 
         var cname = _.ld.compact(name);
-        var cmatch = cname.match(/^iot-attribute:band[.](.*[.])?(.*)/);
+        var cmatch = cname.match(/^iot-attribute:(.*[.])?(.*)/);
         if (cmatch) {
             name = cmatch[2];
         }
