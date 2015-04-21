@@ -34,7 +34,7 @@ var helpers = require('./helpers');
 var interactors = require('./interactors');
 
 var MQTTTransport = require('iotdb-transport-mqtt').Transport;
-var RESTTransport = require('iotdb-transport-rest').Transport;
+var ExpressTransport = require('iotdb-transport-express').Transport;
 var IOTDBTransport = require('iotdb-transport-iotdb').Transport;
 
 var logger = iotdb.logger({
@@ -398,7 +398,7 @@ var setup = function(app) {
     });
 
     /* REST interface - get & put. Put only on META and OSTATE */
-    var rest_transporter = new RESTTransport({
+    var rest_transporter = new ExpressTransport({
         prefix: path.join("/", "api", "things"),
     }, app);
     iotdb.transporter.bind(iotdb_transporter, rest_transporter, {
