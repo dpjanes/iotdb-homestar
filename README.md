@@ -2,7 +2,13 @@
 
 ## What is it
 
-HomeStar is powerful IoT software written in Node.JS.
+HomeStar is powerful, Open Source IoT software written in Node.JS.
+The core of HomeStar is a library called IOTDB - the Internet of Things
+Database - which provides a well thought out and programmer-friendly
+model for discovering and configuring things, and controlling the using
+their own native vocabulary, or more importantly, using a universal
+semantic language.
+
 You can run it on your home computer, Raspberry Pi,
 Intel Edison, BeagleBone Black, &c.
 
@@ -22,7 +28,7 @@ LIFX, but theoretically it'll run with anything.
 
 ### Updates
 
-* [IOTDB 0.6.X][docs/IOTDB-0.6.md] - what's changed
+* [IOTDB 0.6.X](docs/IOTDB-0.6.md) - what's changed
 
 ## Running HomeStar
 
