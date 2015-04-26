@@ -59,6 +59,10 @@ var logger = iotdb.logger({
     module: 'app/app',
 });
 
+var _modules_locals;
+var _setup_express_dynamic_folder;
+var swig_outer;
+
 /*
  *  Filter to make printing JSON easy
  */
@@ -243,7 +247,7 @@ var _template_upnp = function () {
 
 var _template_cookbook = function () {
     var rds = [];
-    var recipes = recipe.recipes()
+    var recipes = recipe.recipes();
     for (var ri in recipes) {
         var rd = _.clone(recipes[ri]);
         rd._context = undefined;
@@ -261,7 +265,7 @@ var _template_cookbook = function () {
 
 var _template_cookbooks = function () {
     return recipe.cookbooks();
-}
+};
 
 var _template_settings = function () {
     var sd = _.smart_extend({}, settings.d);
@@ -419,7 +423,7 @@ var setup_express_modules = function (app) {
             _.extend(_modules_locals, module.web.locals);
         }
     }
-}
+};
 
 /**
  *  Built-in pages
@@ -427,14 +431,14 @@ var setup_express_modules = function (app) {
 var setup_express_dynamic = function (app) {
     for (var fi in settings.d.webserver.folders.dynamic) {
         var folder = settings.d.webserver.folders.dynamic[fi];
-        folder = cfg.cfg_expand(settings.envd, folder)
+        folder = cfg.cfg_expand(settings.envd, folder);
 
         _setup_express_dynamic_folder(app, folder);
     }
 };
 
 var _setup_express_dynamic_folder = function (app, folder) {
-    var files = fs.readdirSync(folder)
+    var files = fs.readdirSync(folder);
     for (var fi in files) {
         var file = files[fi];
         var match = file.match(/^(.*)[.](js|html)$/);

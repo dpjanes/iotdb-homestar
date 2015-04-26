@@ -45,27 +45,27 @@ var logger = iotdb.logger({
 /**
  *  Returns a Thing by thing_id
  */
-var _thing_by_id = function(thing_id) {
+var _thing_by_id = function (thing_id) {
     var iot = iotdb.iot();
-    var things = iot.things()
+    var things = iot.things();
     for (var ti = 0; ti < things.length; ti++) {
         var t = things[ti];
-        if (t.thing_id() == thing_id) {
-            return t
+        if (t.thing_id() === thing_id) {
+            return t;
         }
     }
 
-    console.log("# _thing_by_id: thing not found", thing_id)
-    return null
-}
+    console.log("# _thing_by_id: thing not found", thing_id);
+    return null;
+};
 
-var scrub_id = function(v) {
+var scrub_id = function (v) {
     if (!v) {
-        return ""
+        return "";
     } else {
-        return v.replace(/.*#/, '')
+        return v.replace(/.*#/, '');
     }
-}
+};
 
 var structured = {};
 
@@ -75,24 +75,27 @@ var structured = {};
  *  _structure_thing. Specifically, you'll want to
  *  clear structures when the metadata changes.
  */
-var _clear_structure = function(thing) {
+var _clear_structure = function (thing) {
     if (thing === undefined) {
-        structured = {}; 
+        structured = {};
     } else {
         structured[thing.thing_id()] = undefined;
     }
-}
+};
 
 /*
  *  Preprocess attributes
  *  - compact everything
  *  - find out if control or reading attibute
  */
-var _structure_thing = function(thing) {
+var _structure_thing = function (thing) {
     var s = structured[thing.thing_id()];
     if (s) {
         return s;
     }
+
+    var cid;
+    var cat;
 
     var meta = thing.meta();
     var thing_name = meta.get('schema:name') || thing.name;
@@ -101,14 +104,14 @@ var _structure_thing = function(thing) {
      *  Do initial pre-processing on attributes
      */
     var catd = {};
-    var tats = thing.attributes()
+    var tats = thing.attributes();
     for (var tax in tats) {
-        var tat = tats[tax]
+        var tat = tats[tax];
 
-        var cat = _.ld.compact(tat)
-        cat._code = tat.get_code()
+        cat = _.ld.compact(tat);
+        cat._code = tat.get_code();
 
-        var name = _.ld.first(cat, 'schema:name')
+        var name = _.ld.first(cat, 'schema:name');
         cat['@id'] = "/api/things/" + thing.thing_id() + "/#" + cat._code;
         cat._name = name || cat._code;
         cat._thing_id = thing.thing_id();
@@ -117,46 +120,46 @@ var _structure_thing = function(thing) {
         cat._id = thing.thing_id() + "/#" + cat._code;
         cat.group = thing_name;
 
-        var cid = scrub_id(_.ld.first(cat, "@id", ""))
+        cid = scrub_id(_.ld.first(cat, "@id", ""));
         if (_.ld.list(cat, 'iot:role') === undefined) {
-            cat._out = cid
-            cat._in = cid
-        } 
+            cat._out = cid;
+            cat._in = cid;
+        }
         if (_.ld.contains(cat, 'iot:role', 'iot-attribute:role-control')) {
-            cat._out = cid
+            cat._out = cid;
         }
         if (_.ld.contains(cat, 'iot:role', 'iot-attribute:role-reading')) {
-            cat._in = cid
+            cat._in = cid;
         }
 
-        catd[cid] = cat
+        catd[cid] = cat;
     }
 
     /**
      *  Group related control/reading attributes together
      */
-    for (var cid in catd) {
-        var cat = catd[cid]
+    for (cid in catd) {
+        cat = catd[cid];
         if (cat._use === undefined) {
-            cat._use = true
+            cat._use = true;
         }
 
-        var rids = _.ld.list(cat, "iot:related-role", [])
+        var rids = _.ld.list(cat, "iot:related-role", []);
         for (var rix in rids) {
-            var rid = scrub_id(rids[rix])
-            var rat = catd[rid]
+            var rid = scrub_id(rids[rix]);
+            var rat = catd[rid];
             if (rat === undefined) {
-                continue
+                continue;
             }
 
             if (rat._use === undefined) {
-                rat._use = false
+                rat._use = false;
             }
             if (cat._out && !rat._out) {
-                rat._out = cat._out
+                rat._out = cat._out;
             }
             if (cat._in && !rat._in) {
-                rat._in = cat._in
+                rat._in = cat._in;
             }
         }
 
@@ -164,7 +167,7 @@ var _structure_thing = function(thing) {
 
     var cats = [];
     for (var ci in catd) {
-        var cat = catd[ci];
+        cat = catd[ci];
         if (!cat._use) {
             continue;
         }
@@ -182,29 +185,31 @@ var _structure_thing = function(thing) {
 };
 
 
-var structured = function() {
+var structured = function () {
     var things = iotdb.iot().things();
+    var thing;
+    var ti;
 
     // order things by thing_name first
     var tts = [];
-    for (var ti = 0; ti < things.length; ti++) {
-        var thing = things[ti];
+    for (ti = 0; ti < things.length; ti++) {
+        thing = things[ti];
         var meta = thing.meta();
         var thing_name = meta.get('schema:name') || thing.name;
         if (thing_name === undefined) {
-            continue
+            continue;
         }
 
-        tts.push([ thing_name, thing ]);
+        tts.push([thing_name, thing]);
     }
 
     tts.sort();
 
     // then get all the compressed attributes
     var cats = [];
-    for (var ti in tts) {
+    for (ti in tts) {
         var tt = tts[ti];
-        var thing = tt[1];
+        thing = tt[1];
         var state = thing.state();
         var s = _structure_thing(thing);
 
@@ -219,7 +224,7 @@ var structured = function() {
     return cats;
 };
 
-var _make_thing = function(f) {
+var _make_thing = function (f) {
     return function (request, response) {
         logger.info({
             method: "_make_thing",
@@ -235,8 +240,7 @@ var _make_thing = function(f) {
                 .send(JSON.stringify({
                     error: "thing not found",
                     thing_id: request.params.thing_id
-                }, null, 2))
-                ;
+                }, null, 2));
         }
 
         response.set('Content-Type', 'application/json');
@@ -246,7 +250,7 @@ var _make_thing = function(f) {
 
 /**
  */
-var thing_thing = function(thing) {
+var thing_thing = function (thing) {
     var base = "/api/things/" + thing.thing_id();
 
     return {
@@ -261,10 +265,9 @@ var thing_thing = function(thing) {
 
 /**
  */
-var thing_istate = function(thing) {
+var thing_istate = function (thing) {
     return _.extend(
-        thing.state({ istate: true, ostate: false }),
-        {
+        thing.state("istate"), {
             "@id": "/api/things/" + thing.thing_id() + "/istate",
         }
     );
@@ -272,10 +275,9 @@ var thing_istate = function(thing) {
 
 /**
  */
-var thing_ostate = function(thing) {
+var thing_ostate = function (thing) {
     return _.extend(
-        thing.state({ istate: false, ostate: true }),
-        {
+        thing.state("ostate"), {
             "@id": "/api/things/" + thing.thing_id() + "/ostate",
         }
     );
@@ -283,10 +285,9 @@ var thing_ostate = function(thing) {
 
 /**
  */
-var thing_meta = function(thing) {
+var thing_meta = function (thing) {
     return _.ld.compact(
-        thing.meta().state(),
-        {
+        thing.state("meta"), {
             "@id": "/api/things/" + thing.thing_id() + "/meta",
         }
     );
@@ -294,17 +295,15 @@ var thing_meta = function(thing) {
 
 /**
  */
-var thing_model = function(thing) {
-    var md = _.ld.compact(thing.jsonld({
-        // base: "/api/things/" + thing.thing_id() + "/model",
-    }));
+var thing_model = function (thing) {
+    var md = thing.state("model");
 
     md["@context"] = {
         "iot": _.ld.namespace["iot"],
         "iot-unit": _.ld.namespace["iot-unit"],
         "iot-attribute": _.ld.namespace["iot-attribute"],
         "schema": _.ld.namespace["schema"],
-    },
+    };
     md["@id"] = "/api/things/" + thing.thing_id() + "/model";
 
     var meta = thing.meta();
@@ -342,7 +341,7 @@ var thing_model = function(thing) {
 
 /*
  */
-var things = function() {
+var things = function () {
     var tds = [];
     var things = iotdb.iot().things();
 
@@ -363,11 +362,11 @@ var things = function() {
         tds.push(td);
     }
 
-    tds.sort(function(a, b) {
+    tds.sort(function (a, b) {
         if (a._sort < b._sort) {
             return -1;
         } else if (a._sort > b._sort) {
-            return 1
+            return 1;
         } else {
             return 0;
         }
@@ -381,10 +380,10 @@ var things = function() {
  *  changes to Things to MQTT path 
  *  the same as the REST API
  */
-var setup = function(app) {
+var setup = function (app) {
     var iot = iotdb.iot();
     var things = iot.connect();
-    
+
     var iotdb_transporter = new IOTDBTransport({}, things);
 
     /* MQTT messages - notifications, only on ISTATE and META */
@@ -394,7 +393,7 @@ var setup = function(app) {
         port: settings.d.mqttd.port,
     });
     iotdb.transporter.bind(iotdb_transporter, mqtt_transporter, {
-        bands: [ "meta", "istate", ],
+        bands: ["meta", "istate", ],
     });
 
     /* REST interface - get & put. Put only on META and OSTATE */
@@ -402,8 +401,8 @@ var setup = function(app) {
         prefix: path.join("/", "api", "things"),
     }, app);
     iotdb.transporter.bind(iotdb_transporter, rest_transporter, {
-        bands: [ "meta", "istate", "ostate", "model", ],
-        updated: [ "meta", "ostate", ],
+        bands: ["meta", "istate", "ostate", "model", ],
+        updated: ["meta", "ostate", ],
     });
 };
 

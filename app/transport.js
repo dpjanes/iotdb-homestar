@@ -52,7 +52,7 @@ var _setup_firebase_transport = function () {
         prefix: settings.d.keys.homestar.key + "/homestar",
     });
 
-    var iot = iotdb.iot()
+    var iot = iotdb.iot();
     iotdb.transport(homestar_transporter, iot.things(), {
         meta: true,
         model: true,

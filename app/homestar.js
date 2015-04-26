@@ -79,85 +79,14 @@ var _cookbooks_sent = false;
 var _cookbooks_timer = null;
 
 /**
- *  Send cookbooks to HomeStar.io
- */
-var send_cookbooks = function(retry) {
-    var cookbook = {};
-
-    if (_cookbooks_timer && retry > 0) {
-        clearTimeout(_cookbooks_timer);
-    }
-
-    var sent = true;
-    var count = 1;
-    var _track_callback = function(error) {
-        count--;
-
-        if (error) {
-            sent = false;
-        }
-
-        if (count !== 0) {
-            return;
-        }
-
-        _cookbooks_sent = sent;
-
-        /*
-        console.log("=======================");
-        console.log(_cookbooks_sent, retry);
-        console.log("=======================");
-        */
-
-        if (_cookbooks_sent) {
-            return;
-        }
-        if (retry <= 0) {
-            return;
-        }
-
-        _cookbooks_timer = setTimeout(function() {
-            _cookbooks_timer = null;
-            send_cookbooks(retry);
-        }, retry * 1000);
-    };
-
-    var rs = recipe.recipes();
-    for (var ri in rs) {
-        var r = rs[ri];
-        if (!r.cookbook_id) {
-            continue;
-        }
-
-        if (r.cookbook_id != cookbook.cookbook_id) {
-            count++;
-            send_cookbook(cookbook, _track_callback);
-
-            cookbook = {
-                cookbook_id: r.cookbook_id,
-                'schema:name': r.group || r.cookbook_id,
-            };
-        }
-
-        // cookbook.recipes.push(r.name);
-    }
-
-    count++;
-    send_cookbook(cookbook, _track_callback);
-
-    // this clears out the original "count=1"
-    _track_callback(null, null);
-};
-
-/**
  *  Send Cookbook info to the server
  */
-var send_cookbook = function(cookbook, callback) {
+var send_cookbook = function (cookbook, callback) {
     if (!cookbook.cookbook_id) {
         return callback(null, null);
     }
     if (!callback) {
-        callback = function() {};
+        callback = function () {};
     }
 
     var url = URL_COOKBOOKS + '/' + cookbook.cookbook_id;
@@ -189,11 +118,82 @@ var send_cookbook = function(cookbook, callback) {
 };
 
 /**
+ *  Send cookbooks to HomeStar.io
+ */
+var send_cookbooks = function (retry) {
+    var cookbook = {};
+
+    if (_cookbooks_timer && retry > 0) {
+        clearTimeout(_cookbooks_timer);
+    }
+
+    var sent = true;
+    var count = 1;
+    var _track_callback = function (error) {
+        count--;
+
+        if (error) {
+            sent = false;
+        }
+
+        if (count !== 0) {
+            return;
+        }
+
+        _cookbooks_sent = sent;
+
+        /*
+        console.log("=======================");
+        console.log(_cookbooks_sent, retry);
+        console.log("=======================");
+        */
+
+        if (_cookbooks_sent) {
+            return;
+        }
+        if (retry <= 0) {
+            return;
+        }
+
+        _cookbooks_timer = setTimeout(function () {
+            _cookbooks_timer = null;
+            send_cookbooks(retry);
+        }, retry * 1000);
+    };
+
+    var rs = recipe.recipes();
+    for (var ri in rs) {
+        var r = rs[ri];
+        if (!r.cookbook_id) {
+            continue;
+        }
+
+        if (r.cookbook_id !== cookbook.cookbook_id) {
+            count++;
+            send_cookbook(cookbook, _track_callback);
+
+            cookbook = {
+                cookbook_id: r.cookbook_id,
+                'schema:name': r.group || r.cookbook_id,
+            };
+        }
+
+        // cookbook.recipes.push(r.name);
+    }
+
+    count++;
+    send_cookbook(cookbook, _track_callback);
+
+    // this clears out the original "count=1"
+    _track_callback(null, null);
+};
+
+/**
  *  Send Thing metadata to the server
  */
-var send_thing = function(thing, callback) {
+var send_thing = function (thing, callback) {
     if (!callback) {
-        callback = function() {};
+        callback = function () {};
     }
 
     var url = URL_THINGS + '/' + thing.thing_id();
@@ -224,15 +224,17 @@ var send_thing = function(thing, callback) {
         });
 };
 
-var send_things = function() {
-    var iot = iotdb.iot()
-    iot.on("thing", function(thing) {
-        send_thing(thing, function(error, metad) {
+var send_things = function () {
+    var iot = iotdb.iot();
+    iot.on("thing", function (thing) {
+        send_thing(thing, function (error, metad) {
             if (!metad) {
                 return;
             }
-            
-            metad = _.ld.expand(metad, { scrub: true });
+
+            metad = _.ld.expand(metad, {
+                scrub: true
+            });
             if (thing.meta().update(metad)) {
                 /*
                 iotdb.iot().meta_save(thing);
@@ -326,7 +328,7 @@ var setup = function () {
             method: "setup",
             cause: "disabled in settings",
         }, "no HomeStar ping service");
-    } 
+    }
 
     /* fetch my profile */
     profile();

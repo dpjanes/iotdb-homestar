@@ -22,6 +22,8 @@
  *  limitations under the License.
  */
 
+"use strict";
+
 var iotdb = require('iotdb');
 var _ = iotdb._;
 var cfg = iotdb.cfg;
@@ -39,13 +41,13 @@ var logger = iotdb.logger({
     module: 'app/interactors',
 });
 
-var htmlsd = {}
+var htmlsd = {};
 var htmld = {};
 var moduled = {};
 
 /**
  */
-var assign_interactor_to_attribute = function(attributed) {
+var assign_interactor_to_attribute = function (attributed) {
     var bestd = null;
 
     for (var interactor_key in moduled) {
@@ -54,13 +56,13 @@ var assign_interactor_to_attribute = function(attributed) {
             continue;
         }
 
-        var overlayd = module.attribute(attributed)
+        var overlayd = module.attribute(attributed);
         if (overlayd === undefined) {
             continue;
         }
 
         overlayd._interactor = interactor_key;
-        overlayd._q = overlayd._q || ( 0.66 + (overlayd._qd || 0));
+        overlayd._q = overlayd._q || (0.66 + (overlayd._qd || 0));
 
         if (!bestd) {
             bestd = overlayd;
@@ -79,12 +81,12 @@ var assign_interactor_to_attribute = function(attributed) {
 /**
  *  Setup static routes for ExpressJS
  */
-var setup_app = function(app) {
+var setup_app = function (app) {
     for (var interactor_key in moduled) {
         var module = moduled[interactor_key];
         app.use('/static/interactors/' + module.name, express.static(module.path));
     }
-}
+};
 
 var _add_interactor = function (interactor_key, interactor_path) {
     var files = fs.readdirSync(interactor_path);
@@ -93,7 +95,7 @@ var _add_interactor = function (interactor_key, interactor_path) {
         var src_path = path.join(interactor_path, src_file);
         var src_ext = path.extname(src_file);
         if (src_ext.length === 0) {
-            continue
+            continue;
         }
         var src_core = path.basename(src_file, src_ext);
         var src_content = "";
@@ -101,13 +103,12 @@ var _add_interactor = function (interactor_key, interactor_path) {
         if (src_file === "interactor.js") {
             /* not included */
             try {
-                module = require(src_path);
+                var module = require(src_path);
                 module.path = interactor_path;
                 module.name = interactor_key;
 
                 moduled[interactor_key] = module;
-            }
-            catch (x) {
+            } catch (x) {
                 logger.error({
                     method: "setup",
                     interactor: interactor_key,
@@ -148,7 +149,7 @@ var _interactord = {};
 /**
  *  These come with iotdb-homestar. 
  */
-var _setup_builtin_interactors = function() {
+var _setup_builtin_interactors = function () {
     var interactor_root = path.join(__dirname, "../interactors");
     var interactor_folders = fs.readdirSync(interactor_root);
     for (var ifi in interactor_folders) {
@@ -157,7 +158,7 @@ var _setup_builtin_interactors = function() {
         try {
             if (!fs.lstatSync(interactor_path).isDirectory()) {
                 continue;
-            }  
+            }
         } catch (x) {
             console.log(x);
             continue;
@@ -167,13 +168,12 @@ var _setup_builtin_interactors = function() {
 
         _interactord[interactor_key] = interactor_path;
     }
-}
+};
 
 /**
  *  These are loaded by the user via "homestar install"
  */
-var _setup_module_interactors = function() {
-}
+var _setup_module_interactors = function () {};
 
 /**
  */
@@ -187,7 +187,7 @@ var setup = function () {
     }
 
     for (var key in htmlsd) {
-        htmls = htmlsd[key];
+        var htmls = htmlsd[key];
         htmld[key] = htmls.join("\n");
     }
 };

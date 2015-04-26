@@ -38,6 +38,8 @@ var logger = iotdb.logger({
     module: 'app/recipe',
 });
 
+var recipe_to_id;
+
 /**
  *  The "Context" is basically does the work of
  *  managing a running Recipe. You make them
@@ -227,6 +229,7 @@ var load_recipes = function (initd) {
 /**
  *  Call me once
  */
+var _init_recipe;
 var init_recipes = function () {
     var iot = iotdb.iot();
     var cds = iot.data("recipe");
@@ -235,15 +238,11 @@ var init_recipes = function () {
     }
 
     for (var ci in cds) {
-        init_recipe(cds[ci]);
+        _init_recipe(cds[ci]);
     }
 };
 
-var _add = function(reciped, key, value) {
-
-}
-
-var init_recipe = function (reciped) {
+var _init_recipe = function (reciped) {
     reciped._id = recipe_to_id(reciped);
     reciped.state = {};
 
@@ -256,19 +255,22 @@ var init_recipe = function (reciped) {
     var context = make_context(reciped);
 
     /* IOTDB types */
-    var keys = [ "value", "type", "format", "unit", ];
+    var keys = ["value", "type", "format", "unit", ];
     for (var ki in keys) {
         var key = keys[ki];
 
         var value = reciped[key];
         if (value === undefined) {
-            continue
+            continue;
         }
 
-        value = _.ld.compact(reciped[key], { json: true, scrub: true });
+        value = _.ld.compact(reciped[key], {
+            json: true,
+            scrub: true
+        });
 
         if (_.isObject(value)) {
-            var vkeys = [ "iot:type", "iot:format", "iot:unit", "iot:purpose", ];
+            var vkeys = ["iot:type", "iot:format", "iot:unit", "iot:purpose", ];
             for (var vi in vkeys) {
                 var vkey = vkeys[vi];
                 var vvalue = value[vkey];
@@ -320,16 +322,16 @@ var init_recipe = function (reciped) {
     /* watch: ThingArrays we need to monitor for reachable changes */
     if (reciped.watch) {
         if (!_.isArray(reciped.watch)) {
-            reciped.watch = [ reciped.watch ]
+            reciped.watch = [reciped.watch];
         }
 
-        var _validate = function() {
+        var _validate = function () {
             context.validate();
         };
 
         for (var wi in reciped.watch) {
             var things = reciped.watch[wi];
-            
+
             things.on_thing(_validate);
             things.on_meta(_validate);
         }
@@ -337,7 +339,7 @@ var init_recipe = function (reciped) {
 
     /* validation function default */
     if (reciped.watch && !reciped.onvalidate) {
-        reciped.onvalidate = function(context) {
+        reciped.onvalidate = function (context) {
             for (var wi in reciped.watch) {
                 var things = reciped.watch[wi];
                 if (things.reachable() === 0) {
@@ -469,7 +471,7 @@ var recipes = function () {
         return [];
     }
 
-    var rds = []
+    var rds = [];
     for (var ri in recipeds) {
         var reciped = recipeds[ri];
         if (reciped.enabled === false) {
@@ -486,7 +488,8 @@ var recipes = function () {
 /**
  *  Archive entire cookbooks
  */
-var archive = function() {
+/*
+var archive = function () {
     initd = _.defaults(initd, {
         cookbooks_path: settings.d.cookbooks_path,
     });
@@ -516,10 +519,11 @@ var archive = function() {
         }, "found Model");
     });
 };
+ */
 
 /**
  */
-var recipe_model = function(recipe) {
+var recipe_model = function (recipe) {
     return {
         "@context": {
             "iot": _.ld.namespace["iot"],
@@ -536,14 +540,14 @@ var recipe_model = function(recipe) {
             "iot:purpose": recipe["iot:purpose"],
             "schema:name": "value",
             "iot:type": recipe["iot:type"],
-            "iot:role": [ "iot-attribute:role-control", "iot-attribute:role-reading", ],
+            "iot:role": ["iot-attribute:role-control", "iot-attribute:role-reading", ],
         },
     };
 };
 
 /**
  */
-var recipe_recipe = function(recipe) {
+var recipe_recipe = function (recipe) {
     var base = "/api/recipes/" + recipe._id;
     return {
         "@id": base,
@@ -558,7 +562,7 @@ var recipe_recipe = function(recipe) {
 
 /**
  */
-var recipe_istate = function(recipe, context) {
+var recipe_istate = function (recipe, context) {
     return _.defaults(recipe.state, {
         value: null,
         "@id": "/api/recipes/" + recipe._id + "/istate",
@@ -567,7 +571,7 @@ var recipe_istate = function(recipe, context) {
 
 /**
  */
-var recipe_ostate = function(recipe, context) {
+var recipe_ostate = function (recipe, context) {
     return {
         value: null,
         "@id": "/api/recipes/" + recipe._id + "/ostate",
@@ -576,7 +580,7 @@ var recipe_ostate = function(recipe, context) {
 
 /**
  */
-var recipe_status = function(recipe, context) {
+var recipe_status = function (recipe, context) {
     var self = this;
 
     if (!context) {
@@ -591,12 +595,12 @@ var recipe_status = function(recipe, context) {
 
 /**
  */
-var cookbooks = function() {
+var cookbooks = function () {
     var groups = [];
 
     var group_name = null;
     var attributes = null;
-    var in_recipies = recipes()
+    var in_recipies = recipes();
     var out_recipes = [];
 
     for (var ri in in_recipies) {
@@ -615,7 +619,7 @@ var cookbooks = function() {
             out_recipes = [];
             group["recipes"] = out_recipes;
         }
-        
+
         var out_recipe = {};
         out_recipes.push(out_recipe);
 
@@ -641,7 +645,7 @@ var cookbooks = function() {
     return groups;
 };
 
-var _make_recipe = function(f) {
+var _make_recipe = function (f) {
     return function (request, response) {
         logger.info({
             method: "_make_recipe",
@@ -685,7 +689,7 @@ var _make_recipe = function(f) {
 /**
  *   get '/api/recipes'
  */
-var get_recipes = function(request, response) {
+var get_recipes = function (request, response) {
     var d = {
         "@id": "/api/recipes",
         cookbook: []
@@ -693,7 +697,7 @@ var get_recipes = function(request, response) {
 
     var group_name = null;
     var cookbook = null;
-    var in_recipies = recipes()
+    var in_recipies = recipes();
 
     for (var ri in in_recipies) {
         var in_recipe = in_recipies[ri];
@@ -714,8 +718,7 @@ var get_recipes = function(request, response) {
 
     response
         .set('Content-Type', 'application/json')
-        .send(JSON.stringify(d, null, 2))
-        ;
+        .send(JSON.stringify(d, null, 2));
 };
 
 /**
@@ -741,7 +744,7 @@ var get_status = _make_recipe(recipe_status);
 /**
  *   put '/api/recipes/:recipe_id/ostate'
  */
-var put_ostate = _make_recipe(function(recipe, context, request, response) {
+var put_ostate = _make_recipe(function (recipe, context, request, response) {
     context.onclick(request.body.value);
     return {
         running: context.running,

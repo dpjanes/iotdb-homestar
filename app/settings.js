@@ -87,7 +87,7 @@ var settings = {
             },
         },
         secrets: {
-            host: null,     // not really a secret, as published on MQTT
+            host: null, // not really a secret, as published on MQTT
             session: null,
         },
         keys: {
@@ -160,6 +160,7 @@ var _set = function (key, value) {
 };
 
 var setup = function (av) {
+    var key;
     var iot = iotdb.iot();
     var d = iotdb.keystore().get("/homestar/runner");
     if (d) {
@@ -179,7 +180,7 @@ var setup = function (av) {
 
     /* all secrets must be set  - note that this is done automatically by $ homestar setup */
     var sd = settings.d.secrets;
-    for (var key in sd) {
+    for (key in sd) {
         var value = sd[key];
         if (!value) {
             logger.error({
@@ -242,7 +243,7 @@ var setup = function (av) {
     }
 
     /* make folders - should be changed to make recursive */
-    for (var key in settings.d.folders) {
+    for (key in settings.d.folders) {
         var folder = settings.d.folders[key];
 
         try {

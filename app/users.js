@@ -43,7 +43,7 @@ var band = "user";
 /**
  *  Retrieve a user record
  */
-var get = function(identity, paramd, callback) {
+var get = function (identity, paramd, callback) {
     if (callback === undefined) {
         callback = paramd;
         paramd = {};
@@ -54,7 +54,7 @@ var get = function(identity, paramd, callback) {
     });
 
     var identity_hash = _.id.user_urn(identity);
-    transporter.get(identity_hash, band, function(_id, _band, d) {
+    transporter.get(identity_hash, band, function (_id, _band, d) {
         if ((d === null) && paramd.create) {
             d = {
                 identity: identity
@@ -68,7 +68,7 @@ var get = function(identity, paramd, callback) {
 /**
  *  Save a user record
  */
-var update = function(userd) {
+var update = function (userd) {
     if (!_.isObject(userd)) {
         throw new Error("expecting an object");
     }
@@ -89,30 +89,31 @@ var update = function(userd) {
  *
  *  Horrifying callback code here
  */
-var users = function(callback) {
+var users = function (callback) {
     var pending = 1;
-    var _increment = function() {
+    var _increment = function () {
         pending++;
     };
-    var _decrement = function() {
+    var _decrement = function () {
         if (--pending === 0) {
             callback(null);
         }
     };
+    var _got_user = function (_id, _band, user) {
+        if (user) {
+            callback(user);
+        }
+        _decrement();
+    };
 
-    transporter.list(function(ids) {
+    transporter.list(function (ids) {
         if (ids === null) {
             _decrement();
         } else {
             for (var ii in ids) {
                 var id = ids[ii];
                 _increment();
-                transporter.get(id, band, function(_id, _band, user) {
-                    if (user) {
-                        callback(user);
-                    }
-                    _decrement();
-                });
+                transporter.get(_got_user);
             }
         }
     });
@@ -121,7 +122,7 @@ var users = function(callback) {
 /**
  *  Users are stored in ".iotdb/users"
  */
-var setup = function() {
+var setup = function () {
     transporter = new FSTransport.Transport({
         prefix: ".iotdb/users",
         channel: FSTransport.flat_channel,
