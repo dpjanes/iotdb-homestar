@@ -47,6 +47,11 @@ Note there's a ton of configuration required.
 	$ homestar install homestar-smart-things
 	$ homestar configure homestar-smart-things
 
+### TCP Lighting
+
+	$ homestar install homestar-tcp
+	$ homestar configure homestar-tcp
+
 ### WeMo 
 
 	$ homestar install homestar-wemo
@@ -73,13 +78,6 @@ Talk to LittleBits. Not quite working yet.
 We need a tester
 
 	$ homestar install homestar-tcp
-
-### TCP Lighting
-
-The main problem is discovery.
-
-	$ homestar install homestar-tcp
-	$ homestar configure homestar-tcp
 
 ### Wink
 
