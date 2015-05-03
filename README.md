@@ -4,10 +4,20 @@
 
 IOTDB / Home☆Star is an Open Source IoT Platform / API in Node.JS. I'd tell you it's the _best_ IoT Platform, but I hope you can discover this for yourself.
 
-What does it work with? 
+## What's it good for?
+
+IOTDB makes it _really_ easy to script / monitor the Internet of Things. 
+Really easy. Like super easy.
+
+Home☆Star is the interface bit. Home☆Star makes web pages, APIs, "cookbooks" and controls access to IOTDB running on a particular machine.
+
+## What does it work with? 
+
 Well potentially: anything.
+
 Currently, WeMos of all sorts, Philips Hue Lights, TCP Lighting, Pins on your Raspberry Pi, Bluetooth Low Energy thingies, Sonos, Chromecasts, LittleBits, LG TVs, Denon AVRs, and more….
 
+## Tell me more:
 ### IOTDB v. Home☆Star
 
 First, a simple introduction of "what's what".
@@ -140,7 +150,6 @@ Here's your links - go explore!
 
 * [homestar-ble](https://github.com/dpjanes/homestar-ble)
 * [homestar-chromecast](https://github.com/dpjanes/homestar-chromecast)
-* [homestar-coap](https://github.com/dpjanes/homestar-coap)
 * [homestar-denon-avr](https://github.com/dpjanes/homestar-denon-avr)
 * [homestar-feed](https://github.com/dpjanes/homestar-feed)
 * [homestar-gpio](https://github.com/dpjanes/homestar-gpio)
