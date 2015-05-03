@@ -1,6 +1,6 @@
 # IOTDB / Home☆Star
 
-## What is it
+## What is it?
 
 IOTDB / Home☆Star is an Open Source IoT Platform / API in Node.JS. I'd tell you it's the _best_ IoT Platform, but I hope you can discover this for yourself.
 
@@ -52,8 +52,72 @@ Of course, _something_ actually has to do the work.
 IOTDB manages this all behind the scenes in something called a **Bridge**, which provides a standard way of discovering, configuring and manipulating Things. 
 Normally as a programmer you do not have to worry about how Bridges work, unless you're adding a new type of Thing to IOTDB.
 
+### What Else Do You Got?
+
+Here's a few other interesting concepts from IOTDB. 
+Don't worry about understanding these right off.
+
+* **Deferred Operations** - Node.JS typically uses lots of callbacks: you wait for something to be ready, get a notification, then do stuff. In IOTDB you typically say "do this operation" and when the Thing becomes available it is then performed.
+* **Bands** - in IOTDB, a Thing is really a unique identifier, plus a series of "bands". Bands are named JSON dictionaries, currently "istate", "ostate", "meta" and "model". You manipulate Things solely by manipulating bands.
+* **Transporters** - a lot of really common and useful operations can done simply by modelling it by moving band data around. For example, Home☆Star's HTML interface is made by a "HTML Transporter" being connected to a "IOTDB Transporter".
+* **Transmogrifiers** - (a work in progress) we can e.g. make a Fahrenheit temperature sensor look like a Celsius one, so as a programmer you don't have to worry about incompatible data sets.
+
+### What does it run on?
+
+Anything that Node.JS runs on.
+We develop on Mac and test on Raspberry Pis, Linux boxes and Intel Edisons (so far)
+
+## Architecture
+
+Here's the architecture of a typical IOTDB program:
 
 
+	+----------------+
+	| Your Code      |
+	+----------------+
+	| Thing Arrays   |
+	+----------------+
+	| Thing          |
+	+----------------+
+	| Model          |
+	+----------------+
+	| Bridge         |
+	+----------------+
+	| Native Code    |
+	+----------------+
+	
+
+* Your Code: as per above, e.g. <code>thing.set(":on", false)</code>
+* Thing Arrays: handles deferred operations
+* Thing: manages ID and Bands for an individual Thing
+* Model: maps semantic operations (":on" → false) to what the Bridge actually does (maybe e.g. "power=0")
+* Bridge: handles discovery and configuration. When Things are actually discovered, it handles moving the "istate" of data into IOTDB and the "ostate" of data to the actual Thing. The "istate" is the "actual" state of a Thing, the "ostate" is what we want it to be.
+* Native Code: typically, a Node.JS library
+
+When working with Transporters the stack looks like this:
+
+
+	+----------------+
+	| Native Code    |
+	+----------------+
+	| Other Trans.   |
+	+----------------+
+	| IOTDB Trans.   |
+	+----------------+
+	| Thing Arrays   |
+	+----------------+
+	| Thing          |
+	+----------------+
+	| Model          |
+	+----------------+
+	| Bridge         |
+	+----------------+
+	| Native Code    |
+	+----------------+
+
+
+Where the top "Native Code" is HTML, MQTT, FireBase, a database and so forth. If this isn't clear, don't worry about it. 
+Home☆Star handles this for most instances where you'll need this. 
 
 ----------------
 
