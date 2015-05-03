@@ -87,6 +87,10 @@ The Home☆Star project also presents an API on your LAN, so you don't necessari
 
 IOTDB looks like any other Node.JS program! The Home☆Star user interface is a web page and looks like this:
 
+<p><img src="https://github.com/dpjanes/iotdb-homestar/blob/master/docs/HomeStar-Cookbooks.png" />
+
+<p><img src="https://github.com/dpjanes/iotdb-homestar/blob/master/docs/HomeStar-Things.png" />
+
 Home☆Star also presents an API that you can see by navigating to:
 
 	http://<local-ip>:11802/api
