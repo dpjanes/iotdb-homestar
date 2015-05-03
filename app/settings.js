@@ -49,8 +49,8 @@ var settings = {
             verbose: true,
             prefix: null,
             host: null,
-            port: 1883,
-            websocket: 8000
+            port: 11800,
+            websocket: 11801
         },
         homestar: {
             url: "https://homestar.io",
@@ -70,7 +70,7 @@ var settings = {
             secret: null,
             scheme: "http",
             host: null,
-            port: 3000,
+            port: 11802,
             require_login: null,
             folders: {
                 static: [

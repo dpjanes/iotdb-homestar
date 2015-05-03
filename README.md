@@ -1,6 +1,25 @@
-# Home☆Star Runner
+# IOTDB / Home☆Star
 
 ## What is it
+
+IOTDB / Home☆Star is an Open Source IoT Platform / API in Node.JS. I'd tell you it's the _best_ IoT Platform, but I hope you can discover this for yourself.
+
+First, a simple introduction of "what's what".
+
+* Home☆Star is the "management" part - it handles the HTML user interface, presenting the RESTful API, hooking into notifications systems like MQTT or FireBase, and installing and configuring IOTDB related modules.
+* IOTDB is the "core" - it's a small Node.JS library that orchestrates making all your different things work together.
+
+Next: "what's the clever bit"? There's a lot of neat ideas that have gone into IOTDB - we'll cover them elsewhere in this documentation. But here's the foremost idea: we don't need to have an "IoT Standard"
+
+
+ The _core_ of IOTDB is knowing that we don't need to standardize
+
+idea is that **Things should be controlled
+
+
+
+
+
 
 HomeStar is powerful, Open Source IoT software written in Node.JS.
 The core of HomeStar is a library called IOTDB - the Internet of Things
