@@ -52,11 +52,12 @@ Of course, _something_ actually has to do the work.
 IOTDB manages this all behind the scenes in something called a **Bridge**, which provides a standard way of discovering, configuring and manipulating Things. 
 Normally as a programmer you do not have to worry about how Bridges work, unless you're adding a new type of Thing to IOTDB.
 
-### What Else Do You Got?
+### What else ya got?
 
 Here's a few other interesting concepts from IOTDB. 
 Don't worry about understanding these right off.
 
+* **Bridge** - a standard way of interfacing to Things in Node.JS. Actually works mostly independently of IOTDB and can be used stand-alone.
 * **Deferred Operations** - Node.JS typically uses lots of callbacks: you wait for something to be ready, get a notification, then do stuff. In IOTDB you typically say "do this operation" and when the Thing becomes available it is then performed.
 * **Bands** - in IOTDB, a Thing is really a unique identifier, plus a series of "bands". Bands are named JSON dictionaries, currently "istate", "ostate", "meta" and "model". You manipulate Things solely by manipulating bands.
 * **Transporters** - a lot of really common and useful operations can done simply by modelling it by moving band data around. For example, Home☆Star's HTML interface is made by a "HTML Transporter" being connected to a "IOTDB Transporter".
@@ -67,7 +68,62 @@ Don't worry about understanding these right off.
 Anything that Node.JS runs on.
 We develop on Mac and test on Raspberry Pis, Linux boxes and Intel Edisons (so far)
 
-## Architecture
+### What does it look like?
+
+IOTDB looks like any other Node.JS program! The Home☆Star user interface is a web page and looks like this:
+
+Home☆Star also presents an API that you can see by navigating to:
+
+	http://192.168.XX.XX:11802/api
+
+
+## Installation
+
+### Install Node.JS
+
+You'll need to have Node.JS installed on your computer.
+I can't help you there, see http://nodejs.org/download/
+
+There is an assumption here you know Node.JS at least a little bit!
+If you don't, it's not too difficult to get going with it.
+
+### Install Home☆Star
+
+    $ sudo npm install -g homestar
+    $ homestar setup
+
+As it's running, you'll see that it identifies your current location (based on IP) and sets up a few UUIDs.
+
+After it finishes, note:
+
+* the folder <code>./node_modules</code> contains a number of <code>iotdb*</code> modules
+* the folder <code>./.iotdb</code> has a file <code>./.iotdb/keystore.json</code> in it - have a look at it! You should see some familiar data
+
+### Install some modules
+
+Home☆Star by itself does very little. 
+To make it do something useful, you have to install "modules", which are basically just plug-ins.
+
+The most common modules are **Bridges** which - as you know from above - encapsulate how to talk to some Thing or another.
+
+Here's how you make your Home☆Star / IOTDB installation talk to WeMos.
+
+	$ homestar install homestar-wemo
+	
+Need to talk to something else? See [docs/modules.md](docs/modules.md) for a list of current modules.
+
+### Run your first IOTDB program
+
+Create a program <code>wemo.js</code> with the following contents:
+
+	iotdb = require('iotdb')
+	iot = iotdb.iot()
+	things = iot.connect()
+	things.set(':on', true)
+
+
+## More
+### Architecture
 
 Here's the architecture of a typical IOTDB program:
 

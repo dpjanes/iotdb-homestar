@@ -53,12 +53,77 @@ exports.run = function (ad) {
     var self = this;
 
     var keystore = iotdb.keystore();
-    console.log("== os");
-    console.log("cwd:", process.cwd());
-    console.log("install location:", __dirname);
+    console.log("== Keystore");
     console.log("");
-
-    console.log("== keystore");
     console.log(JSON.stringify(keystore.d, undefined, 2).replace(/^/mg, "  "));
     console.log("");
+
+    console.log("== OS / Installation");
+    console.log("");
+    console.log("Home☆Star location:", path.join(__dirname, "..", ".."));
+    console.log("");
+
+    console.log("== Installed Modules");
+    console.log("");
+
+    var modules = iotdb.modules().modules();
+    modules.sort(function(am, bm) {
+        if (am.module_name < bm.module_name) {
+            return -1;
+        } else if (am.module_name > bm.module_name) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+    for (var mi in modules) {
+        var m = modules[mi];
+        console.log("*", m.module_name, "(folder:", m.module_folder + ")");
+    }
+
+    console.log("");
+
+    console.log("== Installed Bridges");
+    console.log("");
+
+    var bridges = iotdb.modules().bridges();
+    bridges.sort(function(ab, bb) {
+        if (ab.bridge_name < bb.bridge_name) {
+            return -1;
+        } else if (ab.bridge_name > bb.bridge_name) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+
+    for (var bi in bridges) {
+        var b = bridges[bi];
+        console.log("*", b.bridge_name, "(module:", b.module_name + ")");
+    }
+
+    console.log("");
+
+    console.log("== Available Models");
+    console.log("");
+
+    var bindings = iotdb.modules().bindings();
+    bindings.sort(function(ab, bb) {
+        if (ab.model_code < bb.model_code) {
+            return -1;
+        } else if (ab.model_code > bb.model_code) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+    for (var bi in bindings) {
+        var binding = bindings[bi];
+
+        console.log("*", binding.model_code, "(bridge:", binding.bridge.bridge_name + ")");
+    }
+
+    console.log("");
+
+    process.exit(0)
 };
