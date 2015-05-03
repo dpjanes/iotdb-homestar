@@ -328,6 +328,7 @@ var make_dynamic = function (paramd) {
             cookbook: _template_cookbook,
             cookbooks: _template_cookbooks,
             settings: _template_settings,
+            configures: _configures,
             urls: settings.d.urls,
             user: request.user,
             homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
@@ -424,6 +425,43 @@ var setup_express_modules = function (app) {
         }
     }
 };
+
+/**
+ *  Setup configuration pages
+ */
+var _configures = [];
+
+var setup_express_configure = function (app) {
+    var modules = iotdb.modules().modules();
+    for (var mi in modules) {
+        var module = modules[mi];
+        if (!module.Bridge) {
+            continue;
+        }
+
+        var bridge = new module.Bridge();
+
+        var name = bridge.name();
+        var path = "/configure/" + _.id.to_dash_case(name);
+
+        var subapp = express();
+
+        subapp.engine('html', swig.renderFile);
+        subapp.swig = swig;
+        subapp.html_root = path;
+
+        if (!bridge.configure(subapp)) {
+            continue;
+        }
+
+        app.use(path, subapp);
+    
+        _configures.push({
+            name: name,
+            path: path,
+        });
+    }
+}
 
 /**
  *  Built-in pages
@@ -697,6 +735,7 @@ exports.app = app;
 
 setup_express(app);
 setup_express_modules(app);
+setup_express_configure(app);
 setup_express_dynamic(app);
 setup_express_static(app);
 setup_express_api(app);

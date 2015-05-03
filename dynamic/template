@@ -38,6 +38,7 @@
         <ul class="list-inline">
             <li><a href="/">Home</a></li>
             <li><a href="/things">Things</a></li>
+            <li><a href="/configure">Configure</a></li>
             <li><a href="/upnp">UPnP</a></li>
             {% if user.is_owner %}
             <li><a href="{{ urls.admin }}">Admin</a></li>

@@ -1,10 +1,9 @@
 {% extends 'template' %}
 {% block content %}
     <h1>Configure</h1>
-    <!--
-    {% for dd in upnp().devices %}
-        <h3>{{ dd.friendlyName }} &mdash; <code>{{ dd.host }}:{{ dd.port }}</code></h3>
-        <pre>{{ dd|json(2)|safe }}</pre>
+    <ul>
+    {% for cd in configures %}
+        <li><a href="{{ cd.path }}">{{ cd.name }}</a></li>
     {% endfor %}
-    -->
+    </ul>
 {% endblock %}
