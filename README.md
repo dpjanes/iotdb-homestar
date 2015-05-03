@@ -4,6 +4,10 @@
 
 IOTDB / Home☆Star is an Open Source IoT Platform / API in Node.JS. I'd tell you it's the _best_ IoT Platform, but I hope you can discover this for yourself.
 
+What does it work with? 
+Well potentially: anything.
+Currently, WeMos of all sorts, Philips Hue Lights, TCP Lighting, Pins on your Raspberry Pi, Bluetooth Low Energy thingies, Sonos, Chromecasts, LittleBits, LG TVs, Denon AVRs, and more….
+
 ### IOTDB v. Home☆Star
 
 First, a simple introduction of "what's what".
@@ -66,7 +70,8 @@ Don't worry about understanding these right off.
 ### What does it run on?
 
 Anything that Node.JS runs on.
-We develop on Mac and test on Raspberry Pis, Linux boxes and Intel Edisons (so far)
+We develop on Mac and test on Raspberry Pis, Linux boxes and Intel Edisons (so far). 
+The Home☆Star project also presents an API on your LAN, so you don't necessarily have to use Node.JS to work with IOTDB.
 
 ### What does it look like?
 
@@ -74,8 +79,7 @@ IOTDB looks like any other Node.JS program! The Home☆Star user interface is a 
 
 Home☆Star also presents an API that you can see by navigating to:
 
-	http://192.168.XX.XX:11802/api
-
+	http://<local-ip>:11802/api
 
 ## Installation
 
@@ -120,6 +124,40 @@ Create a program <code>wemo.js</code> with the following contents:
 	iot = iotdb.iot()
 	things = iot.connect()
 	things.set(':on', true)
+	
+Run it as follows
+
+	$ node wemo.js
+	
+And _voila_, all your WeMo Sockets will turn on.
+
+### Wah, I don't have a WeMo Socket!
+
+Every one of our modules project on GitHub has a <code>samples</code> folder. 
+You'll especially want to look at samples with <code>iotdb</code> in the name (the other samples are for "stand-alone" projects).
+
+Here's your links - go explore!
+
+* [homestar-ble](https://github.com/dpjanes/homestar-ble)
+* [homestar-chromecast](https://github.com/dpjanes/homestar-chromecast)
+* [homestar-coap](https://github.com/dpjanes/homestar-coap)
+* [homestar-denon-avr](https://github.com/dpjanes/homestar-denon-avr)
+* [homestar-feed](https://github.com/dpjanes/homestar-feed)
+* [homestar-gpio](https://github.com/dpjanes/homestar-gpio)
+* [homestar-hue](https://github.com/dpjanes/homestar-hue)
+* [homestar-lg-smart-tv](https://github.com/dpjanes/homestar-lg-smart-tv)
+* [homestar-lifx](https://github.com/dpjanes/homestar-lifx)
+* [homestar-littlebits](https://github.com/dpjanes/homestar-littlebits)
+* [homestar-null](https://github.com/dpjanes/homestar-null)
+* [homestar-rest](https://github.com/dpjanes/homestar-rest)
+* [homestar-smart-things](https://github.com/dpjanes/homestar-smart-things)
+* [homestar-sonos](https://github.com/dpjanes/homestar-sonos)
+* [homestar-tcp](https://github.com/dpjanes/homestar-tcp)
+* [homestar-wemo](https://github.com/dpjanes/homestar-wemo)
+* [homestar-wink](https://github.com/dpjanes/homestar-wink)
+
+Remember you can install any of these by <code>homestar install [name]</code>!
+
 
 
 ## More
