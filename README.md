@@ -25,12 +25,12 @@ Anything that Node.JS runs on.
 We develop on Mac and test on Raspberry Pis, Linux boxes and Intel Edisons (so far). 
 The Home☆Star project also presents an API on your LAN, so you don't necessarily have to use Node.JS to work with IOTDB.
 
-### IOTDB v. Home☆Star
+## IOTDB v. Home☆Star
 
 * **Home☆Star** is the "management" part - it handles the HTML user interface, presenting the RESTful API, hooking into notifications systems like MQTT or FireBase, and installing and configuring IOTDB related modules.
 * **IOTDB** is the "core" - it's a small Node.JS library that orchestrates making all your different things work together.
 
-### What's the Clever Bit?
+## What's the Clever Bit?
 
 There's a lot of neat ideas that have gone into IOTDB - we'll get to them elsewhere in this documentation. But the foremost: **we don't need to have an "IoT Standard" if we can systematically describe what Things actually do**.
 
@@ -72,7 +72,7 @@ IOTDB manages this all behind the scenes in something called a **Bridge**, which
 Normally as a programmer you do not have to worry about how Bridges work, unless you're adding a new type of Thing to IOTDB.
 
 
-### What does it look like?
+## What does it look like?
 
 IOTDB looks like any other Node.JS program! 
 
