@@ -25,11 +25,7 @@ Anything that Node.JS runs on.
 We develop on Mac and test on Raspberry Pis, Linux boxes and Intel Edisons (so far). 
 The Home☆Star project also presents an API on your LAN, so you don't necessarily have to use Node.JS to work with IOTDB.
 
-
-## Tell me more:
 ### IOTDB v. Home☆Star
-
-First, a simple introduction of "what's what".
 
 * **Home☆Star** is the "management" part - it handles the HTML user interface, presenting the RESTful API, hooking into notifications systems like MQTT or FireBase, and installing and configuring IOTDB related modules.
 * **IOTDB** is the "core" - it's a small Node.JS library that orchestrates making all your different things work together.
