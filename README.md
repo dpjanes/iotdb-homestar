@@ -1,6 +1,6 @@
 # IOTDB / Home☆Star
 
-<img src="https://github.com/dpjanes/iotdb-homestar/blob/master/docs/HomeStar.png" align="right" />
+<div style="z-index: 99"><img src="https://github.com/dpjanes/iotdb-homestar/blob/master/docs/HomeStar.png" align="right" /></div>
 ## What is it?
 
 IOTDB / Home☆Star is an Open Source IoT Platform / API in Node.JS. I'd tell you it's the _best_ IoT Platform, but I hope you can discover this for yourself.
