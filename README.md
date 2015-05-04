@@ -18,6 +18,14 @@ Well potentially: anything.
 
 Currently, WeMos of all sorts, Philips Hue Lights, TCP Lighting, Pins on your Raspberry Pi, Bluetooth Low Energy thingies, Sonos, Chromecasts, LittleBits, LG TVs, Denon AVRs, and more….
 
+## What does it run on?
+
+Anything that Node.JS runs on.
+
+We develop on Mac and test on Raspberry Pis, Linux boxes and Intel Edisons (so far). 
+The Home☆Star project also presents an API on your LAN, so you don't necessarily have to use Node.JS to work with IOTDB.
+
+
 ## Tell me more:
 ### IOTDB v. Home☆Star
 
@@ -67,23 +75,6 @@ Of course, _something_ actually has to do the work.
 IOTDB manages this all behind the scenes in something called a **Bridge**, which provides a standard way of discovering, configuring and manipulating Things. 
 Normally as a programmer you do not have to worry about how Bridges work, unless you're adding a new type of Thing to IOTDB.
 
-### What else ya got?
-
-Here's a few other interesting concepts from IOTDB. 
-Don't worry about understanding these right off.
-
-* **Bridge** - a standard way of interfacing to Things in Node.JS. Actually works mostly independently of IOTDB and can be used stand-alone.
-* **Deferred Operations** - Node.JS typically uses lots of callbacks: you wait for something to be ready, get a notification, then do stuff. In IOTDB you typically say "do this operation" and when the Thing becomes available it is then performed.
-* **Bands** - in IOTDB, a Thing is really a unique identifier, plus a series of "bands". Bands are named JSON dictionaries, currently "istate", "ostate", "meta" and "model". You manipulate Things solely by manipulating bands.
-* **Transporters** - a lot of really common and useful operations can done simply by modelling it by moving band data around. For example, Home☆Star's HTML interface is made by a "HTML Transporter" being connected to a "IOTDB Transporter".
-* **Stores** - (a work in progress) a variation of Transporters that moves data in bulk to a data store
-* **Transmogrifiers** - (a work in progress) we can e.g. make a Fahrenheit temperature sensor look like a Celsius one, so as a programmer you don't have to worry about incompatible data sets.
-
-### What does it run on?
-
-Anything that Node.JS runs on.
-We develop on Mac and test on Raspberry Pis, Linux boxes and Intel Edisons (so far). 
-The Home☆Star project also presents an API on your LAN, so you don't necessarily have to use Node.JS to work with IOTDB.
 
 ### What does it look like?
 
@@ -92,7 +83,6 @@ IOTDB looks like any other Node.JS program!
 The Home☆Star user interface is brought up by this command…
 
     $ homestar runner | homestar pretty
-
 
 …and it opens a web page that looks like this:
 
@@ -234,6 +224,17 @@ When working with Transporters the stack looks like this:
 
 Where the top "Native Code" is HTML, MQTT, FireBase, a database and so forth. If this isn't clear, don't worry about it. 
 Home☆Star handles this for most instances where you'll need this. 
+
+### Other concepts
+
+Here's a few other interesting concepts from IOTDB. 
+
+* **Bridge** - a standard way of interfacing to Things in Node.JS. Actually works mostly independently of IOTDB and can be used stand-alone.
+* **Deferred Operations** - Node.JS typically uses lots of callbacks: you wait for something to be ready, get a notification, then do stuff. In IOTDB you typically say "do this operation" and when the Thing becomes available it is then performed.
+* **Bands** - in IOTDB, a Thing is really a unique identifier, plus a series of "bands". Bands are named JSON dictionaries, currently "istate", "ostate", "meta" and "model". You manipulate Things solely by manipulating bands.
+* **Transporters** - a lot of really common and useful operations can done simply by modelling it by moving band data around. For example, Home☆Star's HTML interface is made by a "HTML Transporter" being connected to a "IOTDB Transporter".
+* **Stores** - (a work in progress) a variation of Transporters that moves data in bulk to a data store
+* **Transmogrifiers** - (a work in progress) we can e.g. make a Fahrenheit temperature sensor look like a Celsius one, so as a programmer you don't have to worry about incompatible data sets.
 
 
 ## Contributing
