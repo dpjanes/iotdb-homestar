@@ -1,5 +1,6 @@
 # IOTDB / Home☆Star
 
+<img src="https://github.com/dpjanes/iotdb-homestar/blob/master/docs/HomeStar-Things.png" style="float: right" />
 ## What is it?
 
 IOTDB / Home☆Star is an Open Source IoT Platform / API in Node.JS. I'd tell you it's the _best_ IoT Platform, but I hope you can discover this for yourself.
@@ -75,6 +76,7 @@ Don't worry about understanding these right off.
 * **Deferred Operations** - Node.JS typically uses lots of callbacks: you wait for something to be ready, get a notification, then do stuff. In IOTDB you typically say "do this operation" and when the Thing becomes available it is then performed.
 * **Bands** - in IOTDB, a Thing is really a unique identifier, plus a series of "bands". Bands are named JSON dictionaries, currently "istate", "ostate", "meta" and "model". You manipulate Things solely by manipulating bands.
 * **Transporters** - a lot of really common and useful operations can done simply by modelling it by moving band data around. For example, Home☆Star's HTML interface is made by a "HTML Transporter" being connected to a "IOTDB Transporter".
+* **Stores** - (a work in progress) a variation of Transporters that moves data in bulk to a data store
 * **Transmogrifiers** - (a work in progress) we can e.g. make a Fahrenheit temperature sensor look like a Celsius one, so as a programmer you don't have to worry about incompatible data sets.
 
 ### What does it run on?
@@ -85,7 +87,14 @@ The Home☆Star project also presents an API on your LAN, so you don't necessari
 
 ### What does it look like?
 
-IOTDB looks like any other Node.JS program! The Home☆Star user interface is a web page and looks like this:
+IOTDB looks like any other Node.JS program! 
+
+The Home☆Star user interface is brought up by this command…
+
+    $ homestar runner | homestar pretty
+
+
+…and it opens a web page that looks like this:
 
 <p><img src="https://github.com/dpjanes/iotdb-homestar/blob/master/docs/HomeStar-Cookbooks.png" />
 
@@ -226,32 +235,12 @@ When working with Transporters the stack looks like this:
 Where the top "Native Code" is HTML, MQTT, FireBase, a database and so forth. If this isn't clear, don't worry about it. 
 Home☆Star handles this for most instances where you'll need this. 
 
-----------------
 
+## Contributing
 
+### 
 
-
- The _core_ of IOTDB is knowing that we don't need to standardize
-
-idea is that **Things should be controlled
-
-
-
-
-
-
-HomeStar is powerful, Open Source IoT software written in Node.JS.
-The core of HomeStar is a library called IOTDB - the Internet of Things
-Database - which provides a well thought out and programmer-friendly
-model for discovering and configuring things, and controlling the using
-their own native vocabulary, or more importantly, using a universal
-semantic language.
-
-You can run it on your home computer, Raspberry Pi,
-Intel Edison, BeagleBone Black, &c.
-
-Ideal early users have Belkin WeMo, Philips Hue,
-LIFX, but theoretically it'll run with anything.
+## Additional Documentation
 
 ### Read these three in order
 
@@ -267,12 +256,3 @@ LIFX, but theoretically it'll run with anything.
 ### Updates
 
 * [IOTDB 0.6.X](docs/IOTDB-0.6.md) - what's changed
-
-## Running HomeStar
-
-    $ homestar runner | homestar pretty
-
-## Getting new recipes
-
-    homestar browse
-
