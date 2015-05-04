@@ -10,6 +10,7 @@ IOTDB makes it _really_ easy to script / monitor the Internet of Things.
 Really easy. Like super easy.
 
 Home☆Star is the interface bit. Home☆Star makes web pages, APIs, "cookbooks" and controls access to IOTDB running on a particular machine.
+It also provides the command line interface for configuring IOTDB.
 
 ## What does it work with? 
 
