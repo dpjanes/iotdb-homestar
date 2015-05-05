@@ -13,6 +13,10 @@ var js = {
         js.general.on_load();
         js.transport.on_load();
         js.mqtt.on_load();
+
+        $('[data-toggle="popover"]').popover({
+            html: true
+        });
     },
 
     interactors: {

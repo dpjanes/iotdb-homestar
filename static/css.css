@@ -54,6 +54,7 @@ body.desktop li.interactor.running {
     padding: 0px;
     border-radius: 4px;
 }
+a.iot-name,
 a.action-edit-permission {
     color: white;
 }
@@ -66,5 +67,6 @@ div[data-notify="container"] span[data-notify="icon"] {
 div[data-notify="container"] .progress {
     display: none;
 }
-    display: none;
+div.popover {
+    color: #34495e;
 }

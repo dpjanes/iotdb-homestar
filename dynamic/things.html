@@ -6,15 +6,15 @@
     <h1>Things</h1>
     {% for thing in things() %}
     <ul class="list-group">
-        <li class="list-group-item active" data-interactor="title" data-id="{{ thing._id }}" id="{{ thing._id }}">
-            <span class="action-group">{{ thing._name }}</span>
-            {% if metadata_editor and user.permissions.owner %}
+        {# <pre>{{ thing.meta|json(2)|safe }}</pre> #}
+        <li class="list-group-item active iotdb-thing" data-interactor="title" data-id="{{ thing._id }}" id="{{ thing._id }}">
+            <a class="action-group iot-name" data-toggle="popover" title="{{ thing.model['schema:name'] }}" data-content="{{ format_metadata(thing)|safe }}">{{ thing._name }}</a>
+            {% if metadata_editor and user.is_owner %}
             <a href="/admin/things/{{ thing._id }}/meta" class="pull-right action-edit-permission">☆</a>
             {% endif %}
         </li>
         {% for attribute in thing.model["iot:attribute"] %}
             <li class="list-group-item interactor" data-interactor="{{ attribute._interactor }}" data-thing="{{ thing._id }}" data-attribute="{{ attribute._code }}" onclick>
-                {# <div>interactor:{{ attribute._interactor }}</div> #}
                 [[{ htmld.attribute|safe }]]
             </li>
         {% endfor %}

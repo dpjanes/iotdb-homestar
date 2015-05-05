@@ -54,14 +54,17 @@ var get = function (identity, paramd, callback) {
     });
 
     var identity_hash = _.id.user_urn(identity);
-    transporter.get(identity_hash, band, function (_id, _band, d) {
-        if ((d === null) && paramd.create) {
-            d = {
+    transporter.get({
+        id: identity_hash, 
+        band: band, 
+    }, function (gd) {
+        if ((gd.value === null) && paramd.create) {
+            gd.value = {
                 identity: identity
             };
         }
 
-        callback(d);
+        callback(gd.value);
     });
 };
 
@@ -78,7 +81,11 @@ var update = function (userd) {
 
     var identity_hash = _.id.user_urn(userd.identity);
 
-    transporter.update(identity_hash, band, userd);
+    transporter.update({
+        id: identity_hash, 
+        band: band, 
+        value: userd,
+    });
 };
 
 /**
@@ -99,23 +106,25 @@ var users = function (callback) {
             callback(null);
         }
     };
-    var _got_user = function (_id, _band, user) {
-        if (user) {
-            callback(user);
-        }
-        _decrement();
+    var _got_user = function (gd) {
     };
 
-    transporter.list(function (ids) {
-        if (ids === null) {
+    transporter.list(function (ld) {
+        if (ld.end) {
             _decrement();
-        } else {
-            for (var ii in ids) {
-                var id = ids[ii];
-                _increment();
-                transporter.get(_got_user);
-            }
+            return;
         }
+
+        transporter.get({
+            id: ld.id,
+            band: band, 
+        }, function(gd) {
+            if (gd.value) {
+                callback(gd.value);
+            }
+
+            _decrement();
+        });
     });
 };
 

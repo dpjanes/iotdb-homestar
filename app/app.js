@@ -42,6 +42,7 @@ var open = require('open');
 var path = require('path');
 var util = require('util');
 var fs = require('fs');
+var url = require('url');
 
 var mqtt = require('./mqtt');
 var recipe = require('./recipe');
@@ -275,6 +276,83 @@ var _template_settings = function () {
     return sd;
 };
 
+var _scrub_url = function(v) {
+    if (!v) {
+        return v;
+    }
+
+    var u = url.parse(v);
+    if (_.isEmpty(u.protocol)) {
+        return v;
+    }
+
+    return u.hostname + u.path.replace(/\/+$/, '');
+};
+
+var _format_metadata = function(thingd) {
+    var metad = thingd.meta;
+    var lines = [];
+    var v;
+    var vi;
+    var vs;
+
+    /*
+    v = _.ld.first(metad, "iot:thing");
+    if (v) {
+        lines.push("id: " + v);
+    }
+     */
+
+    vs = _.ld.list(metad, "iot:zone", []);
+    if (vs.length > 1) {
+        lines.push("<b>zones</b>: " + vs.join(","));
+    } else if (vs.length === 1) {
+        lines.push("<b>zone</b>: " + vs.join(","));
+    } else {
+        lines.push("<b>zones</b>: <i>none asssigned</i>");
+    }
+
+    vs = _.ld.list(metad, "iot:facet", []);
+    for (vi in vs) {
+        vs[vi] = vs[vi].replace(/^.*:/, '');
+    }
+    if (vs.length > 1) {
+        lines.push("<b>facets</b>: " + vs.join(","));
+    } else if (vs.length === 1) {
+        lines.push("<b>facets</b>: " + vs.join(","));
+    } else {
+        lines.push("<b>facets</b>: <i>none asssigned</i>");
+    }
+
+    v = _.ld.first(metad, "schema:manufacturer");
+    if (v) {
+        lines.push("<b>manufacturer</b>: " + _scrub_url(v));
+    }
+
+    v = _.ld.first(metad, "schema:model");
+    if (v) {
+        lines.push("<b>model</b>: " + _scrub_url(v));
+    }
+
+    return lines.join("<br>");
+
+    /*
+{
+  "iot:thing": "urn:iotdb:thing:Chromecast:1e1951d1-4b2e-e5fa-ec1b-d66cb2f84e97",
+  "schema:name": "Basement Chromecast",
+  "schema:manufacturer": "Google Inc.",
+  "schema:model": "Eureka Dongle",
+  "iot:facet": [
+    "iot-facet:media"
+  ],
+  "@timestamp": "2015-05-04T20:46:04.535Z",
+  "iot:zone": [
+    "Basement"
+  ]
+}
+    */
+};
+
 /**
  *  Dynamic pages - we decide at runtime
  *  what these are based on our paths
@@ -332,6 +410,7 @@ var make_dynamic = function (paramd) {
             urls: settings.d.urls,
             user: request.user,
             homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
+            format_metadata: _format_metadata,
         };
         _.extend(locals, _modules_locals);
 

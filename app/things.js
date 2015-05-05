@@ -36,6 +36,7 @@ var interactors = require('./interactors');
 var MQTTTransport = require('iotdb-transport-mqtt').Transport;
 var ExpressTransport = require('iotdb-transport-express').Transport;
 var IOTDBTransport = require('iotdb-transport-iotdb').Transport;
+var FSTransport = require('iotdb-transport-fs').Transport;
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -376,6 +377,76 @@ var things = function () {
 };
 
 /**
+ *  MQTT messages - notifications, only on ISTATE and META 
+ */
+var _transport_mqtt = function(app, iotdb_transporter) {
+    var mqtt_transporter = new MQTTTransport({
+        prefix: path.join(settings.d.mqttd.prefix, "api", "things"),
+        host: settings.d.mqttd.host,
+        port: settings.d.mqttd.port,
+    });
+    iotdb.transporter.bind(iotdb_transporter, mqtt_transporter, {
+        bands: ["meta", "istate", ],
+    });
+};
+
+/**
+ *  Express interface - get & put. Put only on META and OSTATE
+ */
+var _transport_express = function(app, iotdb_transporter) {
+    var express_transporter = new ExpressTransport({
+        prefix: path.join("/", "api", "things"),
+    }, app);
+    iotdb.transporter.bind(iotdb_transporter, express_transporter, {
+        bands: ["meta", "istate", "ostate", "model", ],
+        updated: ["meta", "ostate", ],
+    });
+}
+
+/**
+ *  This handles persisting metadata
+ *  This probably needs work for dealing with @timestamp
+ */
+var _transport_metadata = function(app, iotdb_transporter) {
+    var metadata_transporter = new FSTransport({
+        prefix: ".iotdb/things",
+    });
+
+    // When things are changed, save their metata
+    iotdb_transporter.updated(function(ud) {
+        if (ud.band !== "meta") {
+            return;
+        }
+
+        // thhe @timestamp means it had to be done by the user
+        if (!ud.value['@timestamp']) {
+            return;
+        }
+
+        metadata_transporter.update(ud);
+    });
+
+    // When things are discovered, load their metadata from the FS
+    var _back_copy = function(ld) {
+        if (ld.end) {
+            return;
+        } else if (ld.id) {
+            metadata_transporter.get({
+                id: ld.id, 
+                band: "meta", 
+            }, function(gd) {
+                if (gd.value) {
+                    iotdb_transporter.update(gd);
+                }
+            });
+        }
+    };
+
+    iotdb_transporter.added(_back_copy);
+    iotdb_transporter.list(_back_copy);
+};
+
+/**
  *  The Transporter will brodcast all istate/meta
  *  changes to Things to MQTT path 
  *  the same as the REST API
@@ -386,24 +457,9 @@ var setup = function (app) {
 
     var iotdb_transporter = new IOTDBTransport({}, things);
 
-    /* MQTT messages - notifications, only on ISTATE and META */
-    var mqtt_transporter = new MQTTTransport({
-        prefix: path.join(settings.d.mqttd.prefix, "api", "things"),
-        host: settings.d.mqttd.host,
-        port: settings.d.mqttd.port,
-    });
-    iotdb.transporter.bind(iotdb_transporter, mqtt_transporter, {
-        bands: ["meta", "istate", ],
-    });
-
-    /* REST interface - get & put. Put only on META and OSTATE */
-    var rest_transporter = new ExpressTransport({
-        prefix: path.join("/", "api", "things"),
-    }, app);
-    iotdb.transporter.bind(iotdb_transporter, rest_transporter, {
-        bands: ["meta", "istate", "ostate", "model", ],
-        updated: ["meta", "ostate", ],
-    });
+    _transport_mqtt(app, iotdb_transporter);
+    _transport_express(app, iotdb_transporter);
+    _transport_metadata(app, iotdb_transporter);
 };
 
 /**
