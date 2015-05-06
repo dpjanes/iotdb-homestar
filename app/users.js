@@ -83,21 +83,21 @@ var user_by_id = function (user_id, callback) {
 /**
  *  Save a user record
  */
-var update = function (userd) {
-    if (!_.isObject(userd)) {
+var update = function (user, done) {
+    if (!_.isObject(user)) {
         throw new Error("expecting an object");
     }
-    if (!userd.identity) {
-        throw new Error("expecting userd.identity");
+    if (!user.identity) {
+        throw new Error("expecting user.identity");
     }
 
-    var user_id = _.id.user_urn(userd.identity);
+    var user_id = _.id.user_urn(user.identity);
 
     transporter.update({
         id: user_id, 
         band: band, 
-        value: userd,
-    });
+        value: user,
+    }, done);
 };
 
 /**

@@ -430,6 +430,10 @@ var make_dynamic = function (paramd) {
 
         customize(request, response, locals, function (error, _rendered) {
             if (_rendered) {
+                if (_.is.String(_rendered)) {
+                    response.redirect(_rendered);
+                }
+
                 return;
             }
 
@@ -485,6 +489,7 @@ var setup_express_modules = function (app) {
                 make_dynamic: make_dynamic,
                 settings: settings.d,
                 users: {
+                    update: users.update,
                     users: users.users,
                     user_by_id: users.user_by_id,
                 },
