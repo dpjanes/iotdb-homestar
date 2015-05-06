@@ -433,6 +433,14 @@ var make_dynamic = function (paramd) {
                 return;
             }
 
+            if (error) {
+                response
+                    .status(404)
+                    .set('Content-Type', "text/plain")
+                    .send(error.message ? error.message : error);
+                return;
+            }
+
             var page_template = swig_outer.renderFile(paramd.template);
             var page_content = swig.render(page_template, {
                 filename: paramd.template,
@@ -538,6 +546,12 @@ var setup_express_modules = function (app) {
                             "Friends",
                             "Family",
                         ];
+                    },
+                    default_access_read: function() {
+                        return [ "Everyone", ];
+                    },
+                    default_access_write: function() {
+                        return [ "Friends", ];
                     },
                 },
             });
