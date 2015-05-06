@@ -64,7 +64,7 @@ var user_by_identity = function (identity, paramd, callback) {
             };
         }
 
-        callback(gd.value);
+        callback(null, gd.value);
     });
 };
 
@@ -115,12 +115,11 @@ var users = function (callback) {
 
     var _decrement = function () {
         if (--pending === 0) {
-            callback(null);
+            callback(null, null);
         }
     };
 
     transporter.list(function (ld) {
-
         if (ld.end) {
             _decrement();
         } else if (ld.id) {
@@ -131,7 +130,7 @@ var users = function (callback) {
                 band: band, 
             }, function(gd) {
                 if (gd.value) {
-                    callback(gd.value);
+                    callback(null, gd.value);
                 }
 
                 _decrement();
@@ -155,7 +154,6 @@ var setup = function () {
  */
 exports.setup = setup;
 exports.update = update;
-exports.get = user_by_identity;
 exports.user_by_identity = user_by_identity;
 exports.user_by_id = user_by_id;
 exports.users = users;

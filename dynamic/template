@@ -42,8 +42,14 @@
             <li><a href="/configure">Configure</a></li>
             <li><a href="/upnp">UPnP</a></li>
                 {% if admin_editor %}
-                <li><a href="{{ urls.admin }}">Admin</a></li>
+                <li><a href="{{ urls.admin }}/users">Users</a></li>
                 {% endif %}
+            {% endif %}
+            {% if user %}
+            <li><a href="/auth/logout">Sign out</a></li>
+            {% endif %}
+            {% if homestar_configured and !user %}
+            <a href="{{ urls.login }}">Sign in with HomeStar</a>
             {% endif %}
         </ul>
         {% endblock %}

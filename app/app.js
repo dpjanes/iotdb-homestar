@@ -553,6 +553,9 @@ var setup_express_modules = function (app) {
                     default_access_write: function() {
                         return [ "Friends", ];
                     },
+                    default_groups: function() {
+                        return [ "Everyone", ];
+                    },
                 },
             });
         }
@@ -781,9 +784,13 @@ var setup_passport = function () {
                 };
 
                 /* extend with additional info from the database */
-                users.get(user.identity, {
+                users.user_by_identity(user.identity, {
                     create: true
-                }, function (userd) {
+                }, function (error, userd) {
+                    if (error) {
+                        return done(error);
+                    }
+
                     if (userd.groups !== undefined) {
                         user.groups = userd.groups;
                         user.is_known = true;
@@ -810,10 +817,12 @@ var setup_passport = function () {
             user_identity: user_identity,
         }, "passport/deserializeUser");
 
-        users.get(user_identity, {
+        users.user_by_identity(user_identity, {
             create: false
-        }, function (user) {
-            if (!user) {
+        }, function (error, user) {
+            if (error) {
+                return done(error, null);
+            } else if (!user) {
                 return done(null, null);
             }
 
