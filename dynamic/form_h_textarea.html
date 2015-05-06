@@ -1,0 +1,28 @@
+{% macro form_h_textarea(key, value, readonly, label, placeholder, errors) %}
+<div class="form-group {% if errors %}has-error{% endif %}">
+    <label for="id_{{ key }}" class="col-sm-2 control-label">{{ label }}</label>
+    <div class="col-sm-6">
+        <textarea
+            id="id_{{ key }}"
+            name="{{ key }}"
+            type="{{ type|default:'text' }}"
+            placeholder="{% if placeholder %}{{ placeholder }}{% else %}{{ label }}{% endif %}"
+            {% if readonly %}readonly="readonly"{% endif %}
+            class="form-control">{{ value|default:"" }}</textarea>
+        {% if help %}
+        <p class="text-info">
+            {{ help }}
+        </p>
+        {% endif %}
+
+        {% if errors %}
+        <p class="has-error">
+            {% for error in errors %}
+                <span class="help-block">{{ error }}</span>
+            {% endfor %}
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+{% endmacro %}

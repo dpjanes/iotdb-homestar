@@ -1,0 +1,8 @@
+li[data-interactor="iri"] input {
+    position: relative;
+    top: -6px;
+}
+li[data-interactor="iri"] button {
+    position: relative;
+    top: -7px;
+}

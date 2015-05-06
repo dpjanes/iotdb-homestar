@@ -478,12 +478,67 @@ var setup_express_modules = function (app) {
                 settings: settings.d,
                 users: {
                     users: users.users,
+                    user_by_id: users.user_by_id,
                 },
                 things: {
                     thing_by_id: things.thing_by_id,
                 },
                 recipes: {
                     recipe_by_id: recipe.recipe_by_id,
+                },
+                data: {
+                    facets: function() {
+                        return [
+                            "iot-facet:appliance",
+                            "iot-facet:climate",
+                            "iot-facet:climate.cooling",
+                            "iot-facet:climate.heating",
+                            "iot-facet:control",
+                            "iot-facet:control.dial",
+                            "iot-facet:control.dimmer",
+                            "iot-facet:control.keyboard",
+                            "iot-facet:control.keypad",
+                            "iot-facet:control.mouse",
+                            "iot-facet:control.switch",
+                            "iot-facet:control.touchpad",
+                            "iot-facet:gateway",
+                            "iot-facet:lighting",
+                            "iot-facet:media",
+                            "iot-facet:security",
+                            "iot-facet:sensor",
+                            "iot-facet:sensor.chemical",
+                            "iot-facet:sensor.chemical.carbon-dioxide",
+                            "iot-facet:sensor.chemical.carbon-monoxide",
+                            "iot-facet:sensor.fire",
+                            "iot-facet:sensor.heat",
+                            "iot-facet:sensor.humidity",
+                            "iot-facet:sensor.humidty",
+                            "iot-facet:sensor.motion",
+                            "iot-facet:sensor.particulates",
+                            "iot-facet:sensor.presence",
+                            "iot-facet:sensor.shatter",
+                            "iot-facet:sensor.sound",
+                            "iot-facet:sensor.spatial",
+                            "iot-facet:sensor.temperature",
+                            "iot-facet:sensor.water",
+                            "iot-facet:toy",
+                            "iot-facet:wearable",
+                        ];
+                    },
+                    zones: function() {
+                        return [
+                            "Kitchen", "Living Room", "Basement", "Master Bedroom", "Bedroom", "Den",
+                            "Main Floor", "Second Floor",
+                            "Front Garden", "Back Garden",
+                        ];
+                    },
+                    groups: function() {
+                        return [
+                            "Everyone",
+                            "Friends",
+                            "Family",
+                        ];
+                    },
                 },
             });
         }
@@ -707,24 +762,16 @@ var setup_passport = function () {
                 var user = {
                     identity: user_identity,
                     is_owner: user_identity === owner_identity ? true : false,
-                    id: profile.id,
+                    id: _.id.user_urn(user_identity),
                     username: profile.username,
-                    /* hoping everything below here can be deleted */
-                    /*
-                    service: "homestar",
-                    oauth: {
-                        token: token,
-                        token_secret: token_secret,
-                    },
-                    */
                 };
 
                 /* extend with additional info from the database */
                 users.get(user.identity, {
                     create: true
                 }, function (userd) {
-                    if (userd.acl_groups !== undefined) {
-                        user.acl_groups = userd.acl_groups;
+                    if (userd.groups !== undefined) {
+                        user.groups = userd.groups;
                         user.is_known = true;
                     } else {
                         user.is_known = false;
@@ -758,7 +805,7 @@ var setup_passport = function () {
 
             var owner_identity = settings.d.keys.homestar && settings.d.keys.homestar.owner;
             user.is_owner = user.identity === owner_identity ? true : false;
-            user.is_known = (user.acl_groups !== undefined) ? true : false;
+            user.is_known = (user.groups !== undefined) ? true : false;
 
             done(null, user);
         });

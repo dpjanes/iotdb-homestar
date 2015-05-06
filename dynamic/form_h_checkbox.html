@@ -1,0 +1,27 @@
+{% macro form_h_checkbox(key, value, readonly, label, placeholder, errors) %}
+<div class="form-group {% if errors %}has-error{% endif %}">
+    <label for="id_{{ key }}" class="col-sm-2 control-label">{{ label }}</label>
+    <div class="col-sm-6">
+        <input
+            id="id_{{ key }}"
+            name="{{ key }}"
+            {% if value %}checked="checked"{% endif %}
+            type="checkbox"
+            {% if readonly %}readonly="readonly"{% endif %}
+            class="form-control" />
+        {% if help %}
+        <p class="text-info">
+            {{ help }}
+        </p>
+        {% endif %}
+
+        {% if errors %}
+        <p class="has-error">
+            {% for error in errors %}
+                <span class="help-block">{{ error }}</span>
+            {% endfor %}
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}

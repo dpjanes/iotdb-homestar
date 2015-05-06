@@ -41,9 +41,9 @@ var transporter;
 var band = "user";
 
 /**
- *  Retrieve a user record
+ *  Retrieve a user record by identity (a URL)
  */
-var get = function (identity, paramd, callback) {
+var user_by_identity = function (identity, paramd, callback) {
     if (callback === undefined) {
         callback = paramd;
         paramd = {};
@@ -53,9 +53,9 @@ var get = function (identity, paramd, callback) {
         create: true,
     });
 
-    var identity_hash = _.id.user_urn(identity);
+    var user_id = _.id.user_urn(identity);
     transporter.get({
-        id: identity_hash, 
+        id: user_id, 
         band: band, 
     }, function (gd) {
         if ((gd.value === null) && paramd.create) {
@@ -65,6 +65,18 @@ var get = function (identity, paramd, callback) {
         }
 
         callback(gd.value);
+    });
+};
+
+/**
+ *  Retrieve a user record by user_id (a hash of the Identity URL)
+ */
+var user_by_id = function (user_id, callback) {
+    transporter.get({
+        id: user_id, 
+        band: band, 
+    }, function (gd) {
+        callback(null, gd.value || null);
     });
 };
 
@@ -79,10 +91,10 @@ var update = function (userd) {
         throw new Error("expecting userd.identity");
     }
 
-    var identity_hash = _.id.user_urn(userd.identity);
+    var user_id = _.id.user_urn(userd.identity);
 
     transporter.update({
-        id: identity_hash, 
+        id: user_id, 
         band: band, 
         value: userd,
     });
@@ -93,38 +105,38 @@ var update = function (userd) {
  *
  *  Callback will be called with user records,
  *  and null when all done.
- *
- *  Horrifying callback code here
  */
 var users = function (callback) {
     var pending = 1;
+
     var _increment = function () {
         pending++;
     };
+
     var _decrement = function () {
         if (--pending === 0) {
             callback(null);
         }
     };
-    var _got_user = function (gd) {
-    };
 
     transporter.list(function (ld) {
+
         if (ld.end) {
             _decrement();
-            return;
+        } else if (ld.id) {
+            _increment();
+
+            transporter.get({
+                id: ld.id,
+                band: band, 
+            }, function(gd) {
+                if (gd.value) {
+                    callback(gd.value);
+                }
+
+                _decrement();
+            });
         }
-
-        transporter.get({
-            id: ld.id,
-            band: band, 
-        }, function(gd) {
-            if (gd.value) {
-                callback(gd.value);
-            }
-
-            _decrement();
-        });
     });
 };
 
@@ -134,8 +146,7 @@ var users = function (callback) {
 var setup = function () {
     transporter = new FSTransport.Transport({
         prefix: ".iotdb/users",
-        channel: FSTransport.flat_channel,
-        unchannel: FSTransport.flat_unchannel,
+        flat_band: "user",
     });
 };
 
@@ -144,5 +155,7 @@ var setup = function () {
  */
 exports.setup = setup;
 exports.update = update;
-exports.get = get;
+exports.get = user_by_identity;
+exports.user_by_identity = user_by_identity;
+exports.user_by_id = user_by_id;
 exports.users = users;

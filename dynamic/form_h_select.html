@@ -1,0 +1,28 @@
+{% macro form_h_select(d) %}
+<div class="form-group {% if d.errors %}has-error{% endif %}">
+    <label for="id_{{ d.key }}" class="col-md-2 control-label">{{ d.label }}</label>
+    <div class="col-md-10">
+        <select
+            {% if d.multiple %}multiple="multiple"{% endif %}
+            id="id_{{ d.key }}"
+            name="{{ d.key }}"
+            class="form-control">
+            {% for choice in d.choices %}
+                {% if d.multiple %}
+            <option value="{{ choice.value }}"{% if choice.selected %} selected{% endif %}>{{ choice.name }}</option>
+                {% else %}
+            <option value="{{ choice.value }}"{% if d.value === choice.value %} selected{% endif %}>{{ choice.name }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+
+        {% if d.errors %}
+        <p class="has-error">
+            {% for error in d.errors %}
+                <span class="help-block">{{ error }}</span>
+            {% endfor %}
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}

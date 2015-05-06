@@ -38,10 +38,12 @@
         <ul class="list-inline">
             <li><a href="/">Home</a></li>
             <li><a href="/things">Things</a></li>
+            {% if user.is_owner %}
             <li><a href="/configure">Configure</a></li>
             <li><a href="/upnp">UPnP</a></li>
-            {% if user.is_owner %}
-            <li><a href="{{ urls.admin }}">Admin</a></li>
+                {% if admin_editor %}
+                <li><a href="{{ urls.admin }}">Admin</a></li>
+                {% endif %}
             {% endif %}
         </ul>
         {% endblock %}

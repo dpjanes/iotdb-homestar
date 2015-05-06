@@ -1,0 +1,29 @@
+{% macro form_h_input(fd) %}
+<div class="form-group {% if fd.errors %}has-error{% endif %}">
+    <label for="id_{{ fd.key }}" class="col-md-2 control-label">{{ fd.label }}</label>
+    <div class="col-md-10">
+        <input
+            id="id_{{ fd.key }}"
+            name="{{ fd.key }}"
+            value="{{ fd.value|"" }}"
+            type="{{ fd.type|'text' }}"
+            placeholder="{% if fd.placeholder %}{{ fd.placeholder }}{% else %}{{ fd.label }}{% endif %}"
+            {% if fd.readonly %}readonly="readonly"{% endif %}
+            class="form-control" />
+        {% if fd.help %}
+        <p class="text-info">
+            {{ fd.help }}
+        </p>
+        {% endif %}
+
+        {% if fd.errors %}
+        <p class="has-error">
+            {% for error in fd.errors %}
+                <span class="help-block">{{ error }}</span>
+            {% endfor %}
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+{% endmacro %}
