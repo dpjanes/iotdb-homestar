@@ -30,10 +30,10 @@ var cfg = iotdb.cfg;
 
 var unirest = require('unirest');
 var FirebaseTransport = require('iotdb-transport-firebase').Transport;
-var IOTDBTransport = require('iotdb-transport-iotdb').Transport;
 
 var settings = require('./settings');
 var recipe = require('./recipe');
+var things = require('./things');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -50,8 +50,11 @@ var _setup_firebase_transport = function () {
      */
     var homestar_transporter = new FirebaseTransport({
         prefix: settings.d.keys.homestar.key + "/homestar",
+        add_timestamp: true,
+        check_timestamp: true,
     });
 
+    /*
     var iot = iotdb.iot();
     iotdb.transport(homestar_transporter, iot.things(), {
         meta: true,
@@ -59,6 +62,11 @@ var _setup_firebase_transport = function () {
         istate: false,
         ostate: false,
         verbose: true,
+    });
+    */
+    iotdb.transporter.bind(things.iotdb_transporter, express_transporter, {
+        bands: ["meta", "istate", "ostate", "model", ],
+        updated: ["meta", "ostate", ],
     });
     /*
     iotdb.transport(transporter, recipe.recipes(), {
@@ -89,7 +97,13 @@ var setup = function () {
     }
 };
 
+/**
+ */
+var firebase = function (fd) {
+};
+
 /*
  *  API
  */
 exports.setup = setup;
+exports.firebase = firebase;

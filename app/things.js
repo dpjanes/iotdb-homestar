@@ -455,11 +455,11 @@ var setup = function (app) {
     var iot = iotdb.iot();
     var things = iot.connect();
 
-    var iotdb_transporter = new IOTDBTransport({}, things);
+    exports.iotdb_transporter = new IOTDBTransport({}, things);
 
-    _transport_mqtt(app, iotdb_transporter);
-    _transport_express(app, iotdb_transporter);
-    _transport_metadata(app, iotdb_transporter);
+    _transport_mqtt(app, exports.iotdb_transporter);
+    _transport_express(app, exports.iotdb_transporter);
+    _transport_metadata(app, exports.iotdb_transporter);
 };
 
 /**
@@ -469,3 +469,4 @@ exports.setup = setup;
 
 exports.thing_by_id = _thing_by_id;
 exports.things = things;
+exports.iotdb_transporter = null;
