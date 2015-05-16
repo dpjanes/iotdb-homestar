@@ -56,6 +56,10 @@ var Context = function (reciped) {
     self.reciped._context = self;
     self.reciped.state = {};
 
+    self.created_timestamp = _.timestamp();
+    self.modified_timestamp = _.timestamp();
+    self.execute_timestamp = _.timestamp();
+
     self.status = {
         running: false,
         text: null,
@@ -86,6 +90,7 @@ var make_context = function (reciped) {
  */
 Context.prototype.message = function (first) {
     var self = this;
+    var old_running = self.status.running;
 
     if (first === undefined) {
         self.status.running = false;
@@ -93,6 +98,17 @@ Context.prototype.message = function (first) {
     } else {
         self.status.running = true;
         self.status.message = util.format.apply(util.apply, Array.prototype.slice.call(arguments));
+    }
+
+    self.modified_timestamp = _.timestamp();
+
+    /*
+     *  Unfortunately we are sharing 'running' on 'ostate' also.
+     *  Therefore, a change in running status must change
+     *  our execute_timestamp
+     */
+    if (old_running !== self.status.running) {
+        self.execute_timestamp = _.timestamp();
     }
 
     self.emit("status");
@@ -130,6 +146,7 @@ Context.prototype.state = function (state) {
         _.extend(self.status, state);
     }
 
+    self.modified_timestamp = _.timestamp();
     self.emit("status");
 };
 
@@ -173,6 +190,8 @@ Context.prototype.onclick = function (value) {
             value = self.reciped._valued[value];
         }
 
+        self.execute_timestamp = _.timestamp();
+        console.log("HERE:ONCLICK", self.execute_timestamp);
         self.reciped.onclick(self, value);
     } else {
         logger.info({
@@ -221,9 +240,6 @@ var load_recipes = function (initd) {
         // this resets the groups and ID for every file
         homestar.cookbook();
     });
-
-    // console.log("HERE:BBBB ----------");
-    // process.exit(0)
 };
 
 /**
@@ -524,6 +540,20 @@ var archive = function () {
 /**
  */
 var recipe_model = function (recipe) {
+    var context = make_context(recipe);
+
+    var value_attribute = {
+        "@type": "iot:Attribute",
+        "@id": "#value",
+        "iot:purpose": recipe["iot:purpose"],
+        "schema:name": "value",
+        "iot:type": recipe["iot:type"],
+        "iot:role": ["iot-attribute:role-control", "iot-attribute:role-reading", ],
+    };
+    if (recipe.values) {
+        value_attribute['iot:enumeration'] = recipe.values;
+    }
+
     return {
         "@context": {
             "iot": _.ld.namespace["iot"],
@@ -532,16 +562,36 @@ var recipe_model = function (recipe) {
             "schema": _.ld.namespace["schema"],
         },
         "@id": "/api/recipes/" + recipe._id + "/model",
-        "@type": "iot:Model",
+        "@type": [ "iot:Model", "iot:Recipe", ],
+        "@timestamp": context.created_timestamp,
         "schema:name": recipe._name,
-        "iot:attribute": {
-            "@type": "iot:Attribute",
-            "@id": "#value",
-            "iot:purpose": recipe["iot:purpose"],
-            "schema:name": "value",
-            "iot:type": recipe["iot:type"],
-            "iot:role": ["iot-attribute:role-control", "iot-attribute:role-reading", ],
-        },
+        "iot:attribute": [
+            value_attribute,
+            {
+                "@type": "iot:Attribute",
+                "@id": "#message",
+                "iot:purpose": "iot-attribute:message.html",
+                "schema:name": "text",
+                "iot:type": "iot:string",
+                "iot:role": ["iot-attribute:role-reading", ],
+            },
+            {
+                "@type": "iot:Attribute",
+                "@id": "#text",
+                "iot:purpose": "iot-attribute:message.text",
+                "schema:name": "text",
+                "iot:type": "iot:string",
+                "iot:role": ["iot-attribute:role-reading", ],
+            },
+            {
+                "@type": "iot:Attribute",
+                "@id": "#running",
+                "iot:purpose": "iot-attribute:sensor.running",
+                "schema:name": "text",
+                "iot:type": "iot:boolean",
+                "iot:role": ["iot-attribute:role-reading", ],
+            },
+        ]
     };
 };
 
@@ -563,19 +613,52 @@ var recipe_recipe = function (recipe) {
 /**
  */
 var recipe_istate = function (recipe, context) {
-    return _.defaults(recipe.state, {
-        value: null,
-        "@id": "/api/recipes/" + recipe._id + "/istate",
-    });
+    if (!context) {
+        context = make_context(recipe);
+    }
+
+    var d = _.defaults(
+        {
+            "@timestamp": context.modified_timestamp,
+        },
+        recipe.state,
+        {
+            value: null,
+            "@id": "/api/recipes/" + recipe._id + "/istate",
+        }
+    );
+    d["value"] = null;
+
+
+    if (context.status.text) {
+        d["text"] = context.status.text;
+    }
+    if (context.status.message) {
+        d["message"] = context.status.message;
+    }
+
+    return d;
 };
 
 /**
  */
 var recipe_ostate = function (recipe, context) {
-    return {
+    if (!context) {
+        var context = make_context(recipe);
+    }
+
+    var d = {
         value: null,
+        "@timestamp": context.execute_timestamp,
         "@id": "/api/recipes/" + recipe._id + "/ostate",
     };
+
+    /* really should be istate, but this makes everything work automatically */
+    if (context.status.running) {
+        d["running"] = true;
+    }
+
+    return d;
 };
 
 /**

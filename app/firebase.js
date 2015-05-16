@@ -30,6 +30,7 @@ var _ = iotdb.helpers;
 var unirest = require('unirest');
 var firebase = require('firebase'); // NOTE: the real thing, not this module
 var FirebaseTransport = require('iotdb-transport-firebase').Transport;
+var RecipeTransport = require('./RecipeTransport').RecipeTransport;
 
 var settings = require('./settings');
 var recipe = require('./recipe');
@@ -42,7 +43,7 @@ var logger = iotdb.logger({
 
 /**
  */
-var _connect = function() {
+var _connect_iotdb = function() {
     /* check the timestamp */
     var firebase_transporter_check = new FirebaseTransport({
         firebase: _firebase,
@@ -67,6 +68,39 @@ var _connect = function() {
         updated: [ "ostate", ],
     });
 };
+
+var _connect_recipe = function() {
+    var recipe_transporter = new RecipeTransport();
+
+    /* check the timestamp */
+    var firebase_transporter_check = new FirebaseTransport({
+        firebase: _firebase,
+        prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
+        add_timestamp: true,
+        check_timestamp: true,
+    });
+    iotdb.transporter.bind(recipe_transporter, firebase_transporter_check, {
+        bands: [ "meta", "istate", "model", ],
+        updated: [ "meta", ],
+    });
+
+    /* don't check the timestamp */
+    var firebase_transporter_nocheck = new FirebaseTransport({
+        firebase: _firebase,
+        prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
+        add_timestamp: true,
+        check_timestamp: false,
+    });
+    iotdb.transporter.bind(recipe_transporter, firebase_transporter_nocheck, {
+        bands: [ "ostate", ],
+        updated: [ "ostate", ],
+    });
+}
+
+var _connect = function() {
+    _connect_iotdb();
+    _connect_recipe();
+}
 
 var _firebase = null
 var _cfg = null;

@@ -452,6 +452,7 @@ var _transport_metadata = function(app, iotdb_transporter) {
  *  the same as the REST API
  */
 var setup = function (app) {
+
     var iot = iotdb.iot();
     var things = iot.connect();
 
