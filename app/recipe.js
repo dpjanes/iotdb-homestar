@@ -56,9 +56,9 @@ var Context = function (reciped) {
     self.reciped._context = self;
     self.reciped.state = {};
 
-    self.created_timestamp = _.timestamp();
-    self.modified_timestamp = _.timestamp();
-    self.execute_timestamp = _.timestamp();
+    self.created_timestamp = _.timestamp.make();
+    self.modified_timestamp = _.timestamp.make();
+    self.execute_timestamp = _.timestamp.make();
 
     self.status = {
         running: false,
@@ -100,7 +100,7 @@ Context.prototype.message = function (first) {
         self.status.message = util.format.apply(util.apply, Array.prototype.slice.call(arguments));
     }
 
-    self.modified_timestamp = _.timestamp();
+    self.modified_timestamp = _.timestamp.make();
 
     /*
      *  Unfortunately we are sharing 'running' on 'ostate' also.
@@ -108,7 +108,7 @@ Context.prototype.message = function (first) {
      *  our execute_timestamp
      */
     if (old_running !== self.status.running) {
-        self.execute_timestamp = _.timestamp();
+        self.execute_timestamp = _.timestamp.make();
     }
 
     self.emit("status");
@@ -146,7 +146,7 @@ Context.prototype.state = function (state) {
         _.extend(self.status, state);
     }
 
-    self.modified_timestamp = _.timestamp();
+    self.modified_timestamp = _.timestamp.make();
     self.emit("status");
 };
 
@@ -190,8 +190,12 @@ Context.prototype.onclick = function (value) {
             value = self.reciped._valued[value];
         }
 
-        self.execute_timestamp = _.timestamp();
-        console.log("HERE:ONCLICK", self.execute_timestamp);
+        _.timestamp.update(self, {
+            key: 'execute_timestamp',
+        })
+
+        // self.execute_timestamp = _.timestamp.make();
+        // console.log("HERE:ONCLICK", self.execute_timestamp);
         self.reciped.onclick(self, value);
     } else {
         logger.info({
