@@ -53,7 +53,7 @@ exports.run = function (ad) {
     }
 
     var name = ad._[1];
-    var model_code = _.identifier_to_dash_case(name);
+    var model_code = _.id.to_dash_case(name);
     var model = null;
 
     var bindings = iotdb.modules().bindings();

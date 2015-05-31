@@ -172,6 +172,7 @@ RecipeTransport.prototype.get = function (paramd, callback) {
         var d = {
             "@timestamp": context.created_timestamp,
             "schema:name": rd._name,
+            "iot:cookbook": rd.group || "",
         };
 
         return callback({
@@ -198,6 +199,10 @@ RecipeTransport.prototype.update = function (paramd, callback) {
 
     self._validate_update(paramd, callback);
 
+    if (!paramd.id.match(/^urn:iotdb:recipe:/)) {
+        return;
+    }
+
     var rd = recipe.recipe_by_id(paramd.id);
     if (!rd) {
         logger.error({
@@ -205,6 +210,7 @@ RecipeTransport.prototype.update = function (paramd, callback) {
             cause: "hard to say - may not be important",
             thing_id: paramd.id,
         }, "Recipe not found");
+
         return;
     }
 
