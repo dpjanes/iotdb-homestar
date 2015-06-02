@@ -55,7 +55,7 @@ var server_client = function (client) {
     });
 
     client.on('publish', function (packet) {
-        logger.info({
+        logger.debug({
             method: "server_client/on(publish)",
             topic: packet.topic,
             // payload: packet.payload,
@@ -88,7 +88,7 @@ var server_client = function (client) {
 
     client.on('pingreq', function (packet) {
         if (settings.d.mqttd.verbose) {
-            logger.info({
+            logger.debug({
                 method: "server_client/on(pingreq)",
             }, "called");
         }
