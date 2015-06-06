@@ -46,7 +46,6 @@ var url = require('url');
 
 var mqtt = require('./mqtt');
 var recipe = require('./recipe');
-var data = require('./data');
 var settings = require('./settings');
 var homestar = require('./homestar');
 var transport = require('./transport');
@@ -247,6 +246,18 @@ var _template_upnp = function () {
 };
 
 var _template_cookbook = function () {
+    var _assign_group = function (rd) {
+        if (rd._thing_group) {
+            rd._group = rd._thing_group;
+        } else if (rd._thing_name) {
+            rd._group = rd._thing_name;
+        } else if (rd.group) {
+            rd._group = rd.group;
+        } else {
+            rd._group = "Ungrouped";
+        }
+    };
+
     var rds = [];
     var recipes = recipe.recipes();
     for (var ri in recipes) {
@@ -255,8 +266,8 @@ var _template_cookbook = function () {
         rd._valued = undefined;
         rd.watch = undefined;
 
-        helpers.assign_group(rd);
-        helpers.assign_interactor(rd);
+        _assign_group(rd);
+        interactors.assign_interactor_to_attribute(rd);
 
         rds.push(rd);
     }

@@ -26,7 +26,6 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var homestar = require('../homestar');
 var settings = require('./settings');
 var interactors = require('./interactors');
 
@@ -91,6 +90,7 @@ var make_context = function (reciped) {
 Context.prototype.message = function (first) {
     var self = this;
     var old_running = self.status.running;
+    var od = _.shallowCopy(self.status);
 
     if (first === undefined) {
         self.status.running = false;
@@ -100,7 +100,16 @@ Context.prototype.message = function (first) {
         self.status.message = util.format.apply(util.apply, Array.prototype.slice.call(arguments));
     }
 
-    self.modified_timestamp = _.timestamp.make();
+    var changed = false;
+    if (self.status.running !== od.running) {
+        changed = true;
+    } else if (self.status.message !== od.message) {
+        changed = true;
+    } 
+
+    if (!changed) {
+        return;
+    }
 
     /*
      *  Unfortunately we are sharing 'running' on 'ostate' also.
@@ -111,6 +120,7 @@ Context.prototype.message = function (first) {
         self.execute_timestamp = _.timestamp.make();
     }
 
+    self.modified_timestamp = _.timestamp.make();
     self.emit("status");
 };
 
@@ -121,6 +131,8 @@ Context.prototype.message = function (first) {
  */
 Context.prototype.state = function (state) {
     var self = this;
+
+    var od = _.shallowCopy(self.status);
 
     if ((state === undefined) || (state === null)) {
         self.status.text = null;
@@ -146,8 +158,19 @@ Context.prototype.state = function (state) {
         _.extend(self.status, state);
     }
 
-    self.modified_timestamp = _.timestamp.make();
-    self.emit("status");
+    var changed = false;
+    if (self.status.text !== od.text) {
+        changed = true;
+    } else if (self.status.html !== od.html) {
+        changed = true;
+    } else if (self.status.number !== od.number) {
+        changed = true;
+    }
+
+    if (changed) {
+        self.modified_timestamp = _.timestamp.make();
+        self.emit("status");
+    }
 };
 
 /*
@@ -242,7 +265,7 @@ var load_recipes = function (initd) {
         }, "found Model");
 
         // this resets the groups and ID for every file
-        homestar.cookbook();
+        iotdb.cookbook();
     });
 };
 

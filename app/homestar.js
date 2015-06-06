@@ -249,11 +249,13 @@ var send_things = function () {
  *  Ping the server that I'm alive
  */
 var ping = function () {
+    /*
     console.log("HERE:XXX", {
         'name': settings.d.name,
         'url': settings.d.webserver.url,
         'controller': _.ld.compact(iotdb.controller_meta()),
     })
+     */
     unirest
         .put(URL_CONSUMER)
         .headers({

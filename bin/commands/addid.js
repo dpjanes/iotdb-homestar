@@ -34,6 +34,43 @@ var settings = require("../../app/settings");
 var child_process = require('child_process')
 var path = require('path')
 
+/**
+ *  This will edit a file and add UDIDs to Chapters
+ *
+ *  <p>
+ *  This is synchronous
+ */
+var edit_add_cookbook_ids = function (filename) {
+    if (!fs.existsSync(filename)) {
+        logger.error({
+            method: "edit_add_cookbook_ids",
+            filename: filename
+        }, "file does not exist");
+        return;
+    }
+
+    var encoding = 'utf8';
+    var changed = false;
+    var contents = fs.readFileSync(filename, encoding);
+    var _replacer = function (full, cookbook_name) {
+        changed = true;
+        return util.format('homestar.cookbook(%s, "%s");', cookbook_name, uuid.v4());
+    };
+
+    contents = contents.replace(/^\s*homestar\s*.\s*cookbook\s*[(]\s*("[^"]*")\s*[)](\s*;)?/mg, _replacer);
+    contents = contents.replace(/^\s*homestar\s*.\s*cookbook\s*[(]\s*('[^"]*')\s*[)](\s*;)?/mg, _replacer);
+
+    if (changed) {
+        fs.writeFileSync(filename, contents, {
+            encoding: encoding
+        });
+        logger.info({
+            method: "edit_add_cookbook_ids",
+            filename: filename
+        }, "updated recipe");
+    }
+};
+
 exports.command = "add-id";
 exports.summary = "Add IDs to your Cookbook";
 
@@ -60,6 +97,6 @@ exports.run = function (ad) {
     var filenames = cfg.cfg_find(iotdb.iot().envd, initd.cookbooks_path, /[.]js$/);
 
     for (var fi in filenames) {
-        helpers.edit_add_cookbook_ids(filenames[fi]);
+        edit_add_cookbook_ids(filenames[fi]);
     }
 };

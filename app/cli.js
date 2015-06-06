@@ -27,7 +27,6 @@ var _ = iotdb.helpers;
 var util = require('util');
 var prompt = require('prompt');
 
-var data = require('./data');
 var runner = require('./runner');
 
 var logger = iotdb.logger({

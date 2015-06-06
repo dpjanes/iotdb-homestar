@@ -28,8 +28,6 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var homestar = require('../homestar');
-
 var FSTransport = require('iotdb-transport-fs');
 
 var logger = iotdb.logger({

@@ -26,7 +26,6 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var homestar = require('../homestar');
 var interactors = require('./interactors');
 
 var fs = require('fs');
@@ -41,114 +40,12 @@ var logger = iotdb.logger({
 });
 
 /**
- *  This will edit a file and add UDIDs to Chapters
- *
- *  <p>
- *  This is synchronous
  */
-var edit_add_cookbook_ids = function (filename) {
-    if (!fs.existsSync(filename)) {
-        logger.error({
-            method: "edit_add_cookbook_ids",
-            filename: filename
-        }, "file does not exist");
-        return;
-    }
-
-    var encoding = 'utf8';
-    var changed = false;
-    var contents = fs.readFileSync(filename, encoding);
-    var _replacer = function (full, cookbook_name) {
-        changed = true;
-        return util.format('homestar.cookbook(%s, "%s");', cookbook_name, uuid.v4());
-    };
-
-    contents = contents.replace(/^\s*homestar\s*.\s*cookbook\s*[(]\s*("[^"]*")\s*[)](\s*;)?/mg, _replacer);
-    contents = contents.replace(/^\s*homestar\s*.\s*cookbook\s*[(]\s*('[^"]*')\s*[)](\s*;)?/mg, _replacer);
-
-    if (changed) {
-        fs.writeFileSync(filename, contents, {
-            encoding: encoding
-        });
-        logger.info({
-            method: "edit_add_cookbook_ids",
-            filename: filename
-        }, "updated recipe");
-    }
-};
-
-/**
- */
-var assign_group = function (rd) {
-    if (rd._thing_group) {
-        rd._group = rd._thing_group;
-    } else if (rd._thing_name) {
-        rd._group = rd._thing_name;
-    } else if (rd.group) {
-        rd._group = rd.group;
-    } else {
-        rd._group = "Ungrouped";
-    }
-};
 
 /**
  */
 var assign_interactor = function (rd) {
-    interactors.assign_interactor_to_attribute(rd);
 };
-
-/*
-var values = rd.values;
-if (values) {
-    rd._interactor = "enumeration";
-    rd._values = [];
-    for (var vi in values) {
-        rd._values.push({
-            name: values[vi],
-            value: values[vi],
-        });
-    }
-    return;
-}
-
-var format = rd['iot:format'];
-if (format === "iot:color") {
-    rd._interactor = "color";
-    return;
-} else if (format === "iot:date") {
-    rd._interactor = "date";
-    return;
-} else if (format === "iot:datetime") {
-    rd._interactor = "datetime";
-    return;
-} else if (format === "iot:time") {
-    rd._interactor = "time";
-    return;
-}
-
-var type = rd['iot:type'];
-if (type === "iot:boolean") {
-    rd._values = [ 
-        {
-            name: "Off",
-            value: 0
-        },
-        {
-            name: "On",
-            value: 1
-        },
-    ];
-    rd._interactor = "enumeration";
-    return;
-}
-
-if (rd.onclick) {
-    rd._interactor = "click";
-    return;
-}
-
-rd._interactor = "otherwise";
-*/
 
 /**
  *  API
