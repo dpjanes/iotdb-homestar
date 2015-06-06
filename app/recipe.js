@@ -105,7 +105,7 @@ Context.prototype.message = function (first) {
         changed = true;
     } else if (self.status.message !== od.message) {
         changed = true;
-    } 
+    }
 
     if (!changed) {
         return;
@@ -215,7 +215,7 @@ Context.prototype.onclick = function (value) {
 
         _.timestamp.update(self, {
             key: 'execute_timestamp',
-        })
+        });
 
         // self.execute_timestamp = _.timestamp.make();
         // console.log("HERE:ONCLICK", self.execute_timestamp);
@@ -589,28 +589,25 @@ var recipe_model = function (recipe) {
             "schema": _.ld.namespace["schema"],
         },
         "@id": "/api/recipes/" + recipe._id + "/model",
-        "@type": [ "iot:Model", "iot:Recipe", ],
+        "@type": ["iot:Model", "iot:Recipe", ],
         "@timestamp": context.created_timestamp,
         "schema:name": recipe._name,
         "iot:attribute": [
-            value_attribute,
-            {
+            value_attribute, {
                 "@type": "iot:Attribute",
                 "@id": "#message",
                 "iot:purpose": "iot-attribute:message.html",
                 "schema:name": "text",
                 "iot:type": "iot:string",
                 "iot:role": ["iot-attribute:role-reading", ],
-            },
-            {
+            }, {
                 "@type": "iot:Attribute",
                 "@id": "#text",
                 "iot:purpose": "iot-attribute:message.text",
                 "schema:name": "text",
                 "iot:type": "iot:string",
                 "iot:role": ["iot-attribute:role-reading", ],
-            },
-            {
+            }, {
                 "@type": "iot:Attribute",
                 "@id": "#running",
                 "iot:purpose": "iot-attribute:sensor.running",
@@ -644,12 +641,10 @@ var recipe_istate = function (recipe, context) {
         context = make_context(recipe);
     }
 
-    var d = _.defaults(
-        {
+    var d = _.defaults({
             "@timestamp": context.modified_timestamp,
         },
-        recipe.state,
-        {
+        recipe.state, {
             value: null,
             "@id": "/api/recipes/" + recipe._id + "/istate",
         }
@@ -671,7 +666,7 @@ var recipe_istate = function (recipe, context) {
  */
 var recipe_ostate = function (recipe, context) {
     if (!context) {
-        var context = make_context(recipe);
+        context = make_context(recipe);
     }
 
     var d = {

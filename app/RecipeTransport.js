@@ -49,8 +49,7 @@ var RecipeTransport = function () {
     var self = this;
 
     self.initd = _.defaults(
-        iotdb.keystore().get("/transports/RecipeTransport/initd"),
-        {}
+        iotdb.keystore().get("/transports/RecipeTransport/initd"), {}
     );
 };
 
@@ -127,6 +126,7 @@ RecipeTransport.prototype.about = function (paramd, callback) {
  */
 RecipeTransport.prototype.get = function (paramd, callback) {
     var self = this;
+    var d;
 
     self._validate_get(paramd, callback);
 
@@ -140,7 +140,7 @@ RecipeTransport.prototype.get = function (paramd, callback) {
     }
 
     if (paramd.band === "istate") {
-        var d = recipe.recipe_istate(rd);
+        d = recipe.recipe_istate(rd);
         delete d["@id"];
 
         return callback({
@@ -149,7 +149,7 @@ RecipeTransport.prototype.get = function (paramd, callback) {
             value: d,
         });
     } else if (paramd.band === "ostate") {
-        var d = recipe.recipe_ostate(rd);
+        d = recipe.recipe_ostate(rd);
         delete d["@value"]; // we're executing
         delete d["@id"];
 
@@ -159,7 +159,7 @@ RecipeTransport.prototype.get = function (paramd, callback) {
             value: d,
         });
     } else if (paramd.band === "model") {
-        var d = recipe.recipe_model(rd);
+        d = recipe.recipe_model(rd);
         delete d["@id"];
 
         return callback({
@@ -169,7 +169,7 @@ RecipeTransport.prototype.get = function (paramd, callback) {
         });
     } else if (paramd.band === "meta") {
         var context = recipe.make_context(rd);
-        var d = {
+        d = {
             "@timestamp": context.created_timestamp,
             "schema:name": rd._name,
             "iot:cookbook": rd.group || "",

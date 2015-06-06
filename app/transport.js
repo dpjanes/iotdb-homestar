@@ -99,8 +99,7 @@ var setup = function () {
 
 /**
  */
-var firebase = function (fd) {
-};
+var firebase = function (fd) {};
 
 /*
  *  API

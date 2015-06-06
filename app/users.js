@@ -53,8 +53,8 @@ var user_by_identity = function (identity, paramd, callback) {
 
     var user_id = _.id.user_urn(identity);
     transporter.get({
-        id: user_id, 
-        band: band, 
+        id: user_id,
+        band: band,
     }, function (gd) {
         if ((gd.value === null) && paramd.create) {
             gd.value = {
@@ -71,8 +71,8 @@ var user_by_identity = function (identity, paramd, callback) {
  */
 var user_by_id = function (user_id, callback) {
     transporter.get({
-        id: user_id, 
-        band: band, 
+        id: user_id,
+        band: band,
     }, function (gd) {
         callback(null, gd.value || null);
     });
@@ -92,8 +92,8 @@ var update = function (user, done) {
     var user_id = _.id.user_urn(user.identity);
 
     transporter.update({
-        id: user_id, 
-        band: band, 
+        id: user_id,
+        band: band,
         value: user,
     }, done);
 };
@@ -125,8 +125,8 @@ var users = function (callback) {
 
             transporter.get({
                 id: ld.id,
-                band: band, 
-            }, function(gd) {
+                band: band,
+            }, function (gd) {
                 if (gd.value) {
                     callback(null, gd.value);
                 }

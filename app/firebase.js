@@ -43,7 +43,7 @@ var logger = iotdb.logger({
 
 /**
  */
-var _connect_iotdb = function() {
+var _connect_iotdb = function () {
     /* check the timestamp */
     var firebase_transporter_check = new FirebaseTransport({
         firebase: _firebase,
@@ -52,8 +52,8 @@ var _connect_iotdb = function() {
         check_timestamp: true,
     });
     iotdb.transporter.bind(things.iotdb_transporter, firebase_transporter_check, {
-        bands: [ "meta", "istate", "model", ],
-        updated: [ "meta", ],
+        bands: ["meta", "istate", "model", ],
+        updated: ["meta", ],
     });
 
     /* don't check the timestamp */
@@ -64,12 +64,12 @@ var _connect_iotdb = function() {
         check_timestamp: false,
     });
     iotdb.transporter.bind(things.iotdb_transporter, firebase_transporter_nocheck, {
-        bands: [ "ostate", ],
-        updated: [ "ostate", ],
+        bands: ["ostate", ],
+        updated: ["ostate", ],
     });
 };
 
-var _connect_recipe = function() {
+var _connect_recipe = function () {
     var recipe_transporter = new RecipeTransport();
 
     /* check the timestamp */
@@ -80,8 +80,8 @@ var _connect_recipe = function() {
         check_timestamp: true,
     });
     iotdb.transporter.bind(recipe_transporter, firebase_transporter_check, {
-        bands: [ "meta", "istate", "model", ],
-        updated: [ "meta", ],
+        bands: ["meta", "istate", "model", ],
+        updated: ["meta", ],
     });
 
     /* don't check the timestamp */
@@ -92,15 +92,15 @@ var _connect_recipe = function() {
         check_timestamp: false,
     });
     iotdb.transporter.bind(recipe_transporter, firebase_transporter_nocheck, {
-        bands: [ "ostate", ],
-        updated: [ "ostate", ],
+        bands: ["ostate", ],
+        updated: ["ostate", ],
     });
-}
+};
 
-var _connect = function() {
+var _connect = function () {
     _connect_iotdb();
     _connect_recipe();
-}
+};
 
 var _firebase = null
 var _cfg = null;
@@ -111,8 +111,8 @@ var _setup = function () {
     }
 
     _firebase = new firebase(_cfg.host);
-    _firebase.auth(_cfg.token, 
-        function() {
+    _firebase.auth(_cfg.token,
+        function () {
             logger.info({
                 method: "_setup/auth",
                 firebase: {
@@ -122,7 +122,7 @@ var _setup = function () {
             }, "connected to FireBase");
             _connect();
         },
-        function(error) {
+        function (error) {
             logger.error({
                 method: "_setup/auth/error",
                 error: error,
@@ -138,15 +138,13 @@ var _setup = function () {
  *  This is called by homestar.profile
  */
 var firebase_cfg = function (cfgd) {
-    if (cfgd === null) {
-    } else if (_cfg === null) {
+    if (cfgd === null) {} else if (_cfg === null) {
         _cfg = cfgd;
         _setup();
     } else if (!_.isEqual(_cfg, cfgd)) {
         _cfg = cfgd;
         _restart();
-    } else {
-    }
+    } else {}
 };
 
 /*

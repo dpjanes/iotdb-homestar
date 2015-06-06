@@ -30,7 +30,6 @@ var path = require('path');
 
 var mqtt = require('./mqtt');
 var settings = require('./settings');
-var helpers = require('./helpers');
 var interactors = require('./interactors');
 
 var MQTTTransport = require('iotdb-transport-mqtt').Transport;
@@ -379,7 +378,7 @@ var things = function () {
 /**
  *  MQTT messages - notifications, only on ISTATE and META 
  */
-var _transport_mqtt = function(app, iotdb_transporter) {
+var _transport_mqtt = function (app, iotdb_transporter) {
     var mqtt_transporter = new MQTTTransport({
         prefix: path.join(settings.d.mqttd.prefix, "api", "things"),
         host: settings.d.mqttd.host,
@@ -393,7 +392,7 @@ var _transport_mqtt = function(app, iotdb_transporter) {
 /**
  *  Express interface - get & put. Put only on META and OSTATE
  */
-var _transport_express = function(app, iotdb_transporter) {
+var _transport_express = function (app, iotdb_transporter) {
     var express_transporter = new ExpressTransport({
         prefix: path.join("/", "api", "things"),
     }, app);
@@ -401,19 +400,19 @@ var _transport_express = function(app, iotdb_transporter) {
         bands: ["meta", "istate", "ostate", "model", ],
         updated: ["meta", "ostate", ],
     });
-}
+};
 
 /**
  *  This handles persisting metadata
  *  This probably needs work for dealing with @timestamp
  */
-var _transport_metadata = function(app, iotdb_transporter) {
+var _transport_metadata = function (app, iotdb_transporter) {
     var metadata_transporter = new FSTransport({
         prefix: ".iotdb/things",
     });
 
     // When things are changed, save their metata
-    iotdb_transporter.updated(function(ud) {
+    iotdb_transporter.updated(function (ud) {
         if (ud.band !== "meta") {
             return;
         }
@@ -427,14 +426,14 @@ var _transport_metadata = function(app, iotdb_transporter) {
     });
 
     // When things are discovered, load their metadata from the FS
-    var _back_copy = function(ld) {
+    var _back_copy = function (ld) {
         if (ld.end) {
             return;
         } else if (ld.id) {
             metadata_transporter.get({
-                id: ld.id, 
-                band: "meta", 
-            }, function(gd) {
+                id: ld.id,
+                band: "meta",
+            }, function (gd) {
                 if (gd.value) {
                     iotdb_transporter.update(gd);
                 }

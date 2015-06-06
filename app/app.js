@@ -50,7 +50,6 @@ var settings = require('./settings');
 var homestar = require('./homestar');
 var transport = require('./transport');
 var things = require('./things');
-var helpers = require('./helpers');
 var interactors = require('./interactors');
 var users = require('./users');
 
@@ -62,6 +61,8 @@ var logger = iotdb.logger({
 var _modules_locals;
 var _setup_express_dynamic_folder;
 var swig_outer;
+
+var _configures = [];
 
 /*
  *  Filter to make printing JSON easy
@@ -287,7 +288,7 @@ var _template_settings = function () {
     return sd;
 };
 
-var _scrub_url = function(v) {
+var _scrub_url = function (v) {
     if (!v) {
         return v;
     }
@@ -300,7 +301,7 @@ var _scrub_url = function(v) {
     return u.hostname + u.path.replace(/\/+$/, '');
 };
 
-var _format_metadata = function(thingd) {
+var _format_metadata = function (thingd) {
     var metad = thingd.meta;
     var lines = [];
     var v;
@@ -511,7 +512,7 @@ var setup_express_modules = function (app) {
                     recipe_by_id: recipe.recipe_by_id,
                 },
                 data: {
-                    facets: function() {
+                    facets: function () {
                         return [
                             "iot-facet:appliance",
                             "iot-facet:climate",
@@ -549,28 +550,28 @@ var setup_express_modules = function (app) {
                             "iot-facet:wearable",
                         ];
                     },
-                    zones: function() {
+                    zones: function () {
                         return [
                             "Kitchen", "Living Room", "Basement", "Master Bedroom", "Bedroom", "Den",
                             "Main Floor", "Second Floor",
                             "Front Garden", "Back Garden",
                         ];
                     },
-                    groups: function() {
+                    groups: function () {
                         return [
                             "Everyone",
                             "Friends",
                             "Family",
                         ];
                     },
-                    default_access_read: function() {
-                        return [ "Everyone", ];
+                    default_access_read: function () {
+                        return ["Everyone", ];
                     },
-                    default_access_write: function() {
-                        return [ "Friends", ];
+                    default_access_write: function () {
+                        return ["Friends", ];
                     },
-                    default_groups: function() {
-                        return [ "Everyone", ];
+                    default_groups: function () {
+                        return ["Everyone", ];
                     },
                 },
             });
@@ -596,8 +597,6 @@ var setup_express_modules = function (app) {
 /**
  *  Setup configuration pages
  */
-var _configures = [];
-
 var setup_express_configure = function (app) {
     var modules = iotdb.modules().modules();
     for (var mi in modules) {
@@ -622,13 +621,13 @@ var setup_express_configure = function (app) {
         }
 
         app.use(path, subapp);
-    
+
         _configures.push({
             name: name,
             path: path,
         });
     }
-}
+};
 
 /**
  *  Built-in pages
@@ -820,7 +819,7 @@ var setup_passport = function () {
     );
 
     passport.serializeUser(function (user, done) {
-        logger.info({
+        logger.debug({
             user: user,
         }, "passport/serializeUser");
 
@@ -829,7 +828,7 @@ var setup_passport = function () {
     });
 
     passport.deserializeUser(function (user_identity, done) {
-        logger.info({
+        logger.debug({
             user_identity: user_identity,
         }, "passport/deserializeUser");
 
