@@ -909,53 +909,84 @@ setup_express_api(app);
 setup_express_auth(app);
 
 interactors.setup_app(app);
+var run = function() {
+    /*
+     *  Run the web server
+     */
+    var wsd = settings.d.webserver;
+    app.listen(wsd.port, wsd.host, function () {
+        logger.info({
+            method: "main",
+            url: settings.d.webserver.url,
+        }, "listening for connect");
 
-/*
- *  Run the web server
- */
-var wsd = settings.d.webserver;
-app.listen(wsd.port, wsd.host, function () {
-    logger.info({
-        method: "main",
-        url: settings.d.webserver.url,
-    }, "listening for connect");
+        if (settings.d.browser) {
+            open(settings.d.webserver.url);
+        }
+    });
 
-    if (settings.d.browser) {
-        open(settings.d.webserver.url);
+    /*
+     *  Other services
+     */
+    mqtt.setup();
+    users.setup();
+    things.setup(app);
+    recipe.setup(app);
+    homestar.setup();
+
+    /**
+     */
+    var profiled = {};
+    profiled.pid = process.pid;
+    profiled.ip = _.ipv4();
+    profiled.cwd = process.cwd();
+    profiled.webserver = {
+        scheme: settings.d.webserver.scheme,
+        host: settings.d.webserver.host,
+        port: settings.d.webserver.port,
+    };
+    profiled.mqttd = {
+        host: settings.d.mqttd.host,
+        port: settings.d.mqttd.port,
+        websocket: settings.d.mqttd.websocket,
+    };
+    profiled.controller = _.ld.compact(iotdb.controller_meta());
+
+    if (settings.d.profile) {
+        fs.writeFileSync(settings.d.profile, JSON.stringify(profiled, null, 2));
     }
-});
 
-/*
- *  Other services
- */
-mqtt.setup();
-users.setup();
-things.setup(app);
-recipe.setup(app);
-homestar.setup();
-
-/**
- */
-var profiled = {};
-profiled.pid = process.pid;
-profiled.ip = _.ipv4();
-profiled.cwd = process.cwd();
-profiled.webserver = {
-    scheme: settings.d.webserver.scheme,
-    host: settings.d.webserver.host,
-    port: settings.d.webserver.port,
-};
-profiled.mqttd = {
-    host: settings.d.mqttd.host,
-    port: settings.d.mqttd.port,
-    websocket: settings.d.mqttd.websocket,
-};
-profiled.controller = _.ld.compact(iotdb.controller_meta());
-
-if (settings.d.profile) {
-    fs.writeFileSync(settings.d.profile, JSON.stringify(profiled, null, 2));
+    logger.info({
+        profile: profiled
+    }, "profile");
 }
 
-logger.info({
-    profile: profiled
-}, "profile");
+
+/**
+ *  Kill old server
+ */
+if (settings.d.profile) {
+    try {
+        var doc = JSON.parse(fs.readFileSync(settings.d.profile));
+        if (doc.pid) {
+            logger.info({
+                pid: doc.pid,
+            }, "killing old process");
+
+            process.kill(doc.pid);
+        
+            logger.info({
+            }, "running in 8 seconds");
+
+            setTimeout(function() {
+                run();
+            }, 8 * 1000);
+        } else {
+            run();
+        }
+    } catch (x) {
+        run();
+    }
+} else {
+    run();
+}
