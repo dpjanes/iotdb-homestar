@@ -117,7 +117,7 @@ RecipeTransport.prototype.about = function (paramd, callback) {
 
     return callback({
         id: paramd.id,
-        bands: ["istate", "ostate", "model", "meta", ],
+        bands: ["istate", "ostate", "model", "meta", "status", ],
     });
 };
 
@@ -150,6 +150,16 @@ RecipeTransport.prototype.get = function (paramd, callback) {
         });
     } else if (paramd.band === "ostate") {
         d = recipe.recipe_ostate(rd);
+        delete d["@value"]; // we're executing
+        delete d["@id"];
+
+        return callback({
+            id: paramd.id,
+            band: paramd.band,
+            value: d,
+        });
+    } else if (paramd.band === "status") {
+        d = recipe.recipe_status(rd);
         delete d["@value"]; // we're executing
         delete d["@id"];
 
@@ -243,7 +253,7 @@ RecipeTransport.prototype.updated = function (paramd, callback) {
     self._validate_updated(paramd, callback);
 
     var _monitor_band = function (_band) {
-        if ((_band === "istate") || (_band === "ostate") || (_band === "meta")) {
+        if ((_band === "istate") || (_band === "ostate") || (_band === "meta") || (_band === "status")) {
             var _handle_status = function (context) {
                 context.on("status", function () {
                     if (paramd.id && (context.id !== paramd.id)) {
@@ -270,7 +280,7 @@ RecipeTransport.prototype.updated = function (paramd, callback) {
     if (paramd.band) {
         _monitor_band(paramd.band);
     } else {
-        var bands = ["istate", "ostate", "meta", "model"];
+        var bands = ["istate", "ostate", "meta", "model", "status", ];
         for (var bi in bands) {
             _monitor_band(bands[bi]);
         }

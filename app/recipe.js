@@ -30,9 +30,12 @@ var settings = require('./settings');
 var interactors = require('./interactors');
 
 var RecipeTransport = require('./RecipeTransport').RecipeTransport;
+var MQTTTransport = require('iotdb-transport-mqtt').Transport;
+var ExpressTransport = require('iotdb-transport-express').Transport;
 
 var events = require('events');
 var util = require('util');
+var path = require('path');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -70,6 +73,8 @@ var Context = function (reciped) {
     };
 
     events.EventEmitter.call(self);
+
+    self.setMaxListeners(0);
 };
 
 util.inherits(Context, events.EventEmitter);
@@ -752,6 +757,7 @@ var cookbooks = function () {
     return groups;
 };
 
+/*
 var _make_recipe = function (f) {
     return function (request, response) {
         logger.info({
@@ -792,10 +798,12 @@ var _make_recipe = function (f) {
         response.send(JSON.stringify(f(recipe, context, request, response), null, 2));
     };
 };
+*/
 
 /**
  *   get '/api/recipes'
  */
+/*
 var get_recipes = function (request, response) {
     var d = {
         "@id": "/api/recipes",
@@ -827,41 +835,72 @@ var get_recipes = function (request, response) {
         .set('Content-Type', 'application/json')
         .send(JSON.stringify(d, null, 2));
 };
+*/
 
 /**
  *   get '/api/recipes/:recipe_id'
  */
-var get_recipe = _make_recipe(recipe_recipe);
+// var get_recipe = _make_recipe(recipe_recipe);
 
 /**
  *   get '/api/recipes/:recipe_id/istate'
  */
-var get_istate = _make_recipe(recipe_istate);
+// var get_istate = _make_recipe(recipe_istate);
 
 /**
  *   get '/api/recipes/:recipe_id/ostate'
  */
-var get_ostate = _make_recipe(recipe_ostate);
+// var get_ostate = _make_recipe(recipe_ostate);
 
 /**
  *   get '/api/recipes/:recipe_id/status'
  */
-var get_status = _make_recipe(recipe_status);
+// var get_status = _make_recipe(recipe_status);
 
 /**
  *   put '/api/recipes/:recipe_id/ostate'
  */
+/*
 var put_ostate = _make_recipe(function (recipe, context, request, response) {
     context.onclick(request.body.value);
     return {
         running: context.running,
     };
 });
+ */
 
 /**
  *   get '/api/recipes/:recipe_id/model'
  */
-var get_model = _make_recipe(recipe_model);
+// var get_model = _make_recipe(recipe_model);
+
+/**
+ *  MQTT messages - notifications, only on ISTATE and META 
+ */
+var _transport_mqtt = function (app, iotdb_transporter) {
+    var mqtt_transporter = new MQTTTransport({
+        prefix: path.join(settings.d.mqttd.prefix, "api", "recipes"),
+        host: settings.d.mqttd.host,
+        port: settings.d.mqttd.port,
+    });
+    iotdb.transporter.bind(iotdb_transporter, mqtt_transporter, {
+        bands: ["meta", "istate", "ostate", "status", ],
+    });
+};
+
+/**
+ *  Express interface - get & put. Put only on META and OSTATE
+ */
+var _transport_express = function (app, iotdb_transporter) {
+    var express_transporter = new ExpressTransport({
+        prefix: path.join("/", "api", "recipes"),
+        key_things: "thing",
+    }, app);
+    iotdb.transporter.bind(iotdb_transporter, express_transporter, {
+        bands: ["meta", "istate", "ostate", "model", "status", ],
+        updated: ["meta", "ostate", ],
+    });
+};
 
 /**
  *  The Transporter will brodcast all istate/meta
@@ -870,6 +909,9 @@ var get_model = _make_recipe(recipe_model);
  */
 var setup = function (app) {
     exports.recipe_transporter = new RecipeTransport();
+
+    _transport_mqtt(app, exports.recipe_transporter);
+    _transport_express(app, exports.recipe_transporter);
 };
 
 /**
@@ -887,6 +929,7 @@ exports.group_recipes = group_recipes;
 exports.recipe_to_id = recipe_to_id;
 exports.recipe_by_id = recipe_by_id;
 
+/*
 exports.get_recipes = get_recipes;
 exports.get_recipe = get_recipe;
 exports.get_istate = get_istate;
@@ -894,6 +937,7 @@ exports.get_ostate = get_ostate;
 exports.put_ostate = put_ostate;
 exports.get_status = get_status;
 exports.get_model = get_model;
+ */
 
 exports.recipe_istate = recipe_istate;
 exports.recipe_ostate = recipe_ostate;

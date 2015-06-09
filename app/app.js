@@ -152,6 +152,7 @@ var webserver_auth_thing = function (request, response) {
  *  Set up all the events around connecting events to MQTT
  */
 var setup_recipe_mqtt = function () {
+    /*
     var _handle_status = function (context) {
         context.on("status", function () {
             var topic = settings.d.mqttd.prefix + "api/recipes/" + context.id + "/status";
@@ -166,6 +167,7 @@ var setup_recipe_mqtt = function () {
 
         _handle_status(context);
     }
+    */
 };
 
 exports.app = null;
@@ -717,6 +719,7 @@ var setup_express_static = function (app) {
 var setup_express_api = function (app) {
     app.get('/api/', get_api);
 
+    /*
     app.get('/api/recipes', recipe.get_recipes);
     app.get('/api/recipes/:recipe_id', recipe.get_recipe);
     app.get('/api/recipes/:recipe_id/istate', recipe.get_istate);
@@ -724,6 +727,7 @@ var setup_express_api = function (app) {
     app.put('/api/recipes/:recipe_id/ostate', recipe.put_ostate);
     app.get('/api/recipes/:recipe_id/model', recipe.get_model);
     app.get('/api/recipes/:recipe_id/status', recipe.get_status);
+     */
 };
 
 /**
