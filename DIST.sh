@@ -58,8 +58,7 @@ then
             README.md \
             LICENSE.txt \
             package.json \
-            app.js homestar.js \
-            app/*js \
+            app/*.js \
             bin/homestar \
             bin/commands \
             dynamic static interactors \

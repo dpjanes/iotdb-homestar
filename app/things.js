@@ -395,6 +395,7 @@ var _transport_mqtt = function (app, iotdb_transporter) {
 var _transport_express = function (app, iotdb_transporter) {
     var express_transporter = new ExpressTransport({
         prefix: path.join("/", "api", "things"),
+        key_things: "thing",
     }, app);
     iotdb.transporter.bind(iotdb_transporter, express_transporter, {
         bands: ["meta", "istate", "ostate", "model", ],

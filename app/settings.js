@@ -136,18 +136,18 @@ var _set = function (key, value) {
     var ovalue = d[lastkey];
     if (_.isBoolean(ovalue)) {
         value = parseInt(value) ? true : false;
-    } else if (_.isInteger(ovalue)) {
+    } else if (_.is.Integer(ovalue)) {
         value = parseInt(value);
-    } else if (_.isNumber(ovalue)) {
+    } else if (_.is.Number(ovalue)) {
         value = parseFloat(value);
-    } else if (_.isArray(ovalue)) {
+    } else if (_.is.Array(ovalue)) {
         logger.fatal({
             method: "_set",
             key: key,
             value: value,
             cause: "sorry - cannot set an array value here",
         }, "can't set an array");
-    } else if (_.isArray(ovalue)) {
+    } else if (_.is.Dictionary(ovalue)) {
         logger.fatal({
             method: "_set",
             key: key,

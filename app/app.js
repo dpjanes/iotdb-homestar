@@ -48,7 +48,6 @@ var mqtt = require('./mqtt');
 var recipe = require('./recipe');
 var settings = require('./settings');
 var homestar = require('./homestar');
-var transport = require('./transport');
 var things = require('./things');
 var interactors = require('./interactors');
 var users = require('./users');
@@ -928,5 +927,31 @@ app.listen(wsd.port, wsd.host, function () {
 mqtt.setup();
 users.setup();
 things.setup(app);
+recipe.setup(app);
 homestar.setup();
-transport.setup();
+
+/**
+ */
+var profiled = {};
+profiled.pid = process.pid;
+profiled.ip = _.ipv4();
+profiled.cwd = process.cwd();
+profiled.webserver = {
+    scheme: settings.d.webserver.scheme,
+    host: settings.d.webserver.host,
+    port: settings.d.webserver.port,
+};
+profiled.mqttd = {
+    host: settings.d.mqttd.host,
+    port: settings.d.mqttd.port,
+    websocket: settings.d.mqttd.websocket,
+};
+profiled.controller = _.ld.compact(iotdb.controller_meta());
+
+if (settings.d.profile) {
+    fs.writeFileSync(settings.d.profile, JSON.stringify(profiled, null, 2));
+}
+
+logger.info({
+    profile: profiled
+}, "profile");

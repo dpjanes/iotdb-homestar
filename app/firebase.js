@@ -30,16 +30,19 @@ var _ = iotdb.helpers;
 var unirest = require('unirest');
 var firebase = require('firebase'); // NOTE: the real thing, not this module
 var FirebaseTransport = require('iotdb-transport-firebase').Transport;
-var RecipeTransport = require('./RecipeTransport').RecipeTransport;
 
 var settings = require('./settings');
 var recipe = require('./recipe');
 var things = require('./things');
+var recipe = require('./recipe');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/firebase',
 });
+
+var _firebase = null;
+var _cfg = null;
 
 /**
  */
@@ -70,8 +73,6 @@ var _connect_iotdb = function () {
 };
 
 var _connect_recipe = function () {
-    var recipe_transporter = new RecipeTransport();
-
     /* check the timestamp */
     var firebase_transporter_check = new FirebaseTransport({
         firebase: _firebase,
@@ -79,7 +80,7 @@ var _connect_recipe = function () {
         add_timestamp: true,
         check_timestamp: true,
     });
-    iotdb.transporter.bind(recipe_transporter, firebase_transporter_check, {
+    iotdb.transporter.bind(recipe.recipe_transporter, firebase_transporter_check, {
         bands: ["meta", "istate", "model", ],
         updated: ["meta", ],
     });
@@ -91,7 +92,7 @@ var _connect_recipe = function () {
         add_timestamp: true,
         check_timestamp: false,
     });
-    iotdb.transporter.bind(recipe_transporter, firebase_transporter_nocheck, {
+    iotdb.transporter.bind(recipe.recipe_transporter, firebase_transporter_nocheck, {
         bands: ["ostate", ],
         updated: ["ostate", ],
     });
@@ -101,9 +102,6 @@ var _connect = function () {
     _connect_iotdb();
     _connect_recipe();
 };
-
-var _firebase = null
-var _cfg = null;
 
 var _setup = function () {
     if (_firebase) {
@@ -142,8 +140,11 @@ var firebase_cfg = function (cfgd) {
         _cfg = cfgd;
         _setup();
     } else if (!_.isEqual(_cfg, cfgd)) {
+        /*
+         *  XXX someday we'll be able to deal with this
         _cfg = cfgd;
         _restart();
+         */
     } else {}
 };
 

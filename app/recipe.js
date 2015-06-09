@@ -29,6 +29,8 @@ var cfg = iotdb.cfg;
 var settings = require('./settings');
 var interactors = require('./interactors');
 
+var RecipeTransport = require('./RecipeTransport').RecipeTransport;
+
 var events = require('events');
 var util = require('util');
 
@@ -862,8 +864,20 @@ var put_ostate = _make_recipe(function (recipe, context, request, response) {
 var get_model = _make_recipe(recipe_model);
 
 /**
+ *  The Transporter will brodcast all istate/meta
+ *  changes to Things to MQTT path 
+ *  the same as the REST API
+ */
+var setup = function (app) {
+    exports.recipe_transporter = new RecipeTransport();
+};
+
+/**
  *  API
  */
+exports.setup = setup;
+exports.recipe_transporter = null;
+
 exports.make_context = make_context;
 exports.order_recipe = order_recipe;
 exports.load_recipes = load_recipes;

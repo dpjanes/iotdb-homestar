@@ -55,7 +55,8 @@ exports.run = function (ad) {
     */
 
     var node_path = process.execPath;
-    var app_path = path.join(__dirname, "..", "..", "app", "app.js");
+    // var app_path = path.join(__dirname, "..", "..", "app", "app.js");
+    var app_path = path.join("node_modules", "homestar", "app", "app.js");
     var argv = [ app_path ].concat(process.argv.slice(3));
 
     child_process.spawn(node_path, argv, {
