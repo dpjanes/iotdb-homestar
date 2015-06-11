@@ -67,7 +67,7 @@ var settings = {
             },
         },
         webserver: {
-            secret: null,
+            // secret: null,
             scheme: "http",
             host: null,
             port: 11802,
@@ -164,7 +164,7 @@ var setup = function (av) {
     var iot = iotdb.iot();
     var d = iotdb.keystore().get("/homestar/runner");
     if (d) {
-        _.smart_extend(settings.d, d);
+        _.d.smart_extend(settings.d, d);
     }
 
     /* command line arguments - homestar/runner prefix not needed (or desired) */

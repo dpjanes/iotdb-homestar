@@ -282,7 +282,7 @@ var _template_cookbooks = function () {
 };
 
 var _template_settings = function () {
-    var sd = _.smart_extend({}, settings.d);
+    var sd = _.d.smart_extend({}, settings.d);
     delete sd["secrets"];
     delete sd["keys"];
 
@@ -680,7 +680,7 @@ var _setup_express_dynamic_folder = function (app, folder) {
  */
 var get_api = function (request, response) {
     var d = {
-        "@message": "JSON-LD/Hydra Framing Wanted",
+        "@context" : "https://iotdb.org/pub/iot",
         "@id": "/api",
         /*
         "@context": {
@@ -697,6 +697,9 @@ var get_api = function (request, response) {
         "things": "/api/things",
         "recipes": "/api/recipes",
     };
+    _.extend(d, _.ld.compact(iotdb.controller_meta()));
+    d["iot:controller.runner"] = settings.d.keys.homestar.key;
+
 
     response
         .set('Content-Type', 'application/json')
