@@ -385,7 +385,7 @@ var _transport_mqtt = function (app, iotdb_transporter) {
         port: settings.d.mqttd.port,
     });
     iotdb.transporter.bind(iotdb_transporter, mqtt_transporter, {
-        bands: ["meta", "istate", ],
+        bands: ["meta", "istate", "ostate", ],
     });
 };
 

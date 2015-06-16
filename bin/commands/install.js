@@ -42,14 +42,13 @@ exports.summary = "install a bridge";
 exports.boolean = [ "update", "global", "update-all", ]
 
 exports.help = function () {
-    console.log("usage: homestar install [--global] [--update] [--update-all] <npm-module>|<tarball>|etc.");
+    console.log("usage: homestar install [--global] [--update] <npm-module>|<tarball>|etc.");
     console.log("");
     console.log("Install a node package for use with HomeStar");
     console.log("Always use this in preference to 'npm install' or 'npm update'");
     console.log("");
     console.log("--global will install in your home directory (otherwise: the current folder)");
     console.log("--update will do 'npm update'");
-    console.log("--update-all will update all installed packages");
 };
 
 var update_install = "install";
@@ -163,14 +162,19 @@ var _install = function (name, callback) {
             match = m;
         }
 
-        if (!match) {
-            console.log("# error: running npm");
-            console.log(stderr);
-            process.exit(1);
-        }
+        var module_name = name;
+        var module_folder = "node_modules/" + name;
 
-        var module_name = match[1];
-        var module_folder = match[3];
+        if (!match) {
+            if (update_install === "install") {
+                console.log("# error: running npm");
+                console.log(stderr);
+                process.exit(1);
+            }
+        } else {
+            module_name = match[1];
+            module_folder = match[3];
+        }
 
         var module_homestard = _load_homestar(module_folder);
         if (_.d.get(module_homestard, "/module", false)) {
@@ -178,7 +182,11 @@ var _install = function (name, callback) {
             remove_iotdb(module_name, module_folder);
             _install_children(module_name, module_folder, callback);
         } else {
-            console.log("- installed node module!");
+            if (update_install === "install") {
+                console.log("- installed node module!");
+            } else {
+                console.log("- updated node module!");
+            }
             console.log("  name:", module_name);
             console.log("  path:", module_folder);
             callback();

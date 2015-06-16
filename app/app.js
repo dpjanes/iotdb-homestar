@@ -700,6 +700,9 @@ var get_api = function (request, response) {
     _.extend(d, _.ld.compact(iotdb.controller_meta()));
     d["iot:controller.runner"] = settings.d.keys.homestar.key;
 
+    d["_mqtt"] = util.format("tcp://%s:%s%s", 
+        settings.d.mqttd.host, settings.d.mqttd.port, 
+        path.join(settings.d.mqttd.prefix, "api", "#"))
 
     response
         .set('Content-Type', 'application/json')
