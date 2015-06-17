@@ -34,6 +34,7 @@ var swig = require('swig');
 var open = require('open');
 var util = require('util');
 var path = require('path');
+var bodyParser = require('body-parser')
 
 exports.command = "configure";
 exports.summary = "configure a bridge";
@@ -75,6 +76,7 @@ exports.run = function (ad) {
 
     app.engine('html', swig.renderFile);
     app.swig = swig;
+    app.use(bodyParser.urlencoded({ extended: false }))
 
     var bridge = new Bridge();
     if (bridge.configure) {
