@@ -456,7 +456,26 @@ var setup = function (app) {
     var iot = iotdb.iot();
     var things = iot.connect();
 
-    exports.iotdb_transporter = new IOTDBTransport({}, things);
+    /*
+    things.on("thing", function(thing) {
+        console.log("THING-ID", thing.thing_id());
+        if (thing.thing_id() === 'urn:iotdb:thing:Nest:A8U2EcjZj7E5Zty2zWKIa34FvE9u2uVE') {
+            process.exit(0)
+        }
+    });
+    */
+
+    exports.iotdb_transporter = new IOTDBTransport({
+        authorize: function(paramd) {
+            console.log("==============");
+            console.log("user", paramd.user);
+            console.log("id", paramd.id);
+            if (paramd.id === "urn:iotdb:thing:Nest:gIkj-8uLztH19SRuYTR1L34FvE9u2uVE:nest-thermostatXX") {
+                return false;
+            }
+            return true;
+        },
+    }, things);
 
     _transport_mqtt(app, exports.iotdb_transporter);
     _transport_express(app, exports.iotdb_transporter);

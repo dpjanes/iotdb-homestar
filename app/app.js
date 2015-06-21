@@ -51,6 +51,8 @@ var homestar = require('./homestar');
 var things = require('./things');
 var interactors = require('./interactors');
 var users = require('./users');
+var api = require('./api');
+var auth = require('./auth');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -121,54 +123,6 @@ swig.setDefaults({
     cache: false,
 });
 
-
-/**
- *  Edit the permissions of a recipe - i.e. who can use it.
- *  We actually do all the editing on HomeStar
- */
-var webserver_auth_cookbook = function (request, response) {
-    logger.info({
-        method: "webserver_auth_cookbook",
-        metadata_id: request.params.metadata_id,
-    }, "called");
-
-    response.redirect(
-        util.format("%s/cookbooks/%s?from=%s", settings.d.homestar.url, request.params.metadata_id, request.headers.referer)
-    );
-};
-
-var webserver_auth_thing = function (request, response) {
-    logger.info({
-        method: "webserver_auth_thing",
-        metadata_id: request.params.metadata_id
-    }, "called");
-
-    response.redirect(
-        util.format("%s/things/%s?from=%s", settings.d.homestar.url, request.params.metadata_id, request.headers.referer)
-    );
-};
-
-/**
- *  Set up all the events around connecting events to MQTT
- */
-var setup_recipe_mqtt = function () {
-    /*
-    var _handle_status = function (context) {
-        context.on("status", function () {
-            var topic = settings.d.mqttd.prefix + "api/recipes/" + context.id + "/status";
-            mqtt.publish(settings.d.mqttd, topic, context.status);
-        });
-    };
-
-    var recipeds = recipe.recipes();
-    for (var ri in recipeds) {
-        var reciped = recipeds[ri];
-        var context = recipe.make_context(reciped);
-
-        _handle_status(context);
-    }
-    */
-};
 
 exports.app = null;
 
@@ -678,39 +632,6 @@ var _setup_express_dynamic_folder = function (app, folder) {
 
 /**
  */
-var get_api = function (request, response) {
-    var d = {
-        "@context" : "https://iotdb.org/pub/iot",
-        "@id": "/api",
-        /*
-        "@context": {
-            "@vocab": "/api#",
-            "@base": "/api",
-            "things": {
-                "@type": "@id"
-            },
-            "coobooks": {
-                "@type": "@id"
-            },
-        },
-        */
-        "things": "/api/things",
-        "recipes": "/api/recipes",
-    };
-    _.extend(d, _.ld.compact(iotdb.controller_meta()));
-    d["iot:controller.runner"] = settings.d.keys.homestar.key;
-
-    d["_mqtt"] = util.format("tcp://%s:%s%s", 
-        settings.d.mqttd.host, settings.d.mqttd.port, 
-        path.join(settings.d.mqttd.prefix, "api", "#"))
-
-    response
-        .set('Content-Type', 'application/json')
-        .send(JSON.stringify(d, null, 2));
-};
-
-/**
- */
 var setup_express_static = function (app) {
     for (var fi in settings.d.webserver.folders.static) {
         var folder = settings.d.webserver.folders.static[fi];
@@ -718,54 +639,6 @@ var setup_express_static = function (app) {
 
         app.use('/static', express.static(expanded));
     }
-};
-
-/**
- */
-var setup_express_api = function (app) {
-    app.get('/api/', get_api);
-
-    /*
-    app.get('/api/recipes', recipe.get_recipes);
-    app.get('/api/recipes/:recipe_id', recipe.get_recipe);
-    app.get('/api/recipes/:recipe_id/istate', recipe.get_istate);
-    app.get('/api/recipes/:recipe_id/ostate', recipe.get_ostate);
-    app.put('/api/recipes/:recipe_id/ostate', recipe.put_ostate);
-    app.get('/api/recipes/:recipe_id/model', recipe.get_model);
-    app.get('/api/recipes/:recipe_id/status', recipe.get_status);
-     */
-};
-
-/**
- */
-var setup_express_auth = function (app) {
-    app.get('/auth/cookbooks/:metadata_id', webserver_auth_cookbook);
-    app.get('/auth/things/:metadata_id', webserver_auth_thing);
-
-    app.get('/auth/logout', function (request, response) {
-        request.logout();
-        response.redirect('/');
-    });
-    app.get('/auth/homestar',
-        passport.authenticate('twitter'),
-        function (error, request, response, next) {
-            make_dynamic({
-                template: path.join(__dirname, "..", "dynamic", "500.html"),
-                require_login: false,
-                status: 500,
-                locals: {
-                    error: "HomeStar.io is not available right now - try again later",
-                },
-                content_type: "text/html",
-            })(request, response);
-        }
-    );
-    app.get('/auth/homestar/callback',
-        passport.authenticate('twitter', {
-            successRedirect: '/',
-            failureRedirect: '/'
-        })
-    );
 };
 
 /**
@@ -876,8 +749,6 @@ iot.on("thing", function (thing) {
 recipe.load_recipes();
 recipe.init_recipes();
 
-setup_recipe_mqtt();
-
 /**
  *  Settings
  */
@@ -911,8 +782,8 @@ setup_express_modules(app);
 setup_express_configure(app);
 setup_express_dynamic(app);
 setup_express_static(app);
-setup_express_api(app);
-setup_express_auth(app);
+api.setup(app);
+auth.setup(app);
 
 interactors.setup_app(app);
 var run = function() {
