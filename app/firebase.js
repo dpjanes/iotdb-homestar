@@ -35,6 +35,7 @@ var settings = require('./settings');
 var recipe = require('./recipe');
 var things = require('./things');
 var recipe = require('./recipe');
+var users = require('./users');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -53,10 +54,12 @@ var _connect_iotdb = function () {
         prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
         add_timestamp: true,
         check_timestamp: true,
+        user: users.owner(),
     });
     iotdb.transporter.bind(things.iotdb_transporter, firebase_transporter_check, {
         bands: ["meta", "istate", "model", ],
         updated: ["meta", ],
+        user: users.owner(),
     });
 
     /* don't check the timestamp */
@@ -65,10 +68,12 @@ var _connect_iotdb = function () {
         prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
         add_timestamp: true,
         check_timestamp: false,
+        user: users.owner(),
     });
     iotdb.transporter.bind(things.iotdb_transporter, firebase_transporter_nocheck, {
         bands: ["ostate", ],
         updated: ["ostate", ],
+        user: users.owner(),
     });
 };
 
@@ -79,10 +84,12 @@ var _connect_recipe = function () {
         prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
         add_timestamp: true,
         check_timestamp: true,
+        user: users.owner(),
     });
     iotdb.transporter.bind(recipe.recipe_transporter, firebase_transporter_check, {
         bands: ["meta", "istate", "model", ],
         updated: ["meta", ],
+        user: users.owner(),
     });
 
     /* don't check the timestamp */
@@ -91,10 +98,12 @@ var _connect_recipe = function () {
         prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
         add_timestamp: true,
         check_timestamp: false,
+        user: users.owner(),
     });
     iotdb.transporter.bind(recipe.recipe_transporter, firebase_transporter_nocheck, {
         bands: ["ostate", ],
         updated: ["ostate", ],
+        user: users.owner(),
     });
 };
 

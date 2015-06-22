@@ -21,6 +21,7 @@ var mqtt = require('mqtt');
 var mows = require('mows');
 
 var settings = require('./settings');
+var auth = require('./auth');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -51,6 +52,8 @@ var server_client = function (client) {
             returnCode: 0
         });
         client.id = packet.clientId;
+        client.user = auth.redeem_token_mqtt(client.id);
+
         self.clients[client.id] = client;
     });
 
@@ -61,7 +64,9 @@ var server_client = function (client) {
             // payload: packet.payload,
         }, "called");
         for (var k in self.clients) {
-            self.clients[k].publish({
+            var client = self.clients[k];
+            // console.log("HERE:CLIENT", client.id, client.user, packet.topic);
+            client.publish({
                 topic: packet.topic,
                 payload: packet.payload
             });
@@ -75,6 +80,7 @@ var server_client = function (client) {
                 topic: packet.topic,
             }, "called");
         }
+
         var granted = [];
         for (var i = 0; i < packet.subscriptions.length; i++) {
             granted.push(packet.subscriptions[i].qos);

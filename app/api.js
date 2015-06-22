@@ -60,17 +60,9 @@ var get_api = function (request, response) {
 };
 
 /**
- *  This will return a token that can be used as a MQTT
- *  Client ID. 
- */
-var get_token_mqtt = function (request, response) {
-}
-
-/**
  */
 var setup = function (app) {
     app.get('/api/', get_api);
-    app.get('/auth/mqtt-token', get_token_mqtt);
 };
 
 /**

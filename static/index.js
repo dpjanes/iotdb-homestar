@@ -75,11 +75,29 @@ var js = {
         },
 
         init: function() {
+            $.ajax({
+                type : 'PUT',
+                url: "/auth/mqtt-token",
+                contentType: "application/json",
+                dataType : 'json',
+                error : function(xhr, status, error) {
+                    console.log("# /auth/mqtt-token", error);
+                    js.mqtt.client_when = new Date().getTime();
+                    js.mqtt.reconnect();
+                },
+                success : function(data, status, xhr) {
+                    console.log("+ /auth/mqtt-token", "success", data.client_id);
+                    js.mqtt.connect(data.client_id);
+                },
+            });
+        },
+
+        connect: function(client_id) {
             js.mqtt.topic_prefix = settingsd.mqttd.prefix.replace(/[\/]*$/, '') 
             js.mqtt.client = new Messaging.Client(
                 js.mqtt.host, 
                 js.mqtt.websocket,
-                "home" + ("" + Math.random()).substring(2)
+                client_id
             );
             js.mqtt.client.onConnectionLost = js.mqtt.onConnectionLost;
             js.mqtt.client.onMessageArrived = js.mqtt.onMessageArrived;
@@ -197,104 +215,6 @@ var js = {
 
         end: 0
     },
-
-    /*
-    actions: {
-        on_load: function() {
-        },
-
-        send: function(element) {
-            var id = element.data("id");
-            var rd = rdd[id];
-            if (!rd) {
-                alert("sorry, can't find this recipe?");
-                return;
-            }
-
-            var out_key = element.data("out");
-            if (!out_key) {
-                out_key = element.parents("li").data("out");
-            }
-            if (!out_key) {
-                out_key = "value";
-            }
-
-            var value = element.data("value");
-            if (value === undefined) {
-                value = "";
-            }
-
-            var requestd = {};
-            requestd[out_key] = value;
-            // console.log(requestd);
-
-            var paramd = {
-                type : 'PUT',
-                url : rd.api.url,
-                data: JSON.stringify(requestd),
-                contentType: "application/json",
-                dataType : 'json',
-                error : function(xhr, status, error) {
-                    alert("" + rd.api.url + "\n" + status + ": " + error);
-                    $('li.interactor-item').removeClass('running');
-                },
-                success : function(data, status, xhr) {
-                    console.log("success", data);
-                    if (!data.running) {
-                        $('li.interactor-item').removeClass('running');
-                    }
-                },
-            };
-
-            // $('li.interactor-item').removeClass('running');
-            element.addClass('running');
-
-            $.ajax(paramd);
-        },
-
-
-        on_message: function(section, id, d) {
-            var e_li = $('li[data-id="' + id + '"]');
-            if (d.message !== undefined) {
-                e_li.find(".interactor-message").text(d.message);
-            }
-
-            if (d.running !== undefined) {
-                if (d.running) {
-                    e_li.addClass('running');
-                } else {
-                    e_li.removeClass('running');
-                    e_li.find(".interactor-message").text("");
-                }
-            } 
-
-            if (d.state !== undefined) {
-                if (d.state._text) {
-                    e_li.find(".interactor-state").text(d.state._text || "");
-                } else if (d.state._html) {
-                    e_li.find(".interactor-state").text(d.state._html);
-                } else if (d.state._number) {
-                    e_li.find(".interactor-state").text("" + d.state._number);
-                }
-
-                var rd = rdd[id];
-                if (rd) {
-                    for (var key in d.state) {
-                        rd.state[key] = d.state[key];
-                    }
-
-                    js.interactors.update(id, rd.state, {
-                        out: rd.out,
-                        in: rd.in
-                    });
-                }
-            }
-
-        },
-
-        end: 0
-    },
-    */
 
     general: {
         on_load: function() {

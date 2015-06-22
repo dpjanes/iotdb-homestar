@@ -28,6 +28,8 @@ var cfg = iotdb.cfg;
 
 var settings = require('./settings');
 var interactors = require('./interactors');
+var auth = require('./auth');
+var users = require('./users');
 
 var RecipeTransport = require('./RecipeTransport').RecipeTransport;
 var MQTTTransport = require('iotdb-transport-mqtt').Transport;
@@ -878,10 +880,17 @@ var put_ostate = _make_recipe(function (recipe, context, request, response) {
  *  MQTT messages - notifications, only on ISTATE and META 
  */
 var _transport_mqtt = function (app, iotdb_transporter) {
+    var client_id;
+    var owner = users.owner();
+    if (owner) {
+        client_id = auth.make_token_mqtt(owner);
+    }
+
     var mqtt_transporter = new MQTTTransport({
         prefix: path.join(settings.d.mqttd.prefix, "api", "recipes"),
         host: settings.d.mqttd.host,
         port: settings.d.mqttd.port,
+        client_id: client_id,
     });
     iotdb.transporter.bind(iotdb_transporter, mqtt_transporter, {
         bands: ["meta", "istate", "ostate", "status", ],

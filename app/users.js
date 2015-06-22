@@ -28,6 +28,8 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
+var settings = require('./settings');
+
 var FSTransport = require('iotdb-transport-fs');
 
 var logger = iotdb.logger({
@@ -37,6 +39,27 @@ var logger = iotdb.logger({
 
 var transporter;
 var band = "user";
+var ownerd = {};
+
+/*
+ *  Owner
+ */
+var owner = function() {
+    if (!ownerd.identity) {
+        if (settings.d.keys && settings.d.keys.homestar && settings.d.keys.homestar.owner) {
+            ownerd = {
+                identity: settings.d.keys.homestar.owner,
+                is_owner: true,
+            };
+        }
+    }
+
+    if (_.isEmpty(ownerd)) {
+        return null;
+    } else {
+        return ownerd;
+    }
+};
 
 /**
  *  Retrieve a user record by identity (a URL)
@@ -151,6 +174,7 @@ var setup = function () {
  *  API
  */
 exports.setup = setup;
+exports.owner = owner;
 exports.update = update;
 exports.user_by_identity = user_by_identity;
 exports.user_by_id = user_by_id;

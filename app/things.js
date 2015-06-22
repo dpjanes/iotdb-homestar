@@ -31,6 +31,8 @@ var path = require('path');
 var mqtt = require('./mqtt');
 var settings = require('./settings');
 var interactors = require('./interactors');
+var auth = require('./auth');
+var users = require('./users');
 
 var MQTTTransport = require('iotdb-transport-mqtt').Transport;
 var ExpressTransport = require('iotdb-transport-express').Transport;
@@ -376,16 +378,24 @@ var things = function () {
 };
 
 /**
- *  MQTT messages - notifications, only on ISTATE and META 
+ *  MQTT messages - notifications, only on ISTATE, OSTATE and META 
  */
 var _transport_mqtt = function (app, iotdb_transporter) {
+    var client_id;
+    var owner = users.owner();
+    if (owner) {
+        client_id = auth.make_token_mqtt(owner);
+    }
+
     var mqtt_transporter = new MQTTTransport({
         prefix: path.join(settings.d.mqttd.prefix, "api", "things"),
         host: settings.d.mqttd.host,
         port: settings.d.mqttd.port,
+        client_id: client_id,
     });
     iotdb.transporter.bind(iotdb_transporter, mqtt_transporter, {
         bands: ["meta", "istate", "ostate", ],
+        user: owner,
     });
 };
 
@@ -393,6 +403,7 @@ var _transport_mqtt = function (app, iotdb_transporter) {
  *  Express interface - get & put. Put only on META and OSTATE
  */
 var _transport_express = function (app, iotdb_transporter) {
+    var owner = users.owner();
     var express_transporter = new ExpressTransport({
         prefix: path.join("/", "api", "things"),
         key_things: "thing",
@@ -400,6 +411,7 @@ var _transport_express = function (app, iotdb_transporter) {
     iotdb.transporter.bind(iotdb_transporter, express_transporter, {
         bands: ["meta", "istate", "ostate", "model", ],
         updated: ["meta", "ostate", ],
+        user: owner,
     });
 };
 
@@ -410,6 +422,7 @@ var _transport_express = function (app, iotdb_transporter) {
 var _transport_metadata = function (app, iotdb_transporter) {
     var metadata_transporter = new FSTransport({
         prefix: ".iotdb/things",
+        user: users.owner(),
     });
 
     // When things are changed, save their metata
@@ -466,13 +479,19 @@ var setup = function (app) {
     */
 
     exports.iotdb_transporter = new IOTDBTransport({
+        user: users.owner(),
         authorize: function(paramd) {
+            /*
             console.log("==============");
-            console.log("user", paramd.user);
-            console.log("id", paramd.id);
+            console.log("paramd", paramd);
+            console.trace();
+            if (!paramd.user) {
+                console.trace();
+            }
             if (paramd.id === "urn:iotdb:thing:Nest:gIkj-8uLztH19SRuYTR1L34FvE9u2uVE:nest-thermostatXX") {
                 return false;
             }
+            */
             return true;
         },
     }, things);
