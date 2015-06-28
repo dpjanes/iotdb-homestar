@@ -44,6 +44,7 @@ var get_api = function (request, response) {
     var d = {
         "@context" : "https://iotdb.org/pub/iot",
         "@id": "/api",
+        "@timestamp": _.timestamp.make(),
         "things": "/api/things",
         "recipes": "/api/recipes",
     };
