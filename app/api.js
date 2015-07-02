@@ -28,6 +28,7 @@ var cfg = iotdb.cfg;
 
 var path = require('path');
 var util = require('util');
+var jwt = require('jsonwebtoken');
 
 var settings = require('./settings');
 
@@ -35,6 +36,46 @@ var logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/api',
 });
+
+/**
+ *  See document "2015-07 HomeStar-Runner-Client Auth Flow.md"
+    PUT https://<RUNNER-IP>/api/authenticate
+    {
+        "user-identity": "https://homestar.io/identity/something"
+    }
+    -
+    {
+        "consumer-id": "<consumer-id of RUNNER>",
+        "user-identity": "<user-identity of CLIENT>"
+        "consumer-signature": "<JWT(CONSUMER-ID,USER-ID,SIGNED(CLIENT SECRET))>"
+    }
+ */
+var put_authenticate = function (request, response) {
+    console.log("HERE:XXX")
+
+    var user_identity = request.body.user_identity;
+    if (!user_identity || !user_identity.match(/^https?:\/\//)) {
+        return response
+            .set('Content-Type', 'application/json')
+            .status(400)
+            .send(JSON.stringify({
+                "error": "no or malformed user identity",
+            }, null, 2));
+    }
+
+    var payload = {
+        user_identity: user_identity,
+        consumer_id: settings.d.keys.homestar.key,
+    };
+    var options = {
+        expiresInMinutes: 5,
+    };
+    payload.consumer_signature = jwt.sign(payload, settings.d.keys.homestar.secret, options)
+
+    return response
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(payload));
+};
 
 /**
  *  Root of API. Things and Recipes
@@ -55,7 +96,7 @@ var get_api = function (request, response) {
         settings.d.mqttd.host, settings.d.mqttd.port, 
         path.join(settings.d.mqttd.prefix, "api", "#"))
 
-    response
+    return response
         .set('Content-Type', 'application/json')
         .send(JSON.stringify(d, null, 2));
 };
@@ -64,6 +105,7 @@ var get_api = function (request, response) {
  */
 var setup = function (app) {
     app.get('/api/', get_api);
+    app.put('/api/authenticate', put_authenticate);
 };
 
 /**
