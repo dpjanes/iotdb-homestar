@@ -482,6 +482,7 @@ var setup = function (app) {
         user: users.owner(),
         authorize: function(paramd) {
             /*
+            console.log("AUTHORIZE", paramd);
             console.log("==============");
             console.log("paramd", paramd);
             console.trace();

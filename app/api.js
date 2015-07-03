@@ -29,6 +29,7 @@ var cfg = iotdb.cfg;
 var path = require('path');
 var util = require('util');
 var jwt = require('jsonwebtoken');
+var unirest = require('unirest');
 
 var settings = require('./settings');
 
@@ -36,6 +37,62 @@ var logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/api',
 });
+
+var tud = {};
+
+var authenticate_bearer = function (required) {
+    return function (request, response, next) {
+        if (request.user) {
+            return next();
+        }
+
+        if (!request.headers.authorization) {
+            return next();
+        }
+
+        var match = request.headers.authorization.match(/^Bearer (.*)/)
+        if (!match) {
+            return next();
+        }
+
+        var user_token = match[1];
+        var user = tud[user_token];
+        if (user) {
+            request.user = user;
+            return next();
+        } else if (user === null) {
+            return next();
+        } else {
+            var requestd = {
+                user_token: user_token,
+            };
+
+            var url_homestar_validate_user = settings.d.homestar.url + "/api/1.0/consumers/:consumer_id/validate-user-token";
+            var validate_user_url = url_homestar_validate_user.replace(/:consumer_id/, settings.d.keys.homestar.key);
+            unirest.put(validate_user_url)
+                .type('json')
+                .json(requestd)
+                .headers({
+                    "Authorization": "Bearer " + settings.d.keys.homestar.bearer,
+                })
+                .end(function (result) {
+                    logger.info({
+                        method: "authenticate_bearer",
+                        error: result.error,
+                        status: result.status,
+                        user_identity: result.body && result.body.identity,
+                    }, "authentication result");
+
+                    if (result.status === 200) {
+                        tud[user_token] = result.body;
+                        request.user = result.body;
+                    }
+
+                    next();
+                });
+        }
+    }
+};
 
 /**
  *  See document "2015-07 HomeStar-Runner-Client Auth Flow.md"
@@ -51,8 +108,6 @@ var logger = iotdb.logger({
     }
  */
 var put_authenticate = function (request, response) {
-    console.log("HERE:XXX")
-
     var user_identity = request.body.user_identity;
     if (!user_identity || !user_identity.match(/^https?:\/\//)) {
         return response
@@ -104,6 +159,7 @@ var get_api = function (request, response) {
 /**
  */
 var setup = function (app) {
+    app.all('/api/*', authenticate_bearer());
     app.get('/api/', get_api);
     app.put('/api/authenticate', put_authenticate);
 };
