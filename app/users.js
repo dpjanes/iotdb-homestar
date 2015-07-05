@@ -38,52 +38,194 @@ var logger = iotdb.logger({
 });
 
 var transporter;
-var band = "user";
-var ownerd = {};
+var flat_band = "user";
+var owner_user_identity = null;
+var owner_userd = null;
 
-/*
- *  Owner
+/**
+ *  What people can do, by group
  */
-var owner = function() {
-    if (!ownerd.identity) {
-        if (settings.d.keys && settings.d.keys.homestar && settings.d.keys.homestar.owner) {
-            ownerd = {
-                identity: settings.d.keys.homestar.owner,
-                is_owner: true,
-            };
-        }
-    }
+var permissions = {
+    "admin": {
+        "things": [ "read", "write", "meta" ],
+        "recipes": [ "read", "write", "meta" ],
+        "users": [ "read", "write" ],
+    },
+    "family": {
+        "things": [ "read", "write", ],
+        "recipes": [ "read", "write", ],
+        "users": [],
+    },
+    "friend": {
+        "things": [ "read", ],
+        "recipes": [ "read", "write", ],
+        "users": [],
+    },
+    "stranger": {
+        "things": [ "read", ],
+        "recipes": [ "read", ],
+        "users": [],
+    },
+};
 
-    if (_.isEmpty(ownerd)) {
-        return null;
-    } else {
-        return ownerd;
-    }
+var open = {
 };
 
 /**
+ *  For the given groups and store, return
+ *  what actions are allowed
  */
-var authorize = function (authd, callback) {
-    var user_identity = null;
-    if (authd.user && authd.user.identity) {
-        var user_identity = authd.user.identity;
-    }
-
-    if (!user_identity) {
-        if ((authd.authorize === "write") || (authd.authorize === "meta")) {
-            return callback(null, false);
+var allowed = function(user, groups, store) {
+    // require login
+    if (!user) {
+        var is_access_login = _.d.get(settings.d, "/access/login")
+        if (is_access_login) {
+            return [];
         }
     }
 
-    // console.log("AUTHORIZE", user_identity, authd);
+    // anyone can use it, even if not logged in (excepting above)
+    var is_access_open = _.d.get(settings.d, "/access/open")
+    if (is_access_open) {
+        groups = [ "admin" ];
+    }
 
-    return callback(null, true);
+    if (!groups) {
+        groups = [];
+    }
+
+    var all_allows = [];
+    groups.map(function(group) {
+        var psd = permissions[group];
+        if (!psd) {
+            return;
+        }
+
+        var allows = psd[store];
+        if (allows) {
+            allows.map(function(allow) {
+                if (all_allows.indexOf(allow) === -1) {
+                    all_allows.push(allow);
+                }
+            });
+        }
+    });
+
+    return all_allows;
 };
+
+/*
+ *  This returns a user record for the owner. This record
+ *  will always be the same one (or null)
+ */
+var owner = function() {
+    return owner_userd;
+};
+
+/**
+ *  There's a slight window where the data won't be fully filled in
+ */ 
+var _setup_owner = function() {
+    owner_user_identity = _.d.get(settings.d, "/keys/homestar/owner")
+    if (!owner_user_identity) {
+        logger.error({
+            identity: owner_user_identity,
+            cause: "likely you have not get keys from HomeStar.io yet",
+        }, "there is no owner defined");
+        return;
+    }
+
+    owner_userd = {
+        identity: owner_user_identity,
+        id: _.id.user_urn(owner_user_identity),
+        is_owner: true,
+        _loading: true,
+    };
+
+    user_by_identity(owner_user_identity, function(error, d) {
+        if (error) {
+            logger.error({
+                identity: owner_user_identity,
+                error: _.error.message(error),
+                cause: "this is highly unexpected",
+            }, "could not retrieve user identity?");
+            return;
+        }
+
+        _.extend(owner_userd, d);
+        owner_userd.is_owner = true;
+
+        delete owner_userd._loading;
+    });
+};
+
+/**
+ *  This is called authorize actions against IDs
+ *
+ *  @param {String} authd.store
+ *  One of "things", "recipes" or "users"
+ *
+ *  @param {String} authd.id
+ *  The ID of something to be authorzed
+ *
+ *  @param {String|undefined} authd.band
+ *  optional band
+ *
+ *  @param {Dictionary|undefiend} authd.user
+ *  This can be undefined if there's no 
+ *  user that has be authenticated
+ *
+ *  @param {String} authd.user.identity
+ *  If there's a user, there an identity
+ *  which is a URL, typically but not necessarily
+ *  in the form: https://homestar.io/identity/<xxx>
+ *
+ *  @param {String} authd.authorize
+ *  What the user wants to do. Typically,
+ *  "read", "write", "meta"
+ *
+ *  @param {Function} callback
+ *  The second paramater will be "true" if 
+ *  it is authorized
+ */
+var authorize = function (authd, callback) {
+    var user = authd.user;
+    var groups = user ? _.ld.list(user, "groups") : [];
+    var store = authd.store;
+
+    var allows = allowed(user, groups, store);
+    var is_allowed = allows.indexOf(authd.authorize) !== -1;
+
+    return callback(null, is_allowed);
+};
+
+/**
+ *  Adds details to the user
+ */
+var _enhance = function (userd) {
+    if (!userd) {
+        return null;
+    }
+
+    if (owner_user_identity && (userd.identity === owner_user_identity)) {
+        userd.is_owner = true;
+    } else {
+        userd.is_owner = false;
+    }
+
+    if (userd.is_owner) {
+        _.ld.add(userd, "groups", "admin");
+    } else if (!userd.groups) {
+        userd.groups = "stranger";
+    }
+
+    return userd;
+}
 
 /**
  *  Retrieve a user record by identity (a URL)
  */
-var user_by_identity = function (identity, paramd, callback) {
+var user_by_identity = function (user_identity, paramd, callback) {
     if (callback === undefined) {
         callback = paramd;
         paramd = {};
@@ -93,18 +235,27 @@ var user_by_identity = function (identity, paramd, callback) {
         create: true,
     });
 
-    var user_id = _.id.user_urn(identity);
+    var user_id = _.id.user_urn(user_identity);
     transporter.get({
         id: user_id,
-        band: band,
+        band: flat_band,
     }, function (gd) {
         if ((gd.value === null) && paramd.create) {
             gd.value = {
-                identity: identity
+                identity: user_identity,
+                created: _.timestamp.make(),
             };
-        }
 
-        callback(null, gd.value);
+            transporter.update({
+                id: user_id,
+                band: flat_band,
+                value: gd.value
+            }, function() {
+                callback(null, _enhance(gd.value));
+            });
+        } else {
+            callback(null, _enhance(gd.value));
+        }
     });
 };
 
@@ -114,9 +265,9 @@ var user_by_identity = function (identity, paramd, callback) {
 var user_by_id = function (user_id, callback) {
     transporter.get({
         id: user_id,
-        band: band,
+        band: flat_band,
     }, function (gd) {
-        callback(null, gd.value || null);
+        callback(null, _enhance(gd.value));
     });
 };
 
@@ -135,9 +286,11 @@ var update = function (user, done) {
 
     transporter.update({
         id: user_id,
-        band: band,
+        band: flat_band,
         value: user,
-    }, done);
+    }, function(rd) {
+        done(rd.error, user);
+    });
 };
 
 /**
@@ -167,10 +320,10 @@ var users = function (callback) {
 
             transporter.get({
                 id: ld.id,
-                band: band,
+                band: flat_band,
             }, function (gd) {
                 if (gd.value) {
-                    callback(null, gd.value);
+                    callback(null, _enhance(gd.value));
                 }
 
                 _decrement();
@@ -184,9 +337,11 @@ var users = function (callback) {
  */
 var setup = function () {
     transporter = new FSTransport.Transport({
-        prefix: ".iotdb/users",
-        flat_band: "user",
+        prefix: settings.d.folders.users,
+        flat_band: flat_band,
     });
+
+    _setup_owner();
 };
 
 /**
@@ -199,3 +354,4 @@ exports.user_by_identity = user_by_identity;
 exports.user_by_id = user_by_id;
 exports.users = users;
 exports.authorize = authorize;
+exports.allowed = allowed;

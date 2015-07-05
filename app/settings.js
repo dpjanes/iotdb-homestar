@@ -41,8 +41,8 @@ var settings = {
     d: {
         ip: "127.0.0.1",
         folders: {
-            sessions: ".sessions",
-            users: ".users",
+            sessions: ".iotdb/sessions",
+            users: ".iotdb/users",
         },
         mqttd: {
             local: true,
@@ -96,6 +96,10 @@ var settings = {
                 secret: null,
                 bearer: null,
             }
+        },
+        access: {
+            login: false,   // user must be logged in to access
+            open: true,     // anyone can do anything
         },
         debug: {
             requests: null,

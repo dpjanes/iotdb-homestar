@@ -32,6 +32,7 @@ var jwt = require('jsonwebtoken');
 var unirest = require('unirest');
 
 var settings = require('./settings');
+var users = require('./users');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -107,7 +108,7 @@ var authenticate_bearer = function (required) {
         "consumer-signature": "<JWT(CONSUMER-ID,USER-ID,SIGNED(CLIENT SECRET))>"
     }
  */
-var put_authenticate = function (request, response) {
+var put_create_consumer_signature = function (request, response) {
     var user_identity = request.body.user_identity;
     if (!user_identity || !user_identity.match(/^https?:\/\//)) {
         return response
@@ -130,6 +131,34 @@ var put_authenticate = function (request, response) {
     return response
         .set('Content-Type', 'application/json')
         .send(JSON.stringify(payload));
+};
+
+/**
+ *  What can I do as a user
+ */
+var get_auth = function (request, response) {
+    var user = request.user;
+    var groups = _.ld.list(user, "groups", []);
+
+    var rd = {
+        "permissions": {
+            "things": users.allowed(user, groups, "things"),
+            "recipes": users.allowed(user, groups, "recipes"),
+            "users": users.allowed(user, groups, "users"),
+        },
+        "access": {
+            "login": _.d.get(settings.d, "/access/login") ? true : false,
+            "open": _.d.get(settings.d, "/access/open") ? true : false,
+        },
+    };
+
+    if (user) {
+        rd.user = user;
+    }
+
+    return response
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify(rd, null, 2));
 };
 
 /**
@@ -161,7 +190,8 @@ var get_api = function (request, response) {
 var setup = function (app) {
     app.all('/api/*', authenticate_bearer());
     app.get('/api/', get_api);
-    app.put('/api/authenticate', put_authenticate);
+    app.get('/api/auth', get_auth);
+    app.put('/api/auth/create-user-signature', put_create_consumer_signature);
 };
 
 /**

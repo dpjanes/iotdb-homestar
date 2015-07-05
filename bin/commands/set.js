@@ -70,7 +70,14 @@ exports.run = function (ad) {
     if (ad.list) {
         value = ad._.slice(2);
     } else if (ad.boolean) {
-        value = ad._[2] ? true : false;
+        var v = ad._[2].toLowerCase();
+        var truey = [ "true", "t", "yes", "y", "1" ];
+        var falsey = [ "false", "f", "no", "no", "0", "" ];
+        if (truey.indexOf(v) > -1) {
+            value = true;
+        } else if (falsey.indexOf(v) > -1) {
+            value = false;
+        }
     } else if (ad.number) {
         value = parseFloat(ad._[2]);
     } else if (ad.integer) {
