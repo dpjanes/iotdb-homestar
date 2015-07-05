@@ -867,3 +867,8 @@ if (settings.d.profile) {
 } else {
     run();
 }
+
+/**
+ *  API (sigh)
+ */
+exports.make_dynamic = make_dynamic;

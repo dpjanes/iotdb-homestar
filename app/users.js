@@ -62,6 +62,25 @@ var owner = function() {
 };
 
 /**
+ */
+var authorize = function (authd, callback) {
+    var user_identity = null;
+    if (authd.user && authd.user.identity) {
+        var user_identity = authd.user.identity;
+    }
+
+    if (!user_identity) {
+        if ((authd.authorize === "write") || (authd.authorize === "meta")) {
+            return callback(null, false);
+        }
+    }
+
+    // console.log("AUTHORIZE", user_identity, authd);
+
+    return callback(null, true);
+};
+
+/**
  *  Retrieve a user record by identity (a URL)
  */
 var user_by_identity = function (identity, paramd, callback) {
@@ -179,3 +198,4 @@ exports.update = update;
 exports.user_by_identity = user_by_identity;
 exports.user_by_id = user_by_id;
 exports.users = users;
+exports.authorize = authorize;

@@ -480,20 +480,8 @@ var setup = function (app) {
 
     exports.iotdb_transporter = new IOTDBTransport({
         user: users.owner(),
-        authorize: function(paramd) {
-            /*
-            console.log("AUTHORIZE", paramd);
-            console.log("==============");
-            console.log("paramd", paramd);
-            console.trace();
-            if (!paramd.user) {
-                console.trace();
-            }
-            if (paramd.id === "urn:iotdb:thing:Nest:gIkj-8uLztH19SRuYTR1L34FvE9u2uVE:nest-thermostatXX") {
-                return false;
-            }
-            */
-            return true;
+        authorize: function(authd, callback) {
+            users.authorize(authd, callback);
         },
     }, things);
 

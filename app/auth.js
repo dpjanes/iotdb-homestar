@@ -5,6 +5,9 @@
  *  IOTDB.org
  *  2015-06-21
  *
+ *  Specifically dealing with /auth/* and not authentication
+ *  in general
+ *
  *  Copyright [2013-2015] [David P. Janes]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -142,7 +145,7 @@ var setup = function (app) {
     app.get('/auth/homestar',
         passport.authenticate('twitter'),
         function (error, request, response, next) {
-            make_dynamic({
+            require('./app').make_dynamic({
                 template: path.join(__dirname, "..", "dynamic", "500.html"),
                 require_login: false,
                 status: 500,
