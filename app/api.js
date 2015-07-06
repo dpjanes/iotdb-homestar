@@ -51,7 +51,7 @@ var authenticate_bearer = function (required) {
             return next();
         }
 
-        var match = request.headers.authorization.match(/^Bearer (.*)/)
+        var match = request.headers.authorization.match(/^Bearer (.*)/);
         if (!match) {
             return next();
         }
@@ -92,7 +92,7 @@ var authenticate_bearer = function (required) {
                     next();
                 });
         }
-    }
+    };
 };
 
 /**
@@ -126,7 +126,7 @@ var put_create_consumer_signature = function (request, response) {
     var options = {
         expiresInMinutes: 5,
     };
-    payload.consumer_signature = jwt.sign(payload, settings.d.keys.homestar.secret, options)
+    payload.consumer_signature = jwt.sign(payload, settings.d.keys.homestar.secret, options);
 
     return response
         .set('Content-Type', 'application/json')
@@ -167,7 +167,7 @@ var get_auth = function (request, response) {
  */
 var get_api = function (request, response) {
     var d = {
-        "@context" : "https://iotdb.org/pub/iot",
+        "@context": "https://iotdb.org/pub/iot",
         "@id": "/api",
         "@timestamp": _.timestamp.make(),
         "things": "/api/things",
@@ -176,9 +176,9 @@ var get_api = function (request, response) {
     _.extend(d, _.ld.compact(iotdb.controller_meta()));
     d["iot:controller.runner"] = settings.d.keys.homestar.key;
 
-    d["_mqtt"] = util.format("tcp://%s:%s%s", 
-        settings.d.mqttd.host, settings.d.mqttd.port, 
-        path.join(settings.d.mqttd.prefix, "api", "#"))
+    d["_mqtt"] = util.format("tcp://%s:%s%s",
+        settings.d.mqttd.host, settings.d.mqttd.port,
+        path.join(settings.d.mqttd.prefix, "api", "#"));
 
     return response
         .set('Content-Type', 'application/json')

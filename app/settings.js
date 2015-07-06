@@ -98,8 +98,8 @@ var settings = {
             }
         },
         access: {
-            login: false,   // user must be logged in to access
-            open: true,     // anyone can do anything
+            login: false, // user must be logged in to access
+            open: true, // anyone can do anything
         },
         debug: {
             requests: null,

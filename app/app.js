@@ -786,7 +786,7 @@ api.setup(app);
 auth.setup(app);
 
 interactors.setup_app(app);
-var run = function() {
+var run = function () {
     /*
      *  Run the web server
      */
@@ -836,7 +836,7 @@ var run = function() {
     logger.info({
         profile: profiled
     }, "profile");
-}
+};
 
 
 /**
@@ -851,11 +851,10 @@ if (settings.d.profile) {
             }, "killing old process");
 
             process.kill(doc.pid);
-        
-            logger.info({
-            }, "running in 8 seconds");
 
-            setTimeout(function() {
+            logger.info({}, "running in 8 seconds");
+
+            setTimeout(function () {
                 run();
             }, 8 * 1000);
         } else {

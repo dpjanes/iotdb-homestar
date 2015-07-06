@@ -759,123 +759,6 @@ var cookbooks = function () {
     return groups;
 };
 
-/*
-var _make_recipe = function (f) {
-    return function (request, response) {
-        logger.info({
-            method: "_make_recipe",
-            recipe_id: request.params.recipe_id,
-            body: request.body,
-        }, "called");
-
-        var recipe = recipe_by_id(request.params.recipe_id);
-        if (!recipe) {
-            return response
-                .set('Content-Type', 'application/json')
-                .status(404)
-                .send(JSON.stringify({
-                    error: "recipe not found",
-                    recipe_id: request.params.recipe_id
-                }, null, 2));
-        }
-
-        var context = make_context(recipe);
-        if (context.running) {
-            logger.error({
-                method: "webserver_recipe_update",
-                recipe_id: request.params.recipe_id,
-                cause: "user sent the request before a previous version finished",
-            }, "recipe is still running");
-
-            return response
-                .set('Content-Type', 'application/json')
-                .status(409)
-                .send(JSON.stringify({
-                    error: "recipe is still running",
-                    recipe_id: request.params.recipe_id
-                }, null, 2));
-        }
-
-        response.set('Content-Type', 'application/json');
-        response.send(JSON.stringify(f(recipe, context, request, response), null, 2));
-    };
-};
-*/
-
-/**
- *   get '/api/recipes'
- */
-/*
-var get_recipes = function (request, response) {
-    var d = {
-        "@id": "/api/recipes",
-        cookbook: []
-    };
-
-    var group_name = null;
-    var cookbook = null;
-    var in_recipies = recipes();
-
-    for (var ri in in_recipies) {
-        var in_recipe = in_recipies[ri];
-
-        if (in_recipe.group !== group_name) {
-            group_name = in_recipe.group;
-
-            cookbook = {
-                name: in_recipe.group,
-                id: util.format("urn:iotdb:cookbook:%s", in_recipe.cookbook_id),
-                recipe: [],
-            };
-            d.cookbook.push(cookbook);
-        }
-
-        cookbook.recipe.push("/api/recipes/" + in_recipe._id);
-    }
-
-    response
-        .set('Content-Type', 'application/json')
-        .send(JSON.stringify(d, null, 2));
-};
-*/
-
-/**
- *   get '/api/recipes/:recipe_id'
- */
-// var get_recipe = _make_recipe(recipe_recipe);
-
-/**
- *   get '/api/recipes/:recipe_id/istate'
- */
-// var get_istate = _make_recipe(recipe_istate);
-
-/**
- *   get '/api/recipes/:recipe_id/ostate'
- */
-// var get_ostate = _make_recipe(recipe_ostate);
-
-/**
- *   get '/api/recipes/:recipe_id/status'
- */
-// var get_status = _make_recipe(recipe_status);
-
-/**
- *   put '/api/recipes/:recipe_id/ostate'
- */
-/*
-var put_ostate = _make_recipe(function (recipe, context, request, response) {
-    context.onclick(request.body.value);
-    return {
-        running: context.running,
-    };
-});
- */
-
-/**
- *   get '/api/recipes/:recipe_id/model'
- */
-// var get_model = _make_recipe(recipe_model);
-
 /**
  *  MQTT messages - notifications, only on ISTATE and META 
  */
@@ -898,7 +781,7 @@ var _transport_mqtt = function (app, iotdb_transporter) {
 };
 
 /**
- *  Express interface - get & put. Put only on META and OSTATE
+ *  Express interface - get & put. Put only on OSTATE
  */
 var _transport_express = function (app, iotdb_transporter) {
     var express_transporter = new ExpressTransport({
@@ -907,7 +790,7 @@ var _transport_express = function (app, iotdb_transporter) {
     }, app);
     iotdb.transporter.bind(iotdb_transporter, express_transporter, {
         bands: ["meta", "istate", "ostate", "model", "status", ],
-        updated: ["meta", "ostate", ],
+        updated: ["ostate", ],
     });
 };
 
@@ -917,7 +800,15 @@ var _transport_express = function (app, iotdb_transporter) {
  *  the same as the REST API
  */
 var setup = function (app) {
-    exports.recipe_transporter = new RecipeTransport();
+    exports.recipe_transporter = new RecipeTransport({
+        authorize: function (authd, callback) {
+            console.log("RECIPE:AUTHORIZE:", authd);
+            authd = _.defaults({}, authd);
+            authd.store = "recipes";
+
+            users.authorize(authd, callback);
+        },
+    });
 
     _transport_mqtt(app, exports.recipe_transporter);
     _transport_express(app, exports.recipe_transporter);
@@ -937,16 +828,6 @@ exports.recipes = recipes;
 exports.group_recipes = group_recipes;
 exports.recipe_to_id = recipe_to_id;
 exports.recipe_by_id = recipe_by_id;
-
-/*
-exports.get_recipes = get_recipes;
-exports.get_recipe = get_recipe;
-exports.get_istate = get_istate;
-exports.get_ostate = get_ostate;
-exports.put_ostate = put_ostate;
-exports.get_status = get_status;
-exports.get_model = get_model;
- */
 
 exports.recipe_istate = recipe_istate;
 exports.recipe_ostate = recipe_ostate;

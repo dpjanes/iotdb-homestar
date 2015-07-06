@@ -38,6 +38,18 @@ var logger = bunyan.createLogger({
     module: 'app/RecipeTransport',
 });
 
+var MSG_NOT_AUTHORIZED = "not authorized";
+var MSG_NOT_FOUND = "not found";
+var MSG_NOT_RECIPE = "not a Recipe";
+var MSG_NOT_APPROPRIATE = "action not available";
+var MSG_TIMESTAMP_ERROR = "try again"
+
+var CODE_NOT_AUTHORIZED = 401;
+var CODE_NOT_FOUND = 404;
+var CODE_NOT_RECIPE = 403;
+var CODE_NOT_APPROPRIATE = 403;
+var CODE_TIMESTAMP_ERROR = 409;
+
 /* --- constructor --- */
 /**
  *  <p>
@@ -45,11 +57,18 @@ var logger = bunyan.createLogger({
  *
  *  @constructor
  */
-var RecipeTransport = function () {
+var RecipeTransport = function (initd) {
     var self = this;
 
     self.initd = _.defaults(
-        iotdb.keystore().get("/transports/RecipeTransport/initd"), {}
+        initd,
+        iotdb.keystore().get("/transports/RecipeTransport/initd"),
+        {
+            authorize: function (authd, callback) {
+                return callback(null, true);
+            },
+            user: null,
+        }
     );
 };
 
@@ -63,25 +82,63 @@ RecipeTransport.prototype.list = function (paramd, callback) {
     var self = this;
 
     if (arguments.length === 1) {
-        paramd = {};
+        paramd = {
+            user: self.initd.user,
+        };
         callback = arguments[0];
     }
 
     self._validate_list(paramd, callback);
 
     var rds = recipe.recipes();
-    for (var rdi = 0; rdi < rds.length; rdi++) {
-        var rd = rds[rdi];
-        if (callback({
-                id: recipe.recipe_to_id(rd),
-            })) {
-            break;
-        }
-    }
+    var count = rds.length;
 
-    callback({
-        end: true,
-    });
+    var _authorize = function (rd) {
+        var r_id = recipe.recipe_to_id(rd);
+        var _after_authorize = function (_error, is_authorized) {
+            if (count === 0) {
+                return;
+            }
+
+            if (is_authorized) {
+                var callbackd = {
+                    id: r_id,
+                    user: self.initd.user,
+                };
+                var r = callback(callbackd);
+                if (!r) {
+                    count--;
+                } else {
+                    count = 0;
+                }
+
+                if (count === 0) {
+                    return callback({
+                        end: true,
+                    });
+                }
+            } else {
+                count = 0;
+
+                return callback({
+                    error: MSG_NOT_AUTHORIZED,
+                    status: CODE_NOT_AUTHORIZED,
+                    end: true,
+                });
+            }
+        };
+
+        var authd = {
+            id: r_id,
+            authorize: "read",
+            user: paramd.user,
+        };
+        self.initd.authorize(authd, _after_authorize);
+    };
+
+    for (var rdi = 0; rdi < rds.length; rdi++) {
+        _authorize(rds[rdi]);
+    }
 };
 
 /**
@@ -91,7 +148,9 @@ RecipeTransport.prototype.added = function (paramd, callback) {
     var self = this;
 
     if (arguments.length === 1) {
-        paramd = {};
+        paramd = {
+            user: self.initd.user,
+        };
         callback = arguments[0];
     }
 
@@ -115,9 +174,24 @@ RecipeTransport.prototype.about = function (paramd, callback) {
     }
     */
 
-    return callback({
+    var authd = {
         id: paramd.id,
-        bands: ["istate", "ostate", "model", "meta", "status", ],
+        authorize: "read",
+        user: paramd.user,
+    };
+    self.initd.authorize(authd, function (error, is_authorized) {
+        var callbackd = {
+            id: paramd.id,
+            user: self.initd.user,
+        };
+        if (!is_authorized) {
+            callbackd.error = MSG_NOT_AUTHORIZED;
+            callbackd.status = CODE_NOT_AUTHORIZED;
+        } else {
+            callbackd.bands = ["istate", "ostate", "model", "meta", "status", ];
+        }
+
+        return callback(callbackd);
     });
 };
 
@@ -136,106 +210,183 @@ RecipeTransport.prototype.get = function (paramd, callback) {
             id: paramd.id,
             band: paramd.band,
             value: null,
+            user: paramd.user,
+            error: MSG_NOT_FOUND,
+            status: CODE_NOT_FOUND,
         });
     }
 
-    if (paramd.band === "istate") {
-        d = recipe.recipe_istate(rd);
-        delete d["@id"];
+    var authd = {
+        id: paramd.id,
+        authorize: "read",
+        band: paramd.band,
+        user: paramd.user,
+    };
+    self.initd.authorize(authd, function (error, is_authorized) {
+        if (!is_authorized) {
+            var callbackd = {
+                id: paramd.id,
+                band: paramd.band,
+                user: paramd.user,
+                value: null,
+                error: MSG_NOT_AUTHORIZED,
+                status: CODE_NOT_AUTHORIZED,
+            };
+            return callback(callbackd);
+        }
 
+        if (paramd.band === "istate") {
+            d = recipe.recipe_istate(rd);
+            delete d["@id"];
+
+            return callback({
+                id: paramd.id,
+                band: paramd.band,
+                value: d,
+                user: paramd.user,
+            });
+        } else if (paramd.band === "ostate") {
+            d = recipe.recipe_ostate(rd);
+            delete d["@value"]; // we're executing
+            delete d["@id"];
+
+            return callback({
+                id: paramd.id,
+                band: paramd.band,
+                value: d,
+                user: paramd.user,
+            });
+        } else if (paramd.band === "status") {
+            d = recipe.recipe_status(rd);
+            delete d["@value"]; // we're executing
+            delete d["@id"];
+
+            return callback({
+                id: paramd.id,
+                band: paramd.band,
+                value: d,
+                user: paramd.user,
+            });
+        } else if (paramd.band === "model") {
+            d = recipe.recipe_model(rd);
+            delete d["@id"];
+
+            return callback({
+                id: paramd.id,
+                band: paramd.band,
+                value: d,
+                user: paramd.user,
+            });
+        } else if (paramd.band === "meta") {
+            var context = recipe.make_context(rd);
+            d = {
+                "@timestamp": context.created_timestamp,
+                "schema:name": rd._name,
+                "iot:cookbook": rd.group || "",
+            };
+
+            return callback({
+                id: paramd.id,
+                band: paramd.band,
+                value: d,
+                user: paramd.user,
+            });
+        } else {
+            return callback({
+                id: paramd.id,
+                band: paramd.band,
+                user: paramd.user,
+                value: null,
+                error: MSG_NOT_FOUND,
+                status: CODE_NOT_FOUND,
+            });
+        }
+    });
+};
+
+/**
+ *  See {iotdb.transporter.Transport#update} for documentation.
+ */
+RecipeTransport.prototype.update = function (paramd, callback) {
+    var self = this;
+
+    if (!callback) {
+        callback = function () {};
+    }
+
+    self._validate_update(paramd, callback);
+
+    if (!paramd.id.match(/^urn:iotdb:recipe:/)) {
         return callback({
             id: paramd.id,
-            band: paramd.band,
-            value: d,
+            error: MSG_NOT_RECIPE,
+            status: CODE_NOT_RECIPE,
+            user: paramd.user,
         });
-    } else if (paramd.band === "ostate") {
-        d = recipe.recipe_ostate(rd);
-        delete d["@value"]; // we're executing
-        delete d["@id"];
+    }
 
+    var rd = recipe.recipe_by_id(paramd.id);
+    if (!rd) {
         return callback({
             id: paramd.id,
-            band: paramd.band,
-            value: d,
+            error: MSG_NOT_FOUND,
+            status: CODE_NOT_FOUND,
+            user: paramd.user,
         });
-    } else if (paramd.band === "status") {
-        d = recipe.recipe_status(rd);
-        delete d["@value"]; // we're executing
-        delete d["@id"];
+    }
 
-        return callback({
+    if (paramd.band === "ostate") {
+        var authd = {
             id: paramd.id,
+            authorize: "write",
             band: paramd.band,
-            value: d,
-        });
-    } else if (paramd.band === "model") {
-        d = recipe.recipe_model(rd);
-        delete d["@id"];
-
-        return callback({
-            id: paramd.id,
-            band: paramd.band,
-            value: d,
-        });
-    } else if (paramd.band === "meta") {
-        var context = recipe.make_context(rd);
-        d = {
-            "@timestamp": context.created_timestamp,
-            "schema:name": rd._name,
-            "iot:cookbook": rd.group || "",
+            user: paramd.user,
         };
+        self.initd.authorize(authd, function (error, is_authorized) {
+            if (!is_authorized) {
+                var callbackd = {
+                    id: paramd.id,
+                    band: paramd.band,
+                    user: paramd.user,
+                    error: MSG_NOT_AUTHORIZED,
+                    status: CODE_NOT_AUTHORIZED,
+                };
+                return callback(callbackd);
+            }
 
-        return callback({
-            id: paramd.id,
-            band: paramd.band,
-            value: d,
+            var context = recipe.make_context(rd);
+
+            var new_timestamp = paramd.value["@timestamp"];
+            var old_timestamp = context.execute_timestamp;
+
+            if (!_.timestamp.check.values(old_timestamp, new_timestamp)) {
+                var callbackd = {
+                    id: paramd.id,
+                    band: paramd.band,
+                    user: paramd.user,
+                    error: MSG_TIMESTAMP_ERROR,
+                    status: CODE_TIMESTAMP_ERROR,
+                };
+                return callback(callbackd);
+            }
+
+            context.execute_timestamp = new_timestamp;
+            context.onclick(paramd.value.value);
+
+            return callback({
+                id: paramd.id,
+                band: paramd.band,
+                user: paramd.user,
+            });
         });
     } else {
         return callback({
             id: paramd.id,
             band: paramd.band,
-            error: new Error("no such Band"),
+            error: MSG_NOT_APPROPRIATE,
+            status: CODE_NOT_APPROPRIATE,
+            user: paramd.user,
         });
-    }
-};
-
-/**
- *  See {iotdb.transporter.Transport#update} for documentation.
- *  <p>
- *  NOT FINISHED
- */
-RecipeTransport.prototype.update = function (paramd, callback) {
-    var self = this;
-
-    self._validate_update(paramd, callback);
-
-    if (!paramd.id.match(/^urn:iotdb:recipe:/)) {
-        return;
-    }
-
-    var rd = recipe.recipe_by_id(paramd.id);
-    if (!rd) {
-        logger.error({
-            method: "update",
-            cause: "hard to say - may not be important",
-            thing_id: paramd.id,
-        }, "Recipe not found");
-
-        return;
-    }
-
-    if (paramd.band === "ostate") {
-        var context = recipe.make_context(rd);
-
-        var new_timestamp = paramd.value["@timestamp"];
-        var old_timestamp = context.execute_timestamp;
-
-        if (!_.timestamp.check.values(old_timestamp, new_timestamp)) {
-            return;
-        }
-
-        context.execute_timestamp = new_timestamp;
-        context.onclick(paramd.value.value);
     }
 };
 
@@ -246,7 +397,9 @@ RecipeTransport.prototype.updated = function (paramd, callback) {
     var self = this;
 
     if (arguments.length === 1) {
-        paramd = {};
+        paramd = {
+            user: self.initd.user,
+        };
         callback = arguments[0];
     }
 
@@ -260,10 +413,22 @@ RecipeTransport.prototype.updated = function (paramd, callback) {
                         return;
                     }
 
-                    self.get({
-                        id: context.id,
+                    var authd = {
+                        id: paramd.id,
+                        authorize: "read",
                         band: _band,
-                    }, callback);
+                        user: paramd.user,
+                    };
+                    self.initd.authorize(authd, function (error, is_authorized) {
+                        if (!is_authorized) {
+                            return;
+                        }
+                        self.get({
+                            id: context.id,
+                            band: _band,
+                            user: paramd.user,
+                        }, callback);
+                    });
                 });
             };
 

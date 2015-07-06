@@ -42,52 +42,53 @@ var flat_band = "user";
 var owner_user_identity = null;
 var owner_userd = null;
 
+var user_by_identity;
+
 /**
  *  What people can do, by group
  */
 var permissions = {
     "admin": {
-        "things": [ "read", "write", "meta" ],
-        "recipes": [ "read", "write", "meta" ],
-        "users": [ "read", "write" ],
+        "things": ["read", "write", "meta"],
+        "recipes": ["read", "write", "meta"],
+        "users": ["read", "write"],
     },
     "family": {
-        "things": [ "read", "write", ],
-        "recipes": [ "read", "write", ],
+        "things": ["read", "write", ],
+        "recipes": ["read", "write", ],
         "users": [],
     },
     "friend": {
-        "things": [ "read", ],
-        "recipes": [ "read", "write", ],
+        "things": ["read", ],
+        "recipes": ["read", "write", ],
         "users": [],
     },
     "stranger": {
-        "things": [ "read", ],
-        "recipes": [ "read", ],
+        "things": ["read", ],
+        "recipes": ["read", ],
         "users": [],
     },
 };
 
-var open = {
-};
+var open = {};
 
 /**
  *  For the given groups and store, return
  *  what actions are allowed
  */
-var allowed = function(user, groups, store) {
+var allowed = function (user, groups, store) {
     // require login
     if (!user) {
-        var is_access_login = _.d.get(settings.d, "/access/login")
+        var is_access_login = _.d.get(settings.d, "/access/login");
         if (is_access_login) {
             return [];
         }
     }
 
     // anyone can use it, even if not logged in (excepting above)
-    var is_access_open = _.d.get(settings.d, "/access/open")
+    var is_access_open = _.d.get(settings.d, "/access/open");
     if (is_access_open) {
-        groups = [ "admin" ];
+        groups = ["admin"];
     }
 
     if (!groups) {
@@ -95,7 +96,7 @@ var allowed = function(user, groups, store) {
     }
 
     var all_allows = [];
-    groups.map(function(group) {
+    groups.map(function (group) {
         var psd = permissions[group];
         if (!psd) {
             return;
@@ -103,7 +104,7 @@ var allowed = function(user, groups, store) {
 
         var allows = psd[store];
         if (allows) {
-            allows.map(function(allow) {
+            allows.map(function (allow) {
                 if (all_allows.indexOf(allow) === -1) {
                     all_allows.push(allow);
                 }
@@ -118,15 +119,15 @@ var allowed = function(user, groups, store) {
  *  This returns a user record for the owner. This record
  *  will always be the same one (or null)
  */
-var owner = function() {
+var owner = function () {
     return owner_userd;
 };
 
 /**
  *  There's a slight window where the data won't be fully filled in
- */ 
-var _setup_owner = function() {
-    owner_user_identity = _.d.get(settings.d, "/keys/homestar/owner")
+ */
+var _setup_owner = function () {
+    owner_user_identity = _.d.get(settings.d, "/keys/homestar/owner");
     if (!owner_user_identity) {
         logger.error({
             identity: owner_user_identity,
@@ -142,7 +143,7 @@ var _setup_owner = function() {
         _loading: true,
     };
 
-    user_by_identity(owner_user_identity, function(error, d) {
+    user_by_identity(owner_user_identity, function (error, d) {
         if (error) {
             logger.error({
                 identity: owner_user_identity,
@@ -157,6 +158,29 @@ var _setup_owner = function() {
 
         delete owner_userd._loading;
     });
+};
+
+/**
+ *  Adds details to the user
+ */
+var _enhance = function (userd) {
+    if (!userd) {
+        return null;
+    }
+
+    if (owner_user_identity && (userd.identity === owner_user_identity)) {
+        userd.is_owner = true;
+    } else {
+        userd.is_owner = false;
+    }
+
+    if (userd.is_owner) {
+        _.ld.add(userd, "groups", "admin");
+    } else if (!userd.groups) {
+        userd.groups = "stranger";
+    }
+
+    return userd;
 };
 
 /**
@@ -189,43 +213,23 @@ var _setup_owner = function() {
  *  it is authorized
  */
 var authorize = function (authd, callback) {
-    var user = authd.user;
+    var user = _enhance(authd.user);
     var groups = user ? _.ld.list(user, "groups") : [];
     var store = authd.store;
 
     var allows = allowed(user, groups, store);
     var is_allowed = allows.indexOf(authd.authorize) !== -1;
 
+    // console.log("GROUPS", user);
+    // console.log("AUTHORIZE", user && user.identity, groups, store, is_allowed);
+
     return callback(null, is_allowed);
 };
 
 /**
- *  Adds details to the user
- */
-var _enhance = function (userd) {
-    if (!userd) {
-        return null;
-    }
-
-    if (owner_user_identity && (userd.identity === owner_user_identity)) {
-        userd.is_owner = true;
-    } else {
-        userd.is_owner = false;
-    }
-
-    if (userd.is_owner) {
-        _.ld.add(userd, "groups", "admin");
-    } else if (!userd.groups) {
-        userd.groups = "stranger";
-    }
-
-    return userd;
-}
-
-/**
  *  Retrieve a user record by identity (a URL)
  */
-var user_by_identity = function (user_identity, paramd, callback) {
+user_by_identity = function (user_identity, paramd, callback) {
     if (callback === undefined) {
         callback = paramd;
         paramd = {};
@@ -250,7 +254,7 @@ var user_by_identity = function (user_identity, paramd, callback) {
                 id: user_id,
                 band: flat_band,
                 value: gd.value
-            }, function() {
+            }, function () {
                 callback(null, _enhance(gd.value));
             });
         } else {
@@ -288,7 +292,7 @@ var update = function (user, done) {
         id: user_id,
         band: flat_band,
         value: user,
-    }, function(rd) {
+    }, function (rd) {
         done(rd.error, user);
     });
 };

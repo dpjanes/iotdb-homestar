@@ -73,20 +73,8 @@ var webserver_auth_thing = function (request, response) {
 var mqtt_tokend = {};
 
 /**
- *  This will return a token that can be used as a MQTT
- *  Client ID. 
  */
-var get_token_mqtt = function (request, response) {
-    var client_id = make_token_mqtt(request.user);
-
-    return response
-        .set('Content-Type', 'application/json')
-        .send(JSON.stringify({ client_id: client_id }, null, 2));
-}
-
-/**
- */
-var make_token_mqtt = function(user) {
+var make_token_mqtt = function (user) {
     if (!user) {
         return "anon-" + uuid.v4();
     }
@@ -102,8 +90,22 @@ var make_token_mqtt = function(user) {
 };
 
 /**
+ *  This will return a token that can be used as a MQTT
+ *  Client ID. 
  */
-var redeem_token_mqtt = function(client_id) {
+var get_token_mqtt = function (request, response) {
+    var client_id = make_token_mqtt(request.user);
+
+    return response
+        .set('Content-Type', 'application/json')
+        .send(JSON.stringify({
+            client_id: client_id
+        }, null, 2));
+};
+
+/**
+ */
+var redeem_token_mqtt = function (client_id) {
     var now = (new Date()).getTime();
     var removes = [];
     var user = null;
@@ -123,14 +125,14 @@ var redeem_token_mqtt = function(client_id) {
             user = id.user;
         }
     }
-    
+
     // remove expired results
     for (var ri in removes) {
         delete mqtt_tokend[removes[ri]];
     }
 
     return user;
-}
+};
 
 /**
  */

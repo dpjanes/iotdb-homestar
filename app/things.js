@@ -480,7 +480,7 @@ var setup = function (app) {
 
     exports.iotdb_transporter = new IOTDBTransport({
         user: users.owner(),
-        authorize: function(authd, callback) {
+        authorize: function (authd, callback) {
             authd = _.defaults({}, authd);
             authd.store = "things";
 
