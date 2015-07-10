@@ -802,7 +802,7 @@ var _transport_express = function (app, iotdb_transporter) {
 var setup = function (app) {
     exports.recipe_transporter = new RecipeTransport({
         authorize: function (authd, callback) {
-            console.log("RECIPE:AUTHORIZE:", authd);
+            // console.log("RECIPE:AUTHORIZE:", authd);
             authd = _.defaults({}, authd);
             authd.store = "recipes";
 

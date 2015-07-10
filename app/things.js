@@ -431,10 +431,13 @@ var _transport_metadata = function (app, iotdb_transporter) {
             return;
         }
 
-        // thhe @timestamp means it had to be done by the user
-        if (!ud.value['@timestamp']) {
-            return;
-        }
+        ud = _.shallowCopy(ud);
+        ud.value = _.shallowCopy(ud.value);
+
+        delete ud.value["iot:controller.session-timestamp"];
+        delete ud.value["iot:controller.machine-id"];
+        delete ud.value["iot:thing"];
+        delete ud.value["iot:reachable"];
 
         metadata_transporter.update(ud);
     });
