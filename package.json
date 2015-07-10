@@ -7,24 +7,24 @@
         "url": "https://github.com/dpjanes/iotdb-homestar/issues"
     }, 
     "dependencies": {
-        "body-parser": "~1.13.1", 
+        "body-parser": "~1.13.2", 
         "bunyan": "~1.4.0", 
         "connect-fs": "~0.1.1", 
         "cookie-parser": "~1.3.5", 
-        "express": "~4.13.0", 
+        "express": "~4.13.1", 
         "express-session": "~1.11.3", 
         "firebase": "~2.2.7", 
-        "iotdb": "~0.7.12", 
+        "iotdb": "~0.8.1", 
         "iotdb-timers": "~0.0.11", 
-        "iotdb-transport-express": "~0.0.13", 
-        "iotdb-transport-firebase": "~0.0.13", 
-        "iotdb-transport-fs": "~0.0.10", 
-        "iotdb-transport-iotdb": "~0.0.7", 
-        "iotdb-transport-mqtt": "~0.0.7", 
-        "jsonwebtoken": "~1.1.1", 
+        "iotdb-transport-express": "~0.0.14", 
+        "iotdb-transport-firebase": "~0.0.15", 
+        "iotdb-transport-fs": "~0.0.11", 
+        "iotdb-transport-iotdb": "~0.0.8", 
+        "iotdb-transport-mqtt": "~0.0.8", 
+        "jsonwebtoken": "~5.0.2", 
         "minimist": "~1.1.1", 
         "mows": "~0.0.6", 
-        "mqtt": "~1.3.2", 
+        "mqtt": "~1.3.4", 
         "open": "~0.0.5", 
         "passport": "~0.2.2", 
         "passport-twitter": "~1.0.3", 
@@ -59,5 +59,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.1.19"
+    "version": "0.1.20"
 }
