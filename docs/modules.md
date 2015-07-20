@@ -44,8 +44,8 @@ Talk to REST interfaces
 
 Note there's a ton of configuration required.
 
-	$ homestar install homestar-smart-things
-	$ homestar configure homestar-smart-things
+	$ homestar install homestar-smartthings
+	$ homestar configure homestar-smartthings
 
 ### TCP Lighting
 
