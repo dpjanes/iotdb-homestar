@@ -15,9 +15,9 @@
         "express-session": "~1.11.3", 
         "firebase": "~2.2.9", 
         "iotdb": "~0.9.2", 
-        "iotdb-recipes": "~0.0.1", 
+        "iotdb-recipes": "~0.0.4", 
         "iotdb-timers": "~0.0.11", 
-        "iotdb-transport": "~0.0.6", 
+        "iotdb-transport": "~0.0.7", 
         "iotdb-transport-express": "~0.0.15", 
         "iotdb-transport-firebase": "~0.0.16", 
         "iotdb-transport-fs": "~0.0.13", 
@@ -61,5 +61,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.2.4"
+    "version": "0.2.5"
 }
