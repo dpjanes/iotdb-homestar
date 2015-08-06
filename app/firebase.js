@@ -25,6 +25,7 @@
 "use strict";
 
 var iotdb = require('iotdb');
+var iotdb_transport = require('iotdb-transport');
 var _ = iotdb.helpers;
 
 var unirest = require('unirest');
@@ -56,7 +57,7 @@ var _connect_iotdb = function () {
         check_timestamp: true,
         user: users.owner(),
     });
-    iotdb.transporter.bind(things.iotdb_transporter, firebase_transporter_check, {
+    iotdb_transport.bind(things.iotdb_transporter, firebase_transporter_check, {
         bands: ["meta", "istate", "model", ],
         updated: ["meta", ],
         user: users.owner(),
@@ -70,7 +71,7 @@ var _connect_iotdb = function () {
         check_timestamp: false,
         user: users.owner(),
     });
-    iotdb.transporter.bind(things.iotdb_transporter, firebase_transporter_nocheck, {
+    iotdb_transport.bind(things.iotdb_transporter, firebase_transporter_nocheck, {
         bands: ["ostate", ],
         updated: ["ostate", ],
         user: users.owner(),
@@ -86,7 +87,7 @@ var _connect_recipe = function () {
         check_timestamp: true,
         user: users.owner(),
     });
-    iotdb.transporter.bind(recipe.recipe_transporter, firebase_transporter_check, {
+    iotdb_transport.bind(recipe.make_recipe_transporter(), firebase_transporter_check, {
         bands: ["meta", "istate", "model", ],
         updated: ["meta", ],
         user: users.owner(),
@@ -100,7 +101,7 @@ var _connect_recipe = function () {
         check_timestamp: false,
         user: users.owner(),
     });
-    iotdb.transporter.bind(recipe.recipe_transporter, firebase_transporter_nocheck, {
+    iotdb_transport.bind(recipe.make_recipe_transporter(), firebase_transporter_nocheck, {
         bands: ["ostate", ],
         updated: ["ostate", ],
         user: users.owner(),

@@ -705,7 +705,8 @@ var setup_passport = function () {
             user: user,
         }, "passport/serializeUser");
 
-        users.update(user);
+        users.update(user, function() {
+        });
         done(null, user.identity);
     });
 
@@ -746,7 +747,9 @@ iot.on("thing", function (thing) {
 /*
  *  Load the Cookbook
  */
-recipe.load_recipes();
+recipe.load_recipes({
+    cookbooks_path: settings.d.cookbooks_path,
+});
 recipe.init_recipes();
 
 /**

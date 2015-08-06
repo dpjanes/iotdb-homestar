@@ -23,6 +23,7 @@
 "use strict";
 
 var iotdb = require('iotdb');
+var iotdb_transport = require('iotdb-transport');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
@@ -393,7 +394,7 @@ var _transport_mqtt = function (app, iotdb_transporter) {
         port: settings.d.mqttd.port,
         client_id: client_id,
     });
-    iotdb.transporter.bind(iotdb_transporter, mqtt_transporter, {
+    iotdb_transport.bind(iotdb_transporter, mqtt_transporter, {
         bands: ["meta", "istate", "ostate", ],
         user: owner,
     });
@@ -408,7 +409,7 @@ var _transport_express = function (app, iotdb_transporter) {
         prefix: path.join("/", "api", "things"),
         key_things: "thing",
     }, app);
-    iotdb.transporter.bind(iotdb_transporter, express_transporter, {
+    iotdb_transport.bind(iotdb_transporter, express_transporter, {
         bands: ["meta", "istate", "ostate", "model", ],
         updated: ["meta", "ostate", ],
         user: owner,

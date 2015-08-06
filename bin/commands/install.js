@@ -53,7 +53,7 @@ exports.help = function () {
 
 var update_install = "install";
 var completed = [
-    "iotdb"
+    // "iotdb"
 ];
 exports.run = function (ad) {
     if (ad.global) {
@@ -62,19 +62,26 @@ exports.run = function (ad) {
 
     var modules = [];
     if (ad['update-all']) {
+        // completed = [];
+
         ad.update = true;
         var module_root = "node_modules";
         var names = fs.readdirSync(module_root);
+
+        names = _.reject(names, function(name) { return !name.match(/^(homestar-|iotdb-|node-iotdb)/) });
+        names = _.union([ "iotdb", "homestar", "iotdb-timers", "iotdb-upnp", ], names);
+
         for (var ni in names) {
             var name = names[ni];
-            if (!name.match(/^(homestar-|iotdb-|node-iotdb)/)) {
-                continue;
-            }
 
             var module_folder = path.join(module_root, name);
-            var stbuf = fs.lstatSync(module_folder);
-            if (!stbuf.isDirectory()) {
-                continue;
+            var stbuf;
+            try {
+                var stbuf = fs.lstatSync(module_folder);
+                if (!stbuf.isDirectory()) {
+                    continue;
+                }
+            } catch (x) {
             }
 
             modules.push(name);
@@ -92,6 +99,7 @@ exports.run = function (ad) {
 
     _make_node_modules();
 
+    modules.reverse();
     var _pop = function() {
         if (modules.length === 0) {
             console.log("- finished");
@@ -116,6 +124,7 @@ exports.install = function(name, callback) {
 
     // make sure local directory exists
     _make_node_modules();
+
 
     // force this to get installed
     var namex = completed.indexOf(name);
@@ -144,7 +153,24 @@ var _install = function (name, callback) {
         return callback(null);
     }
 
-    var command = util.format("npm %s %s", update_install, name);
+    var module_name = name;
+    var module_folder = path.join("node_modules", module_name);
+    var module_update_install = update_install;
+    var exists = false
+    
+    try {
+        var stbuf = fs.lstatSync(module_folder);
+        if (stbuf.isDirectory()) {
+            exists = true;
+        }
+    } catch (x) {
+    }
+
+    if (!exists) {
+        module_update_install = "install";
+    }
+
+    var command = util.format("npm %s %s", module_update_install, module_name);
 
     console.log("- running:", command);
     console.log("  (this may take some time)");
@@ -161,9 +187,6 @@ var _install = function (name, callback) {
         while (m = re.exec(stdout)) {
             match = m;
         }
-
-        var module_name = name;
-        var module_folder = "node_modules/" + name;
 
         if (!match) {
             if (update_install === "install") {

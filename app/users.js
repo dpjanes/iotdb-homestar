@@ -77,6 +77,10 @@ var open = {};
  *  what actions are allowed
  */
 var allowed = function (user, groups, store) {
+    if (store === undefined) {
+        throw new Error("store must have a value");
+    }
+
     // require login
     if (!user) {
         var is_access_login = _.d.get(settings.d, "/access/login");
@@ -220,8 +224,14 @@ var authorize = function (authd, callback) {
     var allows = allowed(user, groups, store);
     var is_allowed = allows.indexOf(authd.authorize) !== -1;
 
-    // console.log("GROUPS", user);
-    // console.log("AUTHORIZE", user && user.identity, groups, store, is_allowed);
+    /*
+    console.log("-----");
+    console.log("USER", user);
+    console.log("ALLOWS", allows);
+    console.log("AUTHORIZE", authd.authorize);
+    console.log("OTHER", "user=", user && user.identity, "groups=", groups, "store=", store, "is_allowed=", is_allowed);
+    console.log("-----");
+     */
 
     return callback(null, is_allowed);
 };
