@@ -128,10 +128,10 @@ var _structure_thing = function (thing) {
             cat._out = cid;
             cat._in = cid;
         }
-        if (_.ld.contains(cat, 'iot:role', 'iot-attribute:role-control')) {
+        if (_.ld.contains(cat, 'iot:role', 'iot-purpose:role-control')) {
             cat._out = cid;
         }
-        if (_.ld.contains(cat, 'iot:role', 'iot-attribute:role-reading')) {
+        if (_.ld.contains(cat, 'iot:role', 'iot-purpose:role-reading')) {
             cat._in = cid;
         }
 
@@ -304,7 +304,7 @@ var thing_model = function (thing) {
     md["@context"] = {
         "iot": _.ld.namespace["iot"],
         "iot-unit": _.ld.namespace["iot-unit"],
-        "iot-attribute": _.ld.namespace["iot-attribute"],
+        "iot-purpose": _.ld.namespace["iot-purpose"],
         "schema": _.ld.namespace["schema"],
     };
     md["@id"] = "/api/things/" + thing.thing_id() + "/model";
@@ -328,9 +328,9 @@ var thing_model = function (thing) {
         } else {
             for (var ri in roles) {
                 var role = roles[ri];
-                if (role === 'iot-attribute:role-control') {
+                if (role === 'iot-purpose:role-control') {
                     ad._control = true;
-                } else if (role === 'iot-attribute:role-reading') {
+                } else if (role === 'iot-purpose:role-reading') {
                     ad._reading = true;
                 }
             }

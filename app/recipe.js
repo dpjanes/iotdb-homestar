@@ -80,7 +80,7 @@ var cookbooks = function () {
         out_recipe["schema:name"] = in_recipe.name;
         out_recipe["iot:type"] = in_recipe["iot:type"];
         if (in_recipe.values) {
-            out_recipe['iot:enumeration'] = in_recipe.values;
+            out_recipe['iot:format.enumeration'] = in_recipe.values;
         }
         out_recipe["_id"] = in_recipe._id;
         out_recipe["_code"] = "value";
