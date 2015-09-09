@@ -29,14 +29,14 @@
  */
 exports.attribute = function(attributed) {
     // must be a control
-    if (!attributed._control) {
+    if (!attributed._out) {
         return;
     }
 
     // must be a number or an integer
     var type = attributed['iot:type'];
-    if (type === "iot:number") {
-    } else if (type === "iot:integer") {
+    if (type === "iot:type.number") {
+    } else if (type === "iot:type.integer") {
     } else {
         return;
     }

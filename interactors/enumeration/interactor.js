@@ -31,7 +31,7 @@ var _ = iotdb._;
  *  will be merged later on if this is used.
  */
 exports.attribute = function(attributed) {
-    var values = attributed["iot:enumeration"]
+    var values = attributed["iot:format.enumeration"]
     if (!values) {
         return;
     }
@@ -42,7 +42,7 @@ exports.attribute = function(attributed) {
         var name = value;
 
         var cname = _.ld.compact(name);
-        var cmatch = cname.match(/^iot-attribute:(.*[.])?(.*)/);
+        var cmatch = cname.match(/^iot-purpose:(.*[.])?(.*)/);
         if (cmatch) {
             name = cmatch[2];
         }

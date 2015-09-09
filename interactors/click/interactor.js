@@ -28,7 +28,7 @@
  *  will be merged later on if this is used.
  */
 exports.attribute = function(attributed) {
-    if (attributed["iot:type"] !== "iot:null") {
+    if (attributed["iot:type"] !== "iot:type.null") {
         return;
     }
 

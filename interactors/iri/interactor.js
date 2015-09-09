@@ -29,16 +29,16 @@
  */
 exports.attribute = function(attributed) {
     var type = attributed['iot:type'];
-    if (type !== "iot:string") {
+    if (type !== "iot:type.string") {
         return;
     }
 
     var format = attributed['iot:format'];
-    if (format !== "iot:iri") {
+    if (format !== "iot:format.iri") {
         return;
     }
 
-    if (!attributed._control) {
+    if (!attributed._out) {
         return;
     }
 

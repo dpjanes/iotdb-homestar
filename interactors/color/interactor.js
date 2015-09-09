@@ -29,7 +29,7 @@
  */
 exports.attribute = function(attributed) {
     var format = attributed['iot:format'];
-    if (format !== "iot:color") {
+    if (format !== "iot:format.color") {
         return;
     }
 

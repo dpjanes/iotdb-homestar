@@ -28,21 +28,22 @@
  *  will be merged later on if this is used.
  */
 exports.attribute = function(attributed) {
+    console.log("HERE:AAA", attributed);
     var type = attributed['iot:type'];
-    if (type !== "iot:boolean") {
+    if (type !== "iot:type.boolean") {
         return;
     }
 
-    if (!attributed._control) {
+    if (!attributed._out) {
         return;
     }
 
     // names ... add away
     var values = [ "0", "1" ];
     var purpose = attributed['iot:purpose'];
-    if (purpose === "iot-attribute:on") {
+    if (purpose === "iot-purpose:on") {
         values = [ "Off", "On" ];
-    } else if (purpose === "iot-attribute:open") {
+    } else if (purpose === "iot-purpose:open") {
         values = [ "Close", "Open" ];
     }
 

@@ -124,16 +124,26 @@ var _structure_thing = function (thing) {
         cat.group = thing_name;
 
         cid = scrub_id(_.ld.first(cat, "@id", ""));
+        /*
         if (_.ld.list(cat, 'iot:role') === undefined) {
             cat._out = cid;
             cat._in = cid;
         }
+        */
+        if (_.ld.first(cat, 'iot:read', false)) {
+            cat._in = cid;
+        }
+        if (_.ld.first(cat, 'iot:write', false)) {
+            cat._out = cid;
+        }
+        /*
         if (_.ld.contains(cat, 'iot:role', 'iot-purpose:role-control')) {
             cat._out = cid;
         }
         if (_.ld.contains(cat, 'iot:role', 'iot-purpose:role-reading')) {
             cat._in = cid;
         }
+        */
 
         catd[cid] = cat;
     }
@@ -317,10 +327,18 @@ var thing_model = function (thing) {
     for (var adi in ads) {
         var ad = ads[adi];
         ad._code = ad["@id"].replace(/^.*#/, '');
-        ad._control = false;
-        ad._reading = false;
         ad._name = _.ld.first(ad, "schema:name");
 
+        if (_.ld.first(ad, 'iot:write', false)) {
+            ad._out = true;
+        }
+        if (_.ld.first(ad, 'iot:read', false)) {
+            ad._in = true;
+        }
+
+        delete ad["iot:role"];
+
+        /*
         var roles = _.ld.list(ad, 'iot:role');
         if (!roles) {
             ad._control = true;
@@ -335,6 +353,7 @@ var thing_model = function (thing) {
                 }
             }
         }
+        */
 
         interactors.assign_interactor_to_attribute(ad);
     }
