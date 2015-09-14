@@ -31,7 +31,7 @@ var _ = iotdb._;
  *  will be merged later on if this is used.
  */
 exports.attribute = function(attributed) {
-    var values = attributed["iot:format.enumeration"]
+    var values = attributed["iot:enumeration"]
     if (!values) {
         return;
     }
