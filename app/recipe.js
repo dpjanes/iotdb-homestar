@@ -27,6 +27,7 @@ var iotdb_transport = require('iotdb-transport');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
+var url_join = require('url-join')
 var iotdb_recipe = require('iotdb-recipes').recipe;
 var settings = require('./settings');
 var interactors = require('./interactors');
@@ -137,7 +138,7 @@ var _transport_mqtt = function (app) {
     var recipe_transporter = make_recipe_transporter({ open: true });
     recipe_transporter.__magic = "TO-MQTT";
     var mqtt_transporter = new MQTTTransport({
-        prefix: path.join(settings.d.mqttd.prefix, "api", "recipes"),
+        prefix: url_join(settings.d.mqttd.prefix, "api", "recipes"),
         host: settings.d.mqttd.host,
         port: settings.d.mqttd.port,
         client_id: client_id,
@@ -154,7 +155,7 @@ var _transport_express = function (app) {
     var recipe_transporter = make_recipe_transporter();
     recipe_transporter.__magic = "TO-EXPRESS";
     var express_transporter = new ExpressTransport({
-        prefix: path.join("/", "api", "recipes"),
+        prefix: url_join("/", "api", "recipes"),
         key_things: "thing",
     }, app);
     iotdb_transport.bind(recipe_transporter, express_transporter, {

@@ -14,10 +14,10 @@
         "express": "~4.13.3", 
         "express-session": "~1.11.3", 
         "firebase": "~2.2.9", 
-        "iotdb": "~0.10.4", 
+        "iotdb": "~0.10.10", 
         "iotdb-recipes": "~0.0.5", 
         "iotdb-timers": "~0.0.11", 
-        "iotdb-transport": "~0.0.10", 
+        "iotdb-transport": "~0.0.11", 
         "iotdb-transport-express": "~0.0.18", 
         "iotdb-transport-firebase": "~0.0.18", 
         "iotdb-transport-fs": "~0.0.16", 
@@ -26,14 +26,15 @@
         "jsonwebtoken": "~5.0.5", 
         "minimist": "~1.2.0", 
         "mows": "~0.0.6", 
-        "mqtt": "~1.4.0", 
+        "mqtt": "~1.4.1", 
         "open": "~0.0.5", 
         "passport": "~0.3.0", 
         "passport-twitter": "~1.0.3", 
         "prompt": "~0.2.14", 
-        "session-file-store": "~0.0.19", 
+        "session-file-store": "~0.0.20", 
         "swig": "~1.4.2", 
         "unirest": "~0.4.2", 
+        "url-join": "~0.0.1", 
         "uuid": "~2.0.1"
     }, 
     "description": "Home\u2606Star Runner", 
@@ -46,7 +47,7 @@
         "grunt-jsbeautifier": "~0.2.10", 
         "jshint-stylish": "~2.0.1", 
         "load-grunt-tasks": "~3.2.0", 
-        "request": "~2.61.0"
+        "request": "~2.62.0"
     }, 
     "homepage": "https://homestar.io", 
     "license": "Apache-2.0", 
@@ -61,5 +62,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.2.10"
+    "version": "0.2.13"
 }

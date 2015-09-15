@@ -29,6 +29,7 @@ var cfg = iotdb.cfg;
 
 var path = require('path');
 
+var url_join = require('url-join')
 var mqtt = require('./mqtt');
 var settings = require('./settings');
 var interactors = require('./interactors');
@@ -408,7 +409,7 @@ var _transport_mqtt = function (app, iotdb_transporter) {
     }
 
     var mqtt_transporter = new MQTTTransport({
-        prefix: path.join(settings.d.mqttd.prefix, "api", "things"),
+        prefix: url_join(settings.d.mqttd.prefix, "api", "things"),
         host: settings.d.mqttd.host,
         port: settings.d.mqttd.port,
         client_id: client_id,
@@ -425,7 +426,7 @@ var _transport_mqtt = function (app, iotdb_transporter) {
 var _transport_express = function (app, iotdb_transporter) {
     var owner = users.owner();
     var express_transporter = new ExpressTransport({
-        prefix: path.join("/", "api", "things"),
+        prefix: url_join("/", "api", "things"),
         key_things: "thing",
     }, app);
     iotdb_transport.bind(iotdb_transporter, express_transporter, {

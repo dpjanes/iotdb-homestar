@@ -28,7 +28,7 @@
  *  will be merged later on if this is used.
  */
 exports.attribute = function(attributed) {
-    console.log("HERE:AAA", attributed);
+    // console.log("HERE:AAA", attributed);
     var type = attributed['iot:type'];
     if (type !== "iot:type.boolean") {
         return;
