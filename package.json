@@ -15,14 +15,14 @@
         "express-session": "~1.11.3", 
         "firebase": "~2.2.9", 
         "iotdb": ">=0.10.0", 
-        "iotdb-recipes": "~0.0.5", 
+        "iotdb-recipes": "~0.0.6", 
         "iotdb-timers": "~0.0.11", 
-        "iotdb-transport": "~0.0.13", 
-        "iotdb-transport-express": "~0.0.19", 
-        "iotdb-transport-firebase": "~0.0.19", 
-        "iotdb-transport-fs": "~0.0.17", 
-        "iotdb-transport-iotdb": "~0.0.13", 
-        "iotdb-transport-mqtt": "~0.0.13", 
+        "iotdb-transport": "~0.0.14", 
+        "iotdb-transport-express": "~0.0.20", 
+        "iotdb-transport-firebase": "~0.0.20", 
+        "iotdb-transport-fs": "~0.0.18", 
+        "iotdb-transport-iotdb": "~0.0.14", 
+        "iotdb-transport-mqtt": "~0.0.14", 
         "jsonwebtoken": "~5.0.5", 
         "minimist": "~1.2.0", 
         "mows": "~0.0.6", 
@@ -61,5 +61,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.2.15"
+    "version": "0.2.16"
 }
