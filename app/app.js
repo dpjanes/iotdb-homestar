@@ -607,19 +607,32 @@ var _setup_express_dynamic_folder = function (app, folder) {
 
         var base = match[1];
         var ext = match[2];
-
-        if (base === 'index') {
-            base = '';
-        }
-
         var template = path.join(folder, file);
 
-        if (ext === "html") {
+        if (file === settings.d.webserver.index) {
+            app.get(util.format("/"), make_dynamic({
+                template: template,
+                mount: base,
+                content_type: "text/html",
+            }));
+
+            app.get(util.format("/%s", base), function(request, response) {
+                return response.redirect("/");
+            });
+
+            app.get(util.format("/%s", file), function(request, response) {
+                return response.redirect("/");
+            });
+        } else if (ext === "html") {
             app.get(util.format("/%s", base), make_dynamic({
                 template: template,
                 mount: base,
                 content_type: "text/html",
             }));
+
+            app.get(util.format("/%s", file), function(request, response) {
+                return response.redirect(util.format("/%s", base));
+            });
         } else if (ext === "js") {
             app.get(util.format("/%s.%s", base, ext), make_dynamic({
                 template: template,
@@ -628,6 +641,8 @@ var _setup_express_dynamic_folder = function (app, folder) {
             }));
         }
     }
+
+    // process.exit(0);
 };
 
 /**

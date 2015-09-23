@@ -72,6 +72,7 @@ var settings = {
             host: null,
             port: 11802,
             require_login: null,
+            index: "things.html",
             folders: {
                 static: [
                     path.join('$HOMESTAR_INSTALL', 'static'),
