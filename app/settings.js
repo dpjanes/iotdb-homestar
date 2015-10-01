@@ -118,7 +118,8 @@ var settings = {
         },
         cookbooks_path: "cookbooks",
         browser: true,
-        name: null
+        name: null,
+        iotql: null         // will try to detect
     }
 };
 
@@ -255,6 +256,23 @@ var setup = function (av) {
             fs.mkdirSync(folder);
         } catch (x) {}
     }
+
+    // determine whether IoTQL is available
+    if (settings.d.iotql === false) {
+    } else {
+        try {
+            require('iotql')
+            settings.d.iotql = true;
+        } catch (x) {
+            settings.d.iotql = false;
+            logger.fatal({
+                method: "settings",
+                cause: "do $ homestar install iotql",
+            }, "IoTQL not found (not required, but nice to have)");
+        }
+    }
+
+    process.exit(0);
 };
 
 /*

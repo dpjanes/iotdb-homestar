@@ -12,6 +12,7 @@
             {% if metadata_editor and user.is_owner %}
             <a href="/admin/things/{{ thing._id }}/meta" class="pull-right action-edit-permission">☆</a>
             {% endif %}
+            {# <b>metadata_editor:{{ metadata_editor }}owner: {{user.is_owner }}</b> #}
         </li>
         {% for attribute in thing.model["iot:attribute"] %}
             <li class="list-group-item interactor" data-interactor="{{ attribute._interactor }}" data-thing="{{ thing._id }}" data-attribute="{{ attribute._code }}" onclick>
