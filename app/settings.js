@@ -271,8 +271,6 @@ var setup = function (av) {
             }, "IoTQL not found (not required, but nice to have)");
         }
     }
-
-    process.exit(0);
 };
 
 /*

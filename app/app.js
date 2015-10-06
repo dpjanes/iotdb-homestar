@@ -759,14 +759,6 @@ iot.on("thing", function (thing) {
     }, "found new thing");
 });
 
-/*
- *  Load the Cookbook
- */
-recipe.load_recipes({
-    cookbooks_path: settings.d.cookbooks_path,
-});
-recipe.init_recipes();
-
 /**
  *  Settings
  */
@@ -828,6 +820,24 @@ var run = function () {
     things.setup(app);
     recipe.setup(app);
     homestar.setup();
+
+    /*
+     *  Load the Cookbook
+     */
+    var iotql = null;
+    var iotql_db = null;
+
+    if (settings.d.iotql) {
+        iotql = require('iotql');
+        iotql_db = new iotql.DB(things.iotdb_transporter, recipe.make_recipe_transporter());
+    };
+
+    recipe.load_recipes({
+        cookbooks_path: "cookbooks",
+        iotql: settings.d.iotql,
+        db: iotql_db,
+    });
+    recipe.init_recipes();
 
     /**
      */
