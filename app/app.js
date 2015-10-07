@@ -829,7 +829,8 @@ var run = function () {
 
     if (settings.d.iotql) {
         iotql = require('iotql');
-        iotql_db = new iotql.DB(things.iotdb_transporter, recipe.make_recipe_transporter());
+        iotql_db = new iotql.DB(things.iotdb_transporter, recipe.make_recipe_transporter({ open: true }));
+        iotql_db.user = users.owner();
     };
 
     recipe.load_recipes({
