@@ -403,7 +403,7 @@ var things = function () {
  */
 var _transport_mqtt = function (app, iotdb_transporter) {
     var client_id;
-    var owner = users.owner();
+    var owner = iotdb.users.owner();
     if (owner) {
         client_id = auth.make_token_mqtt(owner);
     }
@@ -424,7 +424,7 @@ var _transport_mqtt = function (app, iotdb_transporter) {
  *  Express interface - get & put. Put only on META and OSTATE
  */
 var _transport_express = function (app, iotdb_transporter) {
-    var owner = users.owner();
+    var owner = iotdb.users.owner();
     var express_transporter = new ExpressTransport({
         prefix: url_join("/", "api", "things"),
         key_things: "thing",
@@ -443,7 +443,7 @@ var _transport_express = function (app, iotdb_transporter) {
 var _transport_metadata = function (app, iotdb_transporter) {
     var metadata_transporter = new FSTransport({
         prefix: ".iotdb/things",
-        user: users.owner(),
+        user: iotdb.users.owner(),
     });
 
     // When things are changed, save their metata
@@ -491,7 +491,7 @@ var _transport_metadata = function (app, iotdb_transporter) {
 var setup = function (app) {
 
     var iot = iotdb.iot();
-    var things = iot.connect();
+    var things = iot.things();   // NOT 'connect'
 
     /*
     things.on("thing", function(thing) {
@@ -503,18 +503,18 @@ var setup = function (app) {
     */
 
     exports.iotdb_transporter = new IOTDBTransport({
-        user: users.owner(),
+        user: iotdb.users.owner(),
         authorize: function (authd, callback) {
             authd = _.defaults({}, authd);
             authd.store = "things";
 
-            users.authorize(authd, callback);
+            iotdb.users.authorize(authd, callback);
         },
     }, things);
 
     _transport_mqtt(app, exports.iotdb_transporter);
     _transport_express(app, exports.iotdb_transporter);
-    _transport_metadata(app, exports.iotdb_transporter);
+    // _transport_metadata(app, exports.iotdb_transporter);
 };
 
 /**

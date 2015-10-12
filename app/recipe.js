@@ -116,7 +116,7 @@ var make_recipe_transporter = function(paramd) {
             authd = _.defaults({}, authd);
             authd.store = "recipes";
 
-            users.authorize(authd, callback);
+            iotdb.users.authorize(authd, callback);
         },
     });
 };
@@ -130,7 +130,7 @@ var make_recipe_transporter = function(paramd) {
  */
 var _transport_mqtt = function (app) {
     var client_id;
-    var owner = users.owner();
+    var owner = iotdb.users.owner();
     if (owner) {
         client_id = auth.make_token_mqtt(owner);
     }

@@ -15,6 +15,7 @@
         "express-session": "~1.11.3", 
         "firebase": "~2.3.1", 
         "iotdb": ">=0.10.0", 
+        "iotdb-metadata-fs": "~0.0.1", 
         "iotdb-recipes": "~0.0.7", 
         "iotdb-timers": "~0.0.11", 
         "iotdb-transport": "~0.0.14", 
@@ -47,7 +48,7 @@
         "grunt-jsbeautifier": "~0.2.10", 
         "jshint-stylish": "~2.0.1", 
         "load-grunt-tasks": "~3.3.0", 
-        "request": "~2.64.0"
+        "request": "~2.65.0"
     }, 
     "homepage": "https://homestar.io", 
     "license": "Apache-2.0", 
@@ -61,5 +62,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.2.18"
+    "version": "0.2.19"
 }

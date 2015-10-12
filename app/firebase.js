@@ -55,12 +55,12 @@ var _connect_iotdb = function () {
         prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
         add_timestamp: true,
         check_timestamp: true,
-        user: users.owner(),
+        user: iotdb.users.owner(),
     });
     iotdb_transport.bind(things.iotdb_transporter, firebase_transporter_check, {
         bands: ["meta", "istate", "model", ],
         updated: ["meta", ],
-        user: users.owner(),
+        user: iotdb.users.owner(),
     });
 
     /* don't check the timestamp */
@@ -69,12 +69,12 @@ var _connect_iotdb = function () {
         prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
         add_timestamp: true,
         check_timestamp: false,
-        user: users.owner(),
+        user: iotdb.users.owner(),
     });
     iotdb_transport.bind(things.iotdb_transporter, firebase_transporter_nocheck, {
         bands: ["ostate", ],
         updated: ["ostate", ],
-        user: users.owner(),
+        user: iotdb.users.owner(),
     });
 };
 
@@ -85,12 +85,12 @@ var _connect_recipe = function () {
         prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
         add_timestamp: true,
         check_timestamp: true,
-        user: users.owner(),
+        user: iotdb.users.owner(),
     });
     iotdb_transport.bind(recipe.make_recipe_transporter(), firebase_transporter_check, {
         bands: ["meta", "istate", "model", ],
         updated: ["meta", ],
-        user: users.owner(),
+        user: iotdb.users.owner(),
     });
 
     /* don't check the timestamp */
@@ -99,12 +99,12 @@ var _connect_recipe = function () {
         prefix: _cfg.path + "/" + settings.d.keys.homestar.key + "/things",
         add_timestamp: true,
         check_timestamp: false,
-        user: users.owner(),
+        user: iotdb.users.owner(),
     });
     iotdb_transport.bind(recipe.make_recipe_transporter(), firebase_transporter_nocheck, {
         bands: ["ostate", ],
         updated: ["ostate", ],
-        user: users.owner(),
+        user: iotdb.users.owner(),
     });
 };
 

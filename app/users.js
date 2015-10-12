@@ -121,7 +121,10 @@ var allowed = function (user, groups, store) {
 
 /*
  *  This returns a user record for the owner. This record
- *  will always be the same one (or null)
+ *  will always be the same one (or null).
+ *
+ *  Note that this is just exported directly into
+ *  "iotdb.users.owner" so that anyone can access it
  */
 var owner = function () {
     return owner_userd;
@@ -361,11 +364,12 @@ var setup = function () {
 /**
  *  API
  */
+iotdb.users.owner = owner;
+iotdb.users.authorize = authorize;
+
 exports.setup = setup;
-exports.owner = owner;
 exports.update = update;
 exports.user_by_identity = user_by_identity;
 exports.user_by_id = user_by_id;
 exports.users = users;
-exports.authorize = authorize;
 exports.allowed = allowed;
