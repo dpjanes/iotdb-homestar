@@ -126,6 +126,7 @@ exports.run = function (ad) {
             });
     } else if (ad.stdout) {
         process.stdout.write(jsonld$);
+        process.exit(0);
     } else {
         var filename = model_code + ".jsonld";
         fs.writeFile(filename, jsonld$, function(error) {
@@ -134,6 +135,7 @@ exports.run = function (ad) {
             } else {
                 console.log("+ wrote:", filename);
             }
+            process.exit(0);
         });
     }
 
