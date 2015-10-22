@@ -95,6 +95,7 @@ exports.run = function (ad) {
     var server = app.listen(9998);
     server.on('listening', function() {
         var port = server.address().port
-        open(util.format("http://localhost:%s", port))
+        app.html_root = util.format("http://localhost:%s", port);
+        open(app.html_root);
     })
 };
