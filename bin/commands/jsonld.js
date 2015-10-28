@@ -5,7 +5,7 @@
  *  IOTDB.org
  *  2015-03-15
  *
- *  Produce JSIN-LD output for a Model
+ *  Produce JSON-LD output for a Model
  *
  *  Copyright [2013-2015] [David P. Janes]
  *  
@@ -41,12 +41,17 @@ exports.defaults = {
 exports.summary = "produce JSON-LD for a Model";
 
 exports.help = function () {
-    console.log("usage: homestar jsonld [--stdout] [--no-compact] [--url <url>] <model-code>");
+    console.log("usage: homestar jsonld [--stdout] [--no-compact] [--iotql] [--url <url>] <model-code>");
 };
 
 exports.run = function (ad) {
     if (ad._.length != 2) {
         console.log("wrong number of arguments");
+        console.log("");
+        console.log("--url         base URL for the Model");
+        console.log("--stdout      write to stdout (rather than appropriately named file)");
+        console.log("--no-compact  don't compact URIs in the JSON-LD");
+        console.log("--iotql       produce IOTQL rather than JSON-LD");
         console.log("");
         exports.help();
         process.exit(1);
@@ -77,12 +82,16 @@ exports.run = function (ad) {
         jsonld_paramd.base = ad.url;
     }
 
-    var jsonld = model.jsonld(jsonld_paramd);
     var jsonld$ = null;
-    if (ad.compact) {
-        jsonld$ = JSON.stringify(_.ld.compact(jsonld), null, 2) + "\n";
+    if (ad.iotql) {
+        jsonld$ = model.iotql(jsonld_paramd);
     } else {
-        jsonld$ = JSON.stringify(jsonld, null, 2) + "\n";
+        var jsonld = model.jsonld(jsonld_paramd);
+        if (ad.compact) {
+            jsonld$ = JSON.stringify(_.ld.compact(jsonld), null, 2) + "\n";
+        } else {
+            jsonld$ = JSON.stringify(jsonld, null, 2) + "\n";
+        }
     }
 
     if (ad.upload) {
@@ -128,7 +137,7 @@ exports.run = function (ad) {
         process.stdout.write(jsonld$);
         process.exit(0);
     } else {
-        var filename = model_code + ".jsonld";
+        var filename = model_code + ( ad.iotql ? ".iotql" : ".jsonld" );
         fs.writeFile(filename, jsonld$, function(error) {
             if (error) {
                 console.log("+ ERROR writing file:", filename, error);
