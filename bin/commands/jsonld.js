@@ -34,14 +34,14 @@ var uuid = require('uuid');
 var unirest = require('unirest');
 
 exports.command = "jsonld";
-exports.boolean = [ "stdout", "compact", "upload", ];
+exports.boolean = [ "stdout", "compact", "upload", "iotql", ];
 exports.defaults = {
     compact: true
 }
 exports.summary = "produce JSON-LD for a Model";
 
 exports.help = function () {
-    console.log("usage: homestar jsonld [--stdout] [--no-compact] [--iotql] [--url <url>] <model-code>");
+    console.log("usage: homestar jsonld [--stdout] [--no-compact] [--url <url>] <model-code>");
 };
 
 exports.run = function (ad) {
@@ -51,7 +51,6 @@ exports.run = function (ad) {
         console.log("--url         base URL for the Model");
         console.log("--stdout      write to stdout (rather than appropriately named file)");
         console.log("--no-compact  don't compact URIs in the JSON-LD");
-        console.log("--iotql       produce IOTQL rather than JSON-LD");
         console.log("");
         exports.help();
         process.exit(1);
@@ -88,13 +87,15 @@ exports.run = function (ad) {
     } else {
         var jsonld = model.jsonld(jsonld_paramd);
         if (ad.compact) {
+            jsonld = _.ld.compact(jsonld);
+            jsonld = _.ld.patchup(jsonld);
             jsonld$ = JSON.stringify(_.ld.compact(jsonld), null, 2) + "\n";
         } else {
             jsonld$ = JSON.stringify(jsonld, null, 2) + "\n";
         }
     }
 
-    if (ad.upload) {
+    if (ad.upload && !ad.iotql) {
         settings.setup();
         if (!settings.d.keys.homestar.bearer) {
             console.log({
@@ -137,7 +138,13 @@ exports.run = function (ad) {
         process.stdout.write(jsonld$);
         process.exit(0);
     } else {
-        var filename = model_code + ( ad.iotql ? ".iotql" : ".jsonld" );
+        var filename;
+        if (ad.iotql) { 
+            filename = _.id.to_camel_case(model_code) + ".iotql";
+        } else {
+            filename = model_code + ".jsonld";
+        }
+
         fs.writeFile(filename, jsonld$, function(error) {
             if (error) {
                 console.log("+ ERROR writing file:", filename, error);

@@ -12,7 +12,7 @@
         "connect-fs": "~0.1.1", 
         "cookie-parser": "~1.4.0", 
         "express": "~4.13.3", 
-        "express-session": "~1.11.3", 
+        "express-session": "~1.12.1", 
         "firebase": "~2.3.1", 
         "iotdb": ">=0.10.0", 
         "iotdb-metadata-fs": "~0.0.1", 
@@ -24,15 +24,15 @@
         "iotdb-transport-fs": "~0.0.18", 
         "iotdb-transport-iotdb": "~0.0.14", 
         "iotdb-transport-mqtt": "~0.0.14", 
-        "jsonwebtoken": "~5.4.0", 
+        "jsonwebtoken": "~5.4.1", 
         "minimist": "~1.2.0", 
         "mows": "~0.0.6", 
-        "mqtt": "~1.4.3", 
+        "mqtt": "~1.5.0", 
         "open": "~0.0.5", 
-        "passport": "~0.3.0", 
+        "passport": "~0.3.2", 
         "passport-twitter": "~1.0.3", 
         "prompt": "~0.2.14", 
-        "session-file-store": "~0.0.21", 
+        "session-file-store": "~0.0.22", 
         "swig": "~1.4.2", 
         "unirest": "~0.4.2", 
         "url-join": "~0.0.1", 
@@ -43,7 +43,7 @@
         "grunt": "~0.4.5", 
         "grunt-contrib-jshint": "~0.11.3", 
         "grunt-contrib-nodeunit": "~0.4.1", 
-        "grunt-contrib-uglify": "~0.9.2", 
+        "grunt-contrib-uglify": "~0.10.1", 
         "grunt-contrib-watch": "~0.6.1", 
         "grunt-jsbeautifier": "~0.2.10", 
         "jshint-stylish": "~2.0.1", 
@@ -62,5 +62,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.2.21"
+    "version": "0.2.22"
 }
