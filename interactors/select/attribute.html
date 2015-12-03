@@ -1,5 +1,4 @@
 <div>
-    <span class="interactor-name text-primary">{{ attribute._name }}</span>
     <span class="interactor-interactor">
         <select data-id="{{ attribute._id }}">
 {% for vd in attribute._values %}
@@ -7,6 +6,7 @@
 {% endfor %}
         </select>
     </span>
+    <span class="interactor-name text-primary">{{ attribute._name }}</span>
     <span class="interactor-message text-warning"></span>
     <span class="interactor-state text-muted"></span>
 </div>

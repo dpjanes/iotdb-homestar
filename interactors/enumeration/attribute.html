@@ -1,5 +1,4 @@
 <div>
-    <span class="interactor-name text-primary">{{ attribute._name }}</span>
     <span class="interactor-interactor">
         <div class="btn-group btn-group-sm">
         {% for vd in attribute._values %}
@@ -7,6 +6,7 @@
         {% endfor %}
         </div>
     </span>
+    <span class="interactor-name text-primary">{{ attribute._name }}</span>
     <span class="interactor-message text-warning"></span>
     <span class="interactor-state text-muted"></span>
 </div>
