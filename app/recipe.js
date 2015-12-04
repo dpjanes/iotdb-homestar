@@ -28,7 +28,7 @@ var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
 var url_join = require('url-join')
-var iotdb_recipe = require('iotdb-recipes').recipe;
+var iotdb_recipe = require('iotdb-recipes');
 var settings = require('./settings');
 var interactors = require('./interactors');
 var auth = require('./auth');

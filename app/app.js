@@ -840,7 +840,7 @@ var run = function () {
         iotql: settings.d.iotql,
         db: iotql_db,
     });
-    recipe.init_recipes();
+    recipe.init_recipes();  // delete me soon
 
     /**
      */
