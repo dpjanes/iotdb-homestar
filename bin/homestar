@@ -54,7 +54,23 @@ var commandd = {
  *  Load commands from the 'cmd' directory
  */
 var setup_commands = function() {
-    var filenames = cfg.cfg_find(null, path.join(__dirname, "commands"), /[.]js$/);
+    var filenames = [];
+
+    // imported from modules
+    var ms = iotdb.modules().modules();
+    ms.map(function(module) {
+        filenames = _.union(
+            filenames, 
+            cfg.cfg_find(null, path.join(module.module_folder, "commands"), /[.]js$/)
+        );
+    });
+
+    // native to HomeStar (in ./commands)
+    filenames = _.union(
+        filenames, 
+        cfg.cfg_find(null, path.join(__dirname, "commands"), /[.]js$/)
+    );
+
     cfg.cfg_load_js(filenames, function (paramd) {
         if (paramd.error !== undefined) {
             if (paramd.filename) {
@@ -106,7 +122,7 @@ var setup_commands = function() {
 };
 
 var help = function() {
-    console.log("usage: homestar <command> [optional arguments");
+    console.log("usage: homestar <command> [optional arguments]");
     console.log("");
     console.log("valid commands are:");
     console.log("");
