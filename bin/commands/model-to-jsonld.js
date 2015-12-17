@@ -1,5 +1,5 @@
 /*
- *  bin/commands/set.js
+ *  bin/commands/model-to-jsonld.js
  *
  *  David Janes
  *  IOTDB.org
@@ -33,7 +33,7 @@ var fs = require('fs');
 var uuid = require('uuid');
 var unirest = require('unirest');
 
-exports.command = "jsonld";
+exports.command = "model-to-jsonld";
 exports.boolean = [ "stdout", "compact", "upload", "iotql", ];
 exports.defaults = {
     compact: true
@@ -41,17 +41,22 @@ exports.defaults = {
 exports.summary = "produce JSON-LD for a Model";
 
 exports.help = function () {
-    console.log("usage: homestar jsonld [--stdout] [--no-compact] [--url <url>] <model-code>");
+    console.log("usage: homestar model-to-jsonld [--stdout] [--no-compact] [--url <url>] <model-code>");
+    console.log("");
+    console.log("--url         base URL for the Model");
+    console.log("--stdout      write to stdout (rather than appropriately named file)");
+    console.log("--no-compact  don't compact URIs in the JSON-LD");
+    console.log("");
+    console.log("This command will produce a '.iotql' file for a Model.");
+    console.log("Note that the Model must be known to IOTDB.");
+    console.log("A list of known model can be found by 'homestar configuration'.");
+    console.log("");
 };
 
 exports.run = function (ad) {
     if (ad._.length != 2) {
-        console.log("wrong number of arguments");
-        console.log("");
-        console.log("--url         base URL for the Model");
-        console.log("--stdout      write to stdout (rather than appropriately named file)");
-        console.log("--no-compact  don't compact URIs in the JSON-LD");
-        console.log("");
+        console.log("%s: Wrong number of arguments", ad._[0]);
+        console.log();
         exports.help();
         process.exit(1);
     }
