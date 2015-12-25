@@ -239,15 +239,15 @@ var _save_module = function (module_name, module_folder) {
 };
 
 /**
- *  We don't need to have many copies of hoemstar laying about
+ *  We don't need to have many copies of IOTDB laying about
  */
 var remove_iotdb = function (module_name, module_folder) {
-    var homestar_dir = path.join(process.cwd(), module_folder, "node_modules", "iotdb");
+    var iotdb_dir = path.join(process.cwd(), module_folder, "node_modules", "iotdb");
     console.log("- cleanup");
-    console.log("  path:", homestar_dir);
+    console.log("  path:", iotdb_dir);
 
     try {
-        _rmdirSync(homestar_dir);
+        _rmdirSync(iotdb_dir);
     } catch (x) {
     }
 };
@@ -278,7 +278,7 @@ var _install_children = function (module_name, module_folder, callback) {
 
         var is_module = _.d.get(dependency_homestard, "/module", false);
         if (!is_module) {
-            return callback();
+            return _install_next();
         }
 
         console.log("- found dependency:", dname);
@@ -290,7 +290,7 @@ var _install_children = function (module_name, module_folder, callback) {
             } catch (x) {
             }
 
-            callback();
+            _install_next();
         });
     }
 
