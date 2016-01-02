@@ -119,7 +119,7 @@ var settings = {
         cookbooks_path: "cookbooks",
         browser: true,
         name: null,
-        iotql: null         // will try to detect
+        iotql: null // will try to detect
     }
 };
 
@@ -217,7 +217,7 @@ var setup = function (av) {
         timers.setLocation(settings.d.location.latitude, settings.d.location.longitude);
     }
 
-    var ipv4 = _.ipv4();
+    var ipv4 = _.net.ipv4();
     if (ipv4) {
         settings.d.ip = ipv4;
     }
@@ -258,10 +258,9 @@ var setup = function (av) {
     }
 
     // determine whether IoTQL is available
-    if (settings.d.iotql === false) {
-    } else {
+    if (settings.d.iotql === false) {} else {
         try {
-            require('iotql')
+            require('iotql');
             settings.d.iotql = true;
         } catch (x) {
             settings.d.iotql = false;

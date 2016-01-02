@@ -27,7 +27,7 @@ var iotdb_transport = require('iotdb-transport');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var url_join = require('url-join')
+var url_join = require('url-join');
 var iotdb_recipe = require('iotdb-recipes');
 var settings = require('./settings');
 var interactors = require('./interactors');
@@ -103,7 +103,7 @@ var cookbooks = function () {
  *  This will make a new Recipe Transporter,
  *  with the proper authentication set up
  */
-var make_recipe_transporter = function(paramd) {
+var make_recipe_transporter = function (paramd) {
     paramd = _.defaults(paramd, {
         open: false,
     });
@@ -135,7 +135,9 @@ var _transport_mqtt = function (app) {
         client_id = auth.make_token_mqtt(owner);
     }
 
-    var recipe_transporter = make_recipe_transporter({ open: true });
+    var recipe_transporter = make_recipe_transporter({
+        open: true
+    });
     recipe_transporter.__magic = "TO-MQTT";
     var mqtt_transporter = new MQTTTransport({
         prefix: url_join(settings.d.mqttd.prefix, "api", "recipes"),

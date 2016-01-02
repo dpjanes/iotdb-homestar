@@ -26,7 +26,7 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var url_join = require('url-join')
+var url_join = require('url-join');
 var path = require('path');
 var util = require('util');
 var jwt = require('jsonwebtoken');

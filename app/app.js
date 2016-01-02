@@ -597,6 +597,12 @@ var setup_express_dynamic = function (app) {
 };
 
 var _setup_express_dynamic_folder = function (app, folder) {
+    var _make_redirect = function (path) {
+        return function (request, response) {
+            return response.redirect("/" + (path ? path : ""));
+        };
+    };
+
     var files = fs.readdirSync(folder);
     for (var fi in files) {
         var file = files[fi];
@@ -616,13 +622,8 @@ var _setup_express_dynamic_folder = function (app, folder) {
                 content_type: "text/html",
             }));
 
-            app.get(util.format("/%s", base), function(request, response) {
-                return response.redirect("/");
-            });
-
-            app.get(util.format("/%s", file), function(request, response) {
-                return response.redirect("/");
-            });
+            app.get(util.format("/%s", base), _make_redirect());
+            app.get(util.format("/%s", file), _make_redirect());
         } else if (ext === "html") {
             app.get(util.format("/%s", base), make_dynamic({
                 template: template,
@@ -630,9 +631,7 @@ var _setup_express_dynamic_folder = function (app, folder) {
                 content_type: "text/html",
             }));
 
-            app.get(util.format("/%s", file), function(request, response) {
-                return response.redirect(util.format("/%s", base));
-            });
+            app.get(util.format("/%s", file), _make_redirect(base));
         } else if (ext === "js") {
             app.get(util.format("/%s.%s", base, ext), make_dynamic({
                 template: template,
@@ -720,8 +719,7 @@ var setup_passport = function () {
             user: user,
         }, "passport/serializeUser");
 
-        users.update(user, function() {
-        });
+        users.update(user, function () {});
         done(null, user.identity);
     });
 
@@ -831,22 +829,24 @@ var run = function () {
 
     if (settings.d.iotql) {
         iotql = require('iotql');
-        iotql_db = new iotql.DB(things.iotdb_transporter, recipe.make_recipe_transporter({ open: true }));
+        iotql_db = new iotql.DB(things.iotdb_transporter, recipe.make_recipe_transporter({
+            open: true
+        }));
         iotql_db.user = iotdb.users.owner();
-    };
+    }
 
     recipe.load_recipes({
         cookbooks_path: "cookbooks",
         iotql: settings.d.iotql,
         db: iotql_db,
     });
-    recipe.init_recipes();  // delete me soon
+    recipe.init_recipes(); // delete me soon
 
     /**
      */
     var profiled = {};
     profiled.pid = process.pid;
-    profiled.ip = _.ipv4();
+    profiled.ip = _.net.ipv4();
     profiled.cwd = process.cwd();
     profiled.webserver = {
         scheme: settings.d.webserver.scheme,

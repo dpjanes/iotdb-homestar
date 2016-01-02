@@ -29,7 +29,7 @@ var cfg = iotdb.cfg;
 
 var path = require('path');
 
-var url_join = require('url-join')
+var url_join = require('url-join');
 var mqtt = require('./mqtt');
 var settings = require('./settings');
 var interactors = require('./interactors');
@@ -491,7 +491,7 @@ var _transport_metadata = function (app, iotdb_transporter) {
 var setup = function (app) {
 
     var iot = iotdb.iot();
-    var things = iot.things();   // NOT 'connect'
+    var things = iot.things(); // NOT 'connect'
 
     /*
     things.on("thing", function(thing) {
