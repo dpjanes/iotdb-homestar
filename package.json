@@ -24,7 +24,7 @@
         "iotdb-transport-fs": "~0.0.20", 
         "iotdb-transport-iotdb": "~0.0.16", 
         "iotdb-transport-mqtt": "~0.0.17", 
-        "jsonwebtoken": "~5.5.0", 
+        "jsonwebtoken": "~5.5.4", 
         "minimist": "~1.2.0", 
         "mows": "~0.0.6", 
         "mqtt": "~1.6.3", 
@@ -62,5 +62,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.2.32"
+    "version": "0.2.33"
 }
