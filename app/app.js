@@ -808,6 +808,13 @@ var run = function () {
         if (settings.d.browser) {
             open(settings.d.webserver.url);
         }
+
+        console.log("===============================");
+        console.log("=== Home☆Star Runner Up");
+        console.log("=== ");
+        console.log("=== Connect at:");
+        console.log("=== " + settings.d.webserver.url);
+        console.log("===============================");
     });
 
     /*

@@ -95,7 +95,16 @@ exports.run = function (ad) {
     var server = app.listen(9998);
     server.on('listening', function() {
         var port = server.address().port
-        app.html_root = util.format("http://localhost:%s", port);
+        var ip = _.net.ipv4();
+
+        app.html_root = util.format("http://%s:%s", ip, port);
         open(app.html_root);
+
+        console.log("===============================");
+        console.log("=== Home☆Star Configure");
+        console.log("=== ");
+        console.log("=== Connect at:");
+        console.log("=== " + app.html_root);
+        console.log("===============================");
     })
 };
