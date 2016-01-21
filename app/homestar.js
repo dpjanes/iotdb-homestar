@@ -32,7 +32,6 @@ var unirest = require('unirest');
 
 var settings = require('./settings');
 var recipe = require('./recipe');
-var firebase = require('./firebase');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -304,9 +303,10 @@ var profile = function () {
                     body: result.body,
                 }, "profile");
 
-                if (result.body.firebase) {
-                    firebase.firebase_cfg(result.body.firebase);
-                }
+                var app = require("./app");
+                app.extensions_apply("on_profile", function(worker, locals) {
+                    worker(locals, result.body);
+                });
             } else {
                 logger.error({
                     status: result.statusCode,

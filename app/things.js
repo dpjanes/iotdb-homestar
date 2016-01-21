@@ -525,3 +525,7 @@ exports.setup = setup;
 exports.thing_by_id = _thing_by_id;
 exports.things = things;
 exports.iotdb_transporter = null;
+exports.make_iotdb_transporter = function() {
+    // XXX WRONG - MAKE NEW ONES
+    return exports.iotdb_transporter;
+};

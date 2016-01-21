@@ -443,15 +443,18 @@ var setup_extensions = function () {
         make_dynamic: make_dynamic,
         settings: settings.d,
         users: {
+            owner: iotdb.users.owner,
             update: users.update,
             users: users.users,
             user_by_id: users.user_by_id,
         },
         things: {
             thing_by_id: things.thing_by_id,
+            make_transporter: things.make_iotdb_transporter,
         },
         recipes: {
             recipe_by_id: recipe.recipe_by_id,
+            make_transporter: recipe.make_recipe_transporter,
         },
         data: {
             facets: function () {
@@ -930,3 +933,4 @@ if (settings.d.profile) {
  *  API (sigh)
  */
 exports.make_dynamic = make_dynamic;
+exports.extensions_apply = extensions_apply;
