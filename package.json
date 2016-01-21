@@ -10,20 +10,20 @@
         "body-parser": "~1.14.2", 
         "bunyan": "~1.5.1", 
         "connect-fs": "~0.1.1", 
-        "cookie-parser": "~1.4.0", 
+        "cookie-parser": "~1.4.1", 
         "express": "~4.13.3", 
-        "express-session": "~1.12.1", 
+        "express-session": "~1.13.0", 
         "firebase": "~2.3.2", 
         "iotdb": ">=0.11.0", 
         "iotdb-metadata-fs": "~0.0.1", 
         "iotdb-recipes": "~0.0.10", 
         "iotdb-timers": "~0.0.12", 
-        "iotdb-transport": "~0.0.17", 
-        "iotdb-transport-express": "~0.0.22", 
-        "iotdb-transport-firebase": "~0.0.22", 
-        "iotdb-transport-fs": "~0.0.20", 
-        "iotdb-transport-iotdb": "~0.0.16", 
-        "iotdb-transport-mqtt": "~0.0.17", 
+        "iotdb-transport": "~0.0.21", 
+        "iotdb-transport-express": "~0.0.23", 
+        "iotdb-transport-firebase": "~0.0.23", 
+        "iotdb-transport-fs": "~0.0.21", 
+        "iotdb-transport-iotdb": "~0.0.17", 
+        "iotdb-transport-mqtt": "~0.0.19", 
         "jsonwebtoken": "~5.5.4", 
         "minimist": "~1.2.0", 
         "mows": "~0.0.6", 
@@ -41,7 +41,7 @@
     "description": "Home\u2606Star Runner", 
     "devDependencies": {
         "grunt": "~0.4.5", 
-        "grunt-contrib-jshint": "~0.11.3", 
+        "grunt-contrib-jshint": "~0.12.0", 
         "grunt-contrib-nodeunit": "~0.4.1", 
         "grunt-contrib-uglify": "~0.11.0", 
         "grunt-contrib-watch": "~0.6.1", 
@@ -62,5 +62,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.2.33"
+    "version": "0.2.34"
 }
