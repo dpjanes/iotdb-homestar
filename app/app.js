@@ -59,7 +59,7 @@ var logger = iotdb.logger({
     module: 'app/app',
 });
 
-var _modules_locals;
+var _extension_locals;
 var _setup_express_dynamic_folder;
 var swig_outer;
 
@@ -379,7 +379,7 @@ var make_dynamic = function (paramd) {
             homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
             format_metadata: _format_metadata,
         };
-        _.extend(locals, _modules_locals);
+        _.extend(locals, _extension_locals);
 
         if (paramd.locals) {
             _.extend(locals, paramd.locals);
@@ -430,123 +430,135 @@ var make_dynamic = function (paramd) {
 };
 
 /**
- *  Installed modules can add pages by declaring "web"
+ *  Installed modules can add pages by declaring "homestar"
  */
-var _modules_locals = {};
+var _extension_locals = {};
+var _extensions = [];
 
-var setup_express_modules = function (app) {
+var setup_extensions = function () {
+    /*
+     *  Ways you can interact with HomeStar
+     */
+    _extension_locals.homestar = {
+        make_dynamic: make_dynamic,
+        settings: settings.d,
+        users: {
+            update: users.update,
+            users: users.users,
+            user_by_id: users.user_by_id,
+        },
+        things: {
+            thing_by_id: things.thing_by_id,
+        },
+        recipes: {
+            recipe_by_id: recipe.recipe_by_id,
+        },
+        data: {
+            facets: function () {
+                return [
+                    "iot-facet:appliance",
+                    "iot-facet:climate",
+                    "iot-facet:climate.cooling",
+                    "iot-facet:climate.heating",
+                    "iot-facet:control",
+                    "iot-facet:control.dial",
+                    "iot-facet:control.dimmer",
+                    "iot-facet:control.keyboard",
+                    "iot-facet:control.keypad",
+                    "iot-facet:control.mouse",
+                    "iot-facet:control.switch",
+                    "iot-facet:control.touchpad",
+                    "iot-facet:gateway",
+                    "iot-facet:lighting",
+                    "iot-facet:media",
+                    "iot-facet:security",
+                    "iot-facet:sensor",
+                    "iot-facet:sensor.chemical",
+                    "iot-facet:sensor.chemical.carbon-dioxide",
+                    "iot-facet:sensor.chemical.carbon-monoxide",
+                    "iot-facet:sensor.fire",
+                    "iot-facet:sensor.heat",
+                    "iot-facet:sensor.humidity",
+                    "iot-facet:sensor.humidty",
+                    "iot-facet:sensor.motion",
+                    "iot-facet:sensor.particulates",
+                    "iot-facet:sensor.presence",
+                    "iot-facet:sensor.shatter",
+                    "iot-facet:sensor.sound",
+                    "iot-facet:sensor.spatial",
+                    "iot-facet:sensor.temperature",
+                    "iot-facet:sensor.water",
+                    "iot-facet:toy",
+                    "iot-facet:wearable",
+                ];
+            },
+            zones: function () {
+                return [
+                    "Kitchen", "Living Room", "Basement", "Master Bedroom", "Bedroom", "Den",
+                    "Main Floor", "Second Floor",
+                    "Front Garden", "Back Garden",
+                ];
+            },
+            groups: function () {
+                return [
+                    "Everyone",
+                    "Friends",
+                    "Family",
+                ];
+            },
+            default_access_read: function () {
+                return ["Everyone", ];
+            },
+            default_access_write: function () {
+                return ["Friends", ];
+            },
+            default_groups: function () {
+                return ["Everyone", ];
+            },
+        },
+    };
+
     var modules = iotdb.modules().modules();
     for (var mi in modules) {
-        var module = modules[mi];
-        if (!module.web) {
+        var extension = modules[mi];
+        if (!extension.homestar) {
             continue;
         }
 
-        /*
-         *  This is the most general way of using a plug-in
-         *  extension. The function 'setup' is called with
-         *  two arguments: the app, and a dictionary
-         *  of useful functions. We are picking exactly
-         *  what we want to send to the plugin to
-         *  "future-proof" ourselves from maintaining
-         *  code we don't want to.
-         */
-        if (module.web.setup) {
-            module.web.setup(app, {
-                make_dynamic: make_dynamic,
-                settings: settings.d,
-                users: {
-                    update: users.update,
-                    users: users.users,
-                    user_by_id: users.user_by_id,
-                },
-                things: {
-                    thing_by_id: things.thing_by_id,
-                },
-                recipes: {
-                    recipe_by_id: recipe.recipe_by_id,
-                },
-                data: {
-                    facets: function () {
-                        return [
-                            "iot-facet:appliance",
-                            "iot-facet:climate",
-                            "iot-facet:climate.cooling",
-                            "iot-facet:climate.heating",
-                            "iot-facet:control",
-                            "iot-facet:control.dial",
-                            "iot-facet:control.dimmer",
-                            "iot-facet:control.keyboard",
-                            "iot-facet:control.keypad",
-                            "iot-facet:control.mouse",
-                            "iot-facet:control.switch",
-                            "iot-facet:control.touchpad",
-                            "iot-facet:gateway",
-                            "iot-facet:lighting",
-                            "iot-facet:media",
-                            "iot-facet:security",
-                            "iot-facet:sensor",
-                            "iot-facet:sensor.chemical",
-                            "iot-facet:sensor.chemical.carbon-dioxide",
-                            "iot-facet:sensor.chemical.carbon-monoxide",
-                            "iot-facet:sensor.fire",
-                            "iot-facet:sensor.heat",
-                            "iot-facet:sensor.humidity",
-                            "iot-facet:sensor.humidty",
-                            "iot-facet:sensor.motion",
-                            "iot-facet:sensor.particulates",
-                            "iot-facet:sensor.presence",
-                            "iot-facet:sensor.shatter",
-                            "iot-facet:sensor.sound",
-                            "iot-facet:sensor.spatial",
-                            "iot-facet:sensor.temperature",
-                            "iot-facet:sensor.water",
-                            "iot-facet:toy",
-                            "iot-facet:wearable",
-                        ];
-                    },
-                    zones: function () {
-                        return [
-                            "Kitchen", "Living Room", "Basement", "Master Bedroom", "Bedroom", "Den",
-                            "Main Floor", "Second Floor",
-                            "Front Garden", "Back Garden",
-                        ];
-                    },
-                    groups: function () {
-                        return [
-                            "Everyone",
-                            "Friends",
-                            "Family",
-                        ];
-                    },
-                    default_access_read: function () {
-                        return ["Everyone", ];
-                    },
-                    default_access_write: function () {
-                        return ["Friends", ];
-                    },
-                    default_groups: function () {
-                        return ["Everyone", ];
-                    },
-                },
-            });
+        _extensions.push(extension);
+    };
+
+    extensions_apply("setup", function(worker, extension_locals) {
+        worker(extension_locals);
+    });
+};
+
+var extensions_apply = function(key, callback) {
+    _extensions.map(function(extension) {
+        var worker = extension.homestar[key];
+        if (!worker) {
+            return;
         }
 
-        /* autogenerated dynamic files -- should be a folder */
-        if (module.web.dynamic) {
-            _setup_express_dynamic_folder(app, module.web.dynamic);
-        }
+        callback(worker, _extension_locals);
+    });
+};
 
-        /* autogenerated static files -- should be a folder */
-        if (module.web.static) {
-            app.use('/static', express.static(module.web.static));
-        }
 
-        /* local variables - NOTE: shared to _all pages_ */
-        if (module.web.locals) {
-            _.extend(_modules_locals, module.web.locals);
-        }
-    }
+var extensions_setup_app = function (app) {
+    extensions_apply("setup_app", function(worker, extension_locals) {
+        worker(extension_locals, app);
+    });
+    
+    /*
+    extensions_apply("dynamic", function(worker, extension_locals) {
+        _setup_express_dynamic_folder(app, worker);
+    });
+    
+    extensions_apply("static", function(worker, extension_locals) {
+        app.use('/static', express.static(worker));
+    });
+    */
 };
 
 /**
@@ -764,6 +776,11 @@ settings.setup(process.argv);
 interactors.setup();
 
 /**
+ *  Extensions
+ */
+setup_extensions();
+
+/**
  *  Special Swig renderer
  */
 var swig_outer = new swig.Swig({
@@ -786,7 +803,7 @@ var app = express();
 exports.app = app;
 
 setup_express(app);
-setup_express_modules(app);
+extensions_setup_app(app);
 setup_express_configure(app);
 setup_express_dynamic(app);
 setup_express_static(app);
@@ -815,6 +832,10 @@ var run = function () {
         console.log("=== Connect at:");
         console.log("=== " + settings.d.webserver.url);
         console.log("===============================");
+
+        extensions_apply("on_ready", function(worker, extension_locals) {
+            worker(extension_locals);
+        });
     });
 
     /*
