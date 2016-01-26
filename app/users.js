@@ -234,7 +234,8 @@ var authorize = function (authd, callback) {
     console.log("AUTHORIZE", authd.authorize);
     console.log("OTHER", "user=", user && user.identity, "groups=", groups, "store=", store, "is_allowed=", is_allowed);
     console.log("-----");
-     */
+    */
+
 
     return callback(null, is_allowed);
 };
