@@ -257,8 +257,8 @@ user_by_identity = function (user_identity, paramd, callback) {
     transporter.get({
         id: user_id,
         band: flat_band,
-    }, function (gd) {
-        if ((gd.value === null) && paramd.create) {
+    }, function (error, gd) {
+        if (!gd.value && paramd.create) {
             gd.value = {
                 identity: user_identity,
                 created: _.timestamp.make(),
@@ -268,11 +268,11 @@ user_by_identity = function (user_identity, paramd, callback) {
                 id: user_id,
                 band: flat_band,
                 value: gd.value
-            }, function () {
-                callback(null, _enhance(gd.value));
+            }, function (error) {
+                callback(error, _enhance(gd.value));
             });
         } else {
-            callback(null, _enhance(gd.value));
+            callback(error, _enhance(gd.value));
         }
     });
 };
@@ -284,8 +284,8 @@ var user_by_id = function (user_id, callback) {
     transporter.get({
         id: user_id,
         band: flat_band,
-    }, function (gd) {
-        callback(null, _enhance(gd.value));
+    }, function (error, gd) {
+        callback(error, _enhance(gd.value));
     });
 };
 
@@ -306,8 +306,8 @@ var update = function (user, done) {
         id: user_id,
         band: flat_band,
         value: user,
-    }, function (rd) {
-        done(rd.error, user);
+    }, function (error, rd) {
+        done(error, user);
     });
 };
 
@@ -327,26 +327,36 @@ var users = function (callback) {
     var _decrement = function () {
         if (--pending === 0) {
             callback(null, null);
+            callback = _.noop;
         }
     };
 
-    transporter.list(function (ld) {
-        if (ld.end) {
-            _decrement();
-        } else if (ld.id) {
-            _increment();
-
-            transporter.get({
-                id: ld.id,
-                band: flat_band,
-            }, function (gd) {
-                if (gd.value) {
-                    callback(null, _enhance(gd.value));
-                }
-
-                _decrement();
-            });
+    transporter.list(function (error, ld) {
+        if (error) {
+            callback(error, null);
+            callback = _.noop;
+            return;
         }
+
+        if (!ld) {
+            _decrement();
+            return;
+        }
+
+        _increment();
+
+        transporter.get({
+            id: ld.id,
+            band: flat_band,
+        }, function (error, gd) {
+            if (error) {
+                callback(error, _enhance(gd.value));
+            } else if (gd.value) {
+                callback(null, _enhance(gd.value));
+            }
+
+            _decrement();
+        });
     });
 };
 

@@ -464,19 +464,29 @@ var _transport_metadata = function (app, iotdb_transporter) {
     });
 
     // When things are discovered, load their metadata from the FS
-    var _back_copy = function (ld) {
-        if (ld.end) {
+    var _back_copy = function (error, ld) {
+        if (error) {
             return;
-        } else if (ld.id) {
-            metadata_transporter.get({
-                id: ld.id,
-                band: "meta",
-            }, function (gd) {
-                if (gd.value) {
-                    iotdb_transporter.update(gd);
-                }
-            });
         }
+        if (!ld) {
+            return;
+        }
+        if (!ld.id) {
+            return;
+        }
+
+        metadata_transporter.get({
+            id: ld.id,
+            band: "meta",
+        }, function (error, gd) {
+            if (error) {
+                return;
+            }
+
+            if (gd.value) {
+                iotdb_transporter.update(gd, _.noop);
+            }
+        });
     };
 
     iotdb_transporter.added(_back_copy);
