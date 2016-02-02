@@ -14,10 +14,10 @@
         "express": "~4.13.4", 
         "express-session": "~1.13.0", 
         "iotdb": ">=0.11.0", 
-        "iotdb-metadata-fs": "~0.0.1", 
+        "iotdb-metadata-fs": "~0.0.2", 
         "iotdb-recipes": "~0.0.10", 
         "iotdb-timers": "~0.0.12", 
-        "iotdb-transport": "~0.0.24", 
+        "iotdb-transport": "~0.0.27", 
         "iotdb-transport-express": "~0.0.25", 
         "iotdb-transport-fs": "~0.0.22", 
         "iotdb-transport-iotdb": "~0.0.18", 
@@ -60,5 +60,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.2.39"
+    "version": "0.2.40"
 }
