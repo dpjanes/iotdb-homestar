@@ -200,7 +200,7 @@ var _install = function (name, callback) {
         }
 
         var module_homestard = _load_homestar(module_folder);
-        if (_.d.get(module_homestard, "/module", false)) {
+        if (_.d.get(module_homestard, "/module", false) || (module_name === "homestar")) {
             _save_module(module_name, module_folder);
             remove_iotdb(module_name, module_folder);
             _install_children(module_name, module_folder, callback);
