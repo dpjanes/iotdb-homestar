@@ -58,6 +58,7 @@ then
             README.md \
             LICENSE.txt \
             package.json \
+            homestar.js \
             app/*.js \
             bin/homestar \
             bin/commands \

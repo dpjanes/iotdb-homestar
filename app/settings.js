@@ -264,7 +264,7 @@ var setup = function (av) {
             settings.d.iotql = true;
         } catch (x) {
             settings.d.iotql = false;
-            logger.fatal({
+            logger.error({
                 method: "settings",
                 cause: "do $ homestar install iotql",
             }, "IoTQL not found (not required, but nice to have)");

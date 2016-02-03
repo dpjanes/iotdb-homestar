@@ -171,7 +171,7 @@ var _template_things = function () {
 
 var _template_upnp = function () {
     var ds = [];
-    var devices = iotdb.module('iotdb-upnp').devices();
+    var devices = require('iotdb-upnp').devices();
     for (var di in devices) {
         var device = devices[di];
         var d = {};
