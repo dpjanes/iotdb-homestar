@@ -452,8 +452,8 @@ var _transport_metadata = function (app, iotdb_transporter) {
             return;
         }
 
-        ud = _.shallowCopy(ud);
-        ud.value = _.shallowCopy(ud.value);
+        ud = _.d.clone.shallow(ud);
+        ud.value = _.d.clone.shallow(ud.value);
 
         delete ud.value["iot:controller.session-timestamp"];
         delete ud.value["iot:controller.machine-id"];
