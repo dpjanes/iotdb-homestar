@@ -180,7 +180,6 @@ var setup = function (app) {
  *  API
  */
 exports.init_recipes = iotdb_recipe.init_recipes;
-exports.load_recipes = iotdb_recipe.load_recipes;
 exports.recipes = iotdb_recipe.recipes;
 exports.recipe_by_id = iotdb_recipe.recipe_by_id;
 

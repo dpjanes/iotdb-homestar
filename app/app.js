@@ -847,7 +847,6 @@ var run = function () {
     mqtt.setup();
     users.setup();
     things.setup(app);
-    recipe.setup(app);
     homestar.setup();
 
     iotdb.connect();
@@ -866,12 +865,16 @@ var run = function () {
         iotql_db.user = iotdb.users.owner();
     }
 
-    recipe.load_recipes({
+    iotdb.load_recipes({
         cookbooks_path: "cookbooks",
         iotql: settings.d.iotql,
         db: iotql_db,
     });
+    recipe.setup(app);
+    /*
     recipe.init_recipes(); // delete me soon
+    process.exit();
+    */
 
     /**
      */
