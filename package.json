@@ -13,15 +13,15 @@
         "cookie-parser": "~1.4.1", 
         "express": "~4.13.4", 
         "express-session": "~1.13.0", 
-        "iotdb": ">=0.11.0", 
+        "iotdb": ">=0.12.0", 
         "iotdb-metadata-fs": "~0.0.2", 
         "iotdb-recipes": "~0.0.10", 
         "iotdb-timers": "~0.0.12", 
-        "iotdb-transport": "~0.0.28", 
-        "iotdb-transport-express": "~0.0.25", 
-        "iotdb-transport-fs": "~0.0.22", 
-        "iotdb-transport-iotdb": "~0.0.18", 
-        "iotdb-transport-mqtt": "~0.0.21", 
+        "iotdb-transport": "~0.0.30", 
+        "iotdb-transport-express": "~0.0.26", 
+        "iotdb-transport-fs": "~0.0.23", 
+        "iotdb-transport-iotdb": "~0.0.19", 
+        "iotdb-transport-mqtt": "~0.0.22", 
         "jsonwebtoken": "~5.5.4", 
         "minimist": "~1.2.0", 
         "mows": "~0.0.6", 
@@ -60,5 +60,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.3.0"
+    "version": "0.3.1"
 }
