@@ -51,7 +51,7 @@ exports.help = function () {
     console.log("--update will do 'npm update'");
 };
 
-var update_install = "install";
+var is_install = true;
 var completed = [
     // "iotdb"
 ];
@@ -95,9 +95,12 @@ exports.run = function (ad) {
         modules = ad._.slice(1);
     }
 
-    update_install = ad.update ? "update" : "install";
+    if (ad.update) {
+        is_install = false;
+    }
 
     _make_node_modules();
+    process.exit();
 
     modules.reverse();
     var _pop = function() {
@@ -120,11 +123,10 @@ exports.run = function (ad) {
  *  For the benefit of setup.js - don't use elsewhere
  */
 exports.install = function(name, callback) {
-    update_install = "install";
-
+    is_install = true;
+    
     // make sure local directory exists
     _make_node_modules();
-
 
     // force this to get installed
     var namex = completed.indexOf(name);
@@ -155,7 +157,7 @@ var _install = function (name, callback) {
 
     var module_name = name;
     var module_folder = path.join("node_modules", module_name);
-    var module_update_install = update_install;
+    var _is_install = is_install;
     var exists = false
     
     try {
@@ -167,10 +169,15 @@ var _install = function (name, callback) {
     }
 
     if (!exists) {
-        module_update_install = "install";
+        _is_install = true;
     }
 
-    var command = util.format("npm %s %s", module_update_install, module_name);
+    var command;
+    if (_is_install) {
+        command = util.format("npm install --save %s", module_name);
+    } else {
+        command = util.format("npm update %s", module_name);
+    }
 
     console.log("- running:", command);
     console.log("  (this may take some time)");
@@ -181,7 +188,7 @@ var _install = function (name, callback) {
             process.exit(1);
         }
 
-        var re = /^([-_a-z]+)@([0-9.]+) (.*)$/mg; 
+        var re = /[^a-z]* ([-_a-z]+)@([0-9.]+) (.*)$/mg; 
         var match = null;
         var m = null;
         while (m = re.exec(stdout)) {
@@ -189,7 +196,7 @@ var _install = function (name, callback) {
         }
 
         if (!match) {
-            if (update_install === "install") {
+            if (is_install) {
                 console.log("# error: running npm");
                 console.log(stderr);
                 process.exit(1);
@@ -205,7 +212,7 @@ var _install = function (name, callback) {
             remove_iotdb(module_name, module_folder);
             _install_children(module_name, module_folder, callback);
         } else {
-            if (update_install === "install") {
+            if (is_install) {
                 console.log("- installed node module!");
             } else {
                 console.log("- updated node module!");

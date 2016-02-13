@@ -72,16 +72,15 @@ var setup_commands = function() {
     );
 
     cfg.cfg_load_js(filenames, function (paramd) {
-        if (paramd.error !== undefined) {
-            if (paramd.filename) {
-                logger.error({
-                    method: "setup_commands",
-                    filename: paramd.filename,
-                    error: paramd.error,
-                    exception: paramd.exception,
-                    cause: "HomeStar error - contact us",
-                }, "error loading command");
-            }
+        if (paramd.error) {
+            logger.error({
+                method: "setup_commands",
+                filename: paramd.filename,
+                error: _.error.message(paramd.error),
+                exception: paramd.exception,
+                cause: "HomeStar error - contact us",
+                stack: paramd.exception ? paramd.exception.stack : null,
+            }, "error loading command");
 
             return;
         }
