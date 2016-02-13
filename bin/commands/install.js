@@ -100,7 +100,6 @@ exports.run = function (ad) {
     }
 
     _make_node_modules();
-    process.exit();
 
     modules.reverse();
     var _pop = function() {
@@ -159,7 +158,7 @@ var _install = function (name, callback) {
     var module_folder = path.join("node_modules", module_name);
     var _is_install = is_install;
     var exists = false
-    
+
     try {
         var stbuf = fs.lstatSync(module_folder);
         if (stbuf.isDirectory()) {
@@ -171,6 +170,10 @@ var _install = function (name, callback) {
     if (!exists) {
         _is_install = true;
     }
+
+    // console.log("module_folder", module_folder);
+    // console.log("exists", exists);
+    // console.log("_is_install", _is_install);
 
     var command;
     if (_is_install) {
@@ -188,6 +191,12 @@ var _install = function (name, callback) {
             process.exit(1);
         }
 
+        module_folder = path.resolve(module_folder);
+
+        // console.log("module_folder", module_folder);
+        // console.log("module_name", module_name);
+
+            /*
         var re = /[^a-z]* ([-_a-z]+)@([0-9.]+) (.*)$/mg; 
         var match = null;
         var m = null;
@@ -205,20 +214,25 @@ var _install = function (name, callback) {
             module_name = match[1];
             module_folder = match[3];
         }
+        module_name = match[1];
+        module_folder = match[3];
+            */
+        if (is_install) {
+            console.log("- installed node module!");
+        } else {
+            console.log("- updated node module!");
+        }
+        console.log("  name:", module_name);
+        console.log("  path:", module_folder);
 
         var module_homestard = _load_homestar(module_folder);
-        if (_.d.get(module_homestard, "/module", false) || (module_name === "homestar")) {
+        if (module_name === "homestar") {
+            callback();
+        } else if (_.d.get(module_homestard, "/module", false)) {
             _save_module(module_name, module_folder);
             remove_iotdb(module_name, module_folder);
             _install_children(module_name, module_folder, callback);
         } else {
-            if (is_install) {
-                console.log("- installed node module!");
-            } else {
-                console.log("- updated node module!");
-            }
-            console.log("  name:", module_name);
-            console.log("  path:", module_folder);
             callback();
         }
     });
@@ -229,7 +243,7 @@ var _install = function (name, callback) {
  *  Add module info to the keystore
  */
 var _save_module = function (module_name, module_folder) {
-    var module_path = path.join(process.cwd(), module_folder);
+    var module_path = path.resolve(module_folder);
 
     iotdb.keystore().save("/modules", function(current) {
         if (!_.isObject(current)) {
@@ -264,7 +278,7 @@ var remove_iotdb = function (module_name, module_folder) {
  *  essentially recursively
  */
 var _install_children = function (module_name, module_folder, callback) {
-    var module_folder = path.join(process.cwd(), module_folder)
+    var module_folder = path.resolve(module_folder)
     var module_packaged = _load_package(module_folder);
 
     var module_dependencies = _.d.get(module_packaged, "/dependencies");
