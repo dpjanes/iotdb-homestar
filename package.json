@@ -7,21 +7,21 @@
         "url": "https://github.com/dpjanes/iotdb-homestar/issues"
     }, 
     "dependencies": {
-        "body-parser": "~1.14.2", 
-        "bunyan": "~1.5.1", 
+        "body-parser": "~1.15.0", 
+        "bunyan": "~1.6.0", 
         "connect-fs": "~0.1.1", 
         "cookie-parser": "~1.4.1", 
         "express": "~4.13.4", 
         "express-session": "~1.13.0", 
-        "iotdb": ">=0.12.0", 
-        "iotdb-metadata-fs": "~0.0.2", 
-        "iotdb-recipes": "~0.0.10", 
-        "iotdb-timers": "~0.0.12", 
-        "iotdb-transport": "~0.0.30", 
-        "iotdb-transport-express": "~0.0.26", 
-        "iotdb-transport-fs": "~0.0.23", 
-        "iotdb-transport-iotdb": "~0.0.19", 
-        "iotdb-transport-mqtt": "~0.0.22", 
+        "iotdb": ">=0.13.0", 
+        "iotdb-metadata-fs": "~0.0.4", 
+        "iotdb-recipes": "~0.0.11", 
+        "iotdb-timers": "~0.0.13", 
+        "iotdb-transport": "~0.0.31", 
+        "iotdb-transport-express": "~0.0.27", 
+        "iotdb-transport-fs": "~0.0.24", 
+        "iotdb-transport-iotdb": "~0.0.20", 
+        "iotdb-transport-mqtt": "~0.0.23", 
         "jsonwebtoken": "~5.5.4", 
         "minimist": "~1.2.0", 
         "mows": "~0.0.6", 
@@ -29,7 +29,7 @@
         "open": "~0.0.5", 
         "passport": "~0.3.2", 
         "passport-twitter": "~1.0.4", 
-        "prompt": "~0.2.14", 
+        "prompt": "~1.0.0", 
         "session-file-store": "~0.0.24", 
         "swig": "~1.4.2", 
         "unirest": "~0.4.2", 
@@ -60,5 +60,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.3.1"
+    "version": "0.3.2"
 }
