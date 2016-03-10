@@ -204,7 +204,7 @@ var run_cli = function()  {
     }
 };
 
-_.version.check.node();
+// _.version.check.node();
 
 setup_commands();
 run_cli();

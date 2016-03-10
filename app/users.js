@@ -264,7 +264,7 @@ user_by_identity = function (user_identity, paramd, callback) {
                 created: _.timestamp.make(),
             };
 
-            transporter.update({
+            transporter.put({
                 id: user_id,
                 band: flat_band,
                 value: gd.value
@@ -302,7 +302,7 @@ var update = function (user, done) {
 
     var user_id = _.id.user_urn(user.identity);
 
-    transporter.update({
+    transporter.put({
         id: user_id,
         band: flat_band,
         value: user,

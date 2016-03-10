@@ -39,224 +39,17 @@ var logger = iotdb.logger({
 });
 
 var bearer;
-var URL_CONSUMER;
-var URL_PROFILE;
-var URL_COOKBOOKS;
-var URL_THINGS;
-
-/**
- *  Fetch a user's permissions with this consumer
- */
-var permissions = function (user, callback) {
-    var url = URL_CONSUMER + '/users/' + user.id;
-    unirest
-        .get(url)
-        .headers({
-            'Accept': 'application/json',
-            'Authorization': bearer,
-        })
-        .type('json')
-        .end(function (result) {
-            if (result.error) {
-                logger.error({
-                    url: url,
-                    error: result.error,
-                }, "permissions failed");
-                callback("fetch permissions failed", null);
-            } else if (result.body) {
-                callback(null, result.body);
-            } else {
-                logger.error({
-                    status: result.statusCode,
-                    url: url,
-                }, "no readable response");
-                callback("fetch permissions failed [1]");
-            }
-        });
-};
-
-var _cookbooks_sent = false;
-var _cookbooks_timer = null;
-
-/**
- *  Send Cookbook info to the server
- */
-var send_cookbook = function (cookbook, callback) {
-    if (!cookbook.cookbook_id) {
-        return callback(null, null);
-    }
-    if (!callback) {
-        callback = function () {};
-    }
-
-    var url = URL_COOKBOOKS + '/' + cookbook.cookbook_id;
-    unirest
-        .put(url)
-        .headers({
-            'Accept': 'application/json',
-            'Authorization': bearer,
-        })
-        .json(cookbook)
-        .type('json')
-        .end(function (result) {
-            if (result.error) {
-                logger.error({
-                    url: url,
-                    error: result.error,
-                }, "permissions failed");
-                callback("send_cookbook() permissions failed", null);
-            } else if (result.body) {
-                callback(null, result.body);
-            } else {
-                logger.error({
-                    status: result.statusCode,
-                    url: url,
-                }, "no readable response");
-                callback("send_cookbook() permissions failed [1]");
-            }
-        });
-};
-
-/**
- *  Send cookbooks to HomeStar.io
- */
-var send_cookbooks = function (retry) {
-    var cookbook = {};
-
-    if (_cookbooks_timer && retry > 0) {
-        clearTimeout(_cookbooks_timer);
-    }
-
-    var sent = true;
-    var count = 1;
-    var _track_callback = function (error) {
-        count--;
-
-        if (error) {
-            sent = false;
-        }
-
-        if (count !== 0) {
-            return;
-        }
-
-        _cookbooks_sent = sent;
-
-        /*
-        console.log("=======================");
-        console.log(_cookbooks_sent, retry);
-        console.log("=======================");
-        */
-
-        if (_cookbooks_sent) {
-            return;
-        }
-        if (retry <= 0) {
-            return;
-        }
-
-        _cookbooks_timer = setTimeout(function () {
-            _cookbooks_timer = null;
-            send_cookbooks(retry);
-        }, retry * 1000);
-    };
-
-    var rs = recipe.recipes();
-    for (var ri in rs) {
-        var r = rs[ri];
-        if (!r.cookbook_id) {
-            continue;
-        }
-
-        if (r.cookbook_id !== cookbook.cookbook_id) {
-            count++;
-            send_cookbook(cookbook, _track_callback);
-
-            cookbook = {
-                cookbook_id: r.cookbook_id,
-                'schema:name': r.group || r.cookbook_id,
-            };
-        }
-
-        // cookbook.recipes.push(r.name);
-    }
-
-    count++;
-    send_cookbook(cookbook, _track_callback);
-
-    // this clears out the original "count=1"
-    _track_callback(null, null);
-};
-
-/**
- *  Send Thing metadata to the server
- */
-var send_thing = function (thing, callback) {
-    if (!callback) {
-        callback = function () {};
-    }
-
-    var url = URL_THINGS + '/' + thing.thing_id();
-    unirest
-        .put(url)
-        .headers({
-            'Accept': 'application/json',
-            'Authorization': bearer,
-        })
-        .json(thing.meta().state())
-        .type('json')
-        .end(function (result) {
-            if (result.error) {
-                logger.error({
-                    url: url,
-                    error: result.error,
-                }, "permissions failed");
-                callback("send_thing() permissions failed", null);
-            } else if (result.body) {
-                callback(null, result.body);
-            } else {
-                logger.error({
-                    status: result.statusCode,
-                    url: url,
-                }, "no readable response");
-                callback("send_thing() permissions failed [1]");
-            }
-        });
-};
-
-var send_things = function () {
-    var iot = iotdb.iot();
-    iot.on("thing", function (thing) {
-        send_thing(thing, function (error, metad) {
-            if (!metad) {
-                return;
-            }
-
-            metad = _.ld.expand(metad, {
-                scrub: true
-            });
-            if (thing.meta().update(metad)) {
-                /*
-                iotdb.iot().meta_save(thing);
-                */
-            }
-        });
-    });
-};
+var API_ROOT;
+var API_CONSUMER;
+var API_PING;
+var API_PROFILE;
 
 /**
  *  Ping the server that I'm alive
  */
 var ping = function () {
-    /*
-    console.log("HERE:XXX", {
-        'name': settings.d.name,
-        'url': settings.d.webserver.url,
-        'controller': _.ld.compact(iotdb.controller_meta()),
-    })
-     */
     unirest
-        .put(URL_CONSUMER)
+        .put(API_PING)
         .headers({
             'Accept': 'application/json',
             'Authorization': bearer,
@@ -270,17 +63,17 @@ var ping = function () {
         .end(function (result) {
             if (result.error) {
                 logger.error({
-                    url: URL_CONSUMER,
-                    error: result.error,
+                    url: API_PING,
+                    error: _.error.message(result.error),
                 }, "ping failed");
             } else if (result.body) {
                 logger.info({
-                    url: URL_CONSUMER,
+                    url: API_PING,
                 }, "pinged");
             } else {
                 logger.error({
                     status: result.statusCode,
-                    url: URL_CONSUMER,
+                    url: API_PING,
                 }, "ping failed");
             }
         });
@@ -291,7 +84,7 @@ var ping = function () {
  */
 var profile = function () {
     unirest
-        .get(URL_PROFILE)
+        .get(API_PROFILE)
         .headers({
             'Accept': 'application/json',
             'Authorization': bearer,
@@ -310,7 +103,8 @@ var profile = function () {
             } else {
                 logger.error({
                     status: result.statusCode,
-                    url: URL_CONSUMER,
+                    url: API_PROFILE,
+                    error: _.error.message(result.error),
                 }, "profile failed");
             }
         });
@@ -327,10 +121,10 @@ var setup = function () {
 
     /* setup variables */
     bearer = 'Bearer ' + settings.d.keys.homestar.bearer;
-    URL_CONSUMER = settings.d.homestar.url + '/api/1.0/consumers/' + settings.d.keys.homestar.key;
-    URL_PROFILE = settings.d.homestar.url + '/api/1.0/profile';
-    URL_COOKBOOKS = settings.d.homestar.url + '/api/1.0/cookbooks';
-    URL_THINGS = settings.d.homestar.url + '/api/1.0/things';
+    API_ROOT = settings.d.homestar.url + '/api/1.0';
+    API_CONSUMER = API_ROOT + '/consumers/' + settings.d.keys.homestar.key;
+    API_PING = API_CONSUMER;
+    API_PROFILE = API_ROOT + '/profile';
 
     /* ping now and forever */
     if (settings.d.homestar.ping) {
@@ -345,20 +139,9 @@ var setup = function () {
 
     /* fetch my profile */
     profile();
-
-    /* send recipes */
-    /*
-    send_cookbooks(10);
-    send_things();
-     */
 };
 
 /*
  *  API
  */
 exports.setup = setup;
-exports.permissions = permissions;
-exports.send_cookbook = send_cookbook;
-exports.send_cookbooks = send_cookbooks;
-exports.send_thing = send_thing;
-exports.send_things = send_things;
