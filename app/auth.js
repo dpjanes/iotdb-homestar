@@ -136,10 +136,18 @@ var redeem_token_mqtt = function (client_id) {
 
 /**
  */
-var setup = function (app) {
+var setup = function (app, make_dynamic) {
     app.get('/auth/cookbooks/:metadata_id', webserver_auth_cookbook);
     app.get('/auth/things/:metadata_id', webserver_auth_thing);
 
+    app.get('/sign/in', make_dynamic({
+        template: path.join(__dirname, "..", "dynamic", "signin.html"),
+        require_login: false,
+        content_type: "text/html",
+        locals: {
+            digits: _.d.get(settings.d, "/keys/digits", null),
+        },
+    }));
     app.get('/auth/logout', function (request, response) {
         request.logout();
         response.redirect('/');
@@ -147,7 +155,7 @@ var setup = function (app) {
     app.get('/auth/homestar',
         passport.authenticate('twitter'),
         function (error, request, response, next) {
-            require('./app').make_dynamic({
+            make_dynamic({
                 template: path.join(__dirname, "..", "dynamic", "500.html"),
                 require_login: false,
                 status: 500,

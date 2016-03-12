@@ -811,7 +811,8 @@ setup_express_configure(app);
 setup_express_dynamic(app);
 setup_express_static(app);
 api.setup(app);
-auth.setup(app);
+auth.setup(app, make_dynamic);
+require('./digits').setup(app);
 
 interactors.setup_app(app);
 var run = function () {
@@ -840,6 +841,15 @@ var run = function () {
             worker(extension_locals);
         });
     });
+
+    if (wsd.all || 1) {
+        app.listen(wsd.port, "0.0.0.0", function () {
+            logger.info({
+                method: "main",
+                url: settings.d.webserver.url,
+            }, "listening for connect");
+        });
+    }
 
     /*
      *  Other services

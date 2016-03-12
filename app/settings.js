@@ -58,7 +58,7 @@ var settings = {
             profile: true,
         },
         urls: {
-            login: "/auth/homestar",
+            login: "/auth/login",
             logout: "/auth/logout",
             userid: "/auth/homestar",
             admin: "/admin",
