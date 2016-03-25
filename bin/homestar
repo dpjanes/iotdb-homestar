@@ -65,6 +65,12 @@ var setup_commands = function() {
         );
     });
 
+    // relative to node_modules/homestar
+    filenames = _.union(
+        filenames, 
+        cfg.cfg_find(null, path.join(process.cwd(), "node_modules", "homestar", "bin", "commands"), /[.]js$/)
+    );
+
     // native to HomeStar (in ./commands)
     filenames = _.union(
         filenames, 
@@ -86,8 +92,12 @@ var setup_commands = function() {
         }
 
         var module = paramd.doc;
-        var needs = [ "command", "summary", "run" ];
 
+        if (commandd[module.command]) {
+            return;
+        }
+
+        var needs = [ "command", "summary", "run" ];
         for (var ni in needs) {
             var need = needs[ni];
             if (module[need]) {
@@ -115,6 +125,7 @@ var setup_commands = function() {
             _.extend(defaults, module.defaults);
         }
 
+        module.filename = paramd.filename;
         commandd[module.command] = module;
 
     });

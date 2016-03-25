@@ -57,8 +57,14 @@ var settings = {
             ping: true,
             profile: true,
         },
+        aws: {
+            mqtt: {
+              certificate_id: null,
+              certificate_arn: null,
+            }
+        },
         urls: {
-            login: "/auth/login",
+            login: "/auth/homestar",
             logout: "/auth/logout",
             userid: "/auth/homestar",
             admin: "/admin",

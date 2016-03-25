@@ -689,6 +689,18 @@ var setup_passport = function () {
         return;
     }
 
+    if (0) {
+        console.log({
+            consumerKey: settings.d.keys.homestar.key,
+            consumerSecret: settings.d.keys.homestar.secret,
+            callbackURL: client_url + "/auth/homestar/callback",
+            requestTokenURL: server_url + '/oauth/request_token',
+            accessTokenURL: server_url + '/oauth/access_token',
+            userAuthorizationURL: server_url + '/oauth/authenticate',
+            userProfileURL: server_url + '/api/1.0/profile'
+        });
+    }
+
     passport.use(
         new passport_twitter({
                 consumerKey: settings.d.keys.homestar.key,
@@ -842,7 +854,7 @@ var run = function () {
         });
     });
 
-    if (wsd.all || 1) {
+    if (wsd.all) {
         app.listen(wsd.port, "0.0.0.0", function () {
             logger.info({
                 method: "main",

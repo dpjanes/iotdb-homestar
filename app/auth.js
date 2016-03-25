@@ -140,6 +140,7 @@ var setup = function (app, make_dynamic) {
     app.get('/auth/cookbooks/:metadata_id', webserver_auth_cookbook);
     app.get('/auth/things/:metadata_id', webserver_auth_thing);
 
+    /*
     app.get('/sign/in', make_dynamic({
         template: path.join(__dirname, "..", "dynamic", "signin.html"),
         require_login: false,
@@ -148,6 +149,7 @@ var setup = function (app, make_dynamic) {
             digits: _.d.get(settings.d, "/keys/digits", null),
         },
     }));
+     */
     app.get('/auth/logout', function (request, response) {
         request.logout();
         response.redirect('/');
