@@ -120,8 +120,11 @@ exports.run = function (ad) {
             install.install("iotdb", function() {
                 install.install("homestar", function() {
                     install.install("iotdb-timers", function() {
-                        install.install("iotdb-upnp", function() {
+                        install.install("iotdb-recipes", function() {
                             console.log("+ finished!");
+                            install.install("iotdb-upnp", function() {
+                                console.log("+ finished!");
+                            });
                         });
                     });
                 });
