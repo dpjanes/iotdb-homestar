@@ -31,6 +31,7 @@ var settings = require("../../app/settings");
 
 var child_process = require('child_process')
 var path = require('path')
+var fs = require('fs')
 
 exports.command = "configuration";
 exports.summary = "list stuff about configuration";
@@ -77,7 +78,14 @@ exports.run = function (ad) {
     });
     for (var mi in modules) {
         var m = modules[mi];
-        console.log("*", m.module_name, "(folder:", m.module_folder + ")");
+        var version = null;
+        try {
+            var pd = JSON.parse(fs.readFileSync(path.join(m.module_folder, "package.json")));
+            version = pd.version;
+        } catch (x) {
+        }
+
+        console.log("*", m.module_name, "(version: " + version + "; folder:", m.module_folder + ")");
     }
 
     console.log("");
