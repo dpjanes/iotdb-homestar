@@ -78,26 +78,28 @@ exports.run = function (ad) {
     app.swig = swig;
     app.use(bodyParser.urlencoded({ extended: false }))
 
-    var bridge = new Bridge();
-    if (bridge.configure) {
-        bridge.configure(app);
-    }
-    /*
-    */
-
-    for (var fi in settings.d.webserver.folders.static) {
-        var folder = settings.d.webserver.folders.static[fi];
-        app.use('/', 
-            express.static(cfg.cfg_expand(settings.envd, folder))
-        );
-    }
-
+    var bridge = null;
     var server = app.listen(9998);
     server.on('listening', function() {
         var port = server.address().port
         var ip = _.net.ipv4();
 
         app.html_root = util.format("http://%s:%s", ip, port);
+
+        if (!bridge) {
+            bridge = new Bridge();
+            if (bridge.configure) {
+                bridge.configure(app);
+            }
+
+            for (var fi in settings.d.webserver.folders.static) {
+                var folder = settings.d.webserver.folders.static[fi];
+                app.use('/', 
+                    express.static(cfg.cfg_expand(settings.envd, folder))
+                );
+            }
+        }
+
         open(app.html_root);
 
         console.log("===============================");
