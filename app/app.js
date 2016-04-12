@@ -26,6 +26,8 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
+// _.logger.silent();
+
 var express = require('express');
 var express_session = require('express-session');
 var express_cookie_parser = require('cookie-parser');
