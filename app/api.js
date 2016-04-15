@@ -42,6 +42,7 @@ var logger = iotdb.logger({
 
 var tud = {};
 
+/*
 var authenticate_bearer = function (required) {
     return function (request, response, next) {
         if (request.user) {
@@ -95,6 +96,7 @@ var authenticate_bearer = function (required) {
         }
     };
 };
+*/
 
 /**
  *  See document "2015-07 HomeStar-Runner-Client Auth Flow.md"
@@ -109,6 +111,7 @@ var authenticate_bearer = function (required) {
         "consumer-signature": "<JWT(CONSUMER-ID,USER-ID,SIGNED(CLIENT SECRET))>"
     }
  */
+/*
 var put_create_consumer_signature = function (request, response) {
     var user_identity = request.body.user_identity;
     if (!user_identity || !user_identity.match(/^https?:\/\//)) {
@@ -133,10 +136,12 @@ var put_create_consumer_signature = function (request, response) {
         .set('Content-Type', 'application/json')
         .send(JSON.stringify(payload));
 };
+*/
 
 /**
  *  What can I do as a user
  */
+/*
 var get_auth = function (request, response) {
     var user = request.user;
     var groups = _.ld.list(user, "groups", []);
@@ -161,6 +166,7 @@ var get_auth = function (request, response) {
         .set('Content-Type', 'application/json')
         .send(JSON.stringify(rd, null, 2));
 };
+*/
 
 /**
  *  Root of API. Things and Recipes
@@ -189,10 +195,10 @@ var get_api = function (request, response) {
 /**
  */
 var setup = function (app) {
-    app.all('/api/*', authenticate_bearer());
+    // app.all('/api/*', authenticate_bearer());
     app.get('/api/', get_api);
-    app.get('/api/auth', get_auth);
-    app.put('/api/auth/create-user-signature', put_create_consumer_signature);
+    // app.get('/api/auth', get_auth);
+    // app.put('/api/auth/create-user-signature', put_create_consumer_signature);
 };
 
 /**

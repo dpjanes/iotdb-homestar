@@ -714,17 +714,16 @@ var setup_passport = function () {
                 userProfileURL: server_url + '/api/1.0/profile'
             },
             function (token, token_secret, profile, done) {
-                var user_identity = profile._json.identity;
-                var owner_identity = settings.d.keys.homestar && settings.d.keys.homestar.owner;
+                var user_id = profile._json.id;
+                var owner_id = settings.d.keys.homestar && settings.d.keys.homestar.owner;
                 var user = {
-                    identity: user_identity,
-                    is_owner: user_identity === owner_identity ? true : false,
-                    id: _.id.user_urn(user_identity),
+                    id: user_id,
+                    is_owner: user_id === owner_id ? true : false,
                     username: profile.username,
                 };
 
                 /* extend with additional info from the database */
-                users.user_by_identity(user.identity, {
+                users.user_by_id(user.id, {
                     create: true
                 }, function (error, userd) {
                     if (error) {
@@ -749,15 +748,15 @@ var setup_passport = function () {
         }, "passport/serializeUser");
 
         users.update(user, function () {});
-        done(null, user.identity);
+        done(null, user.id);
     });
 
-    passport.deserializeUser(function (user_identity, done) {
+    passport.deserializeUser(function (user_id, done) {
         logger.debug({
-            user_identity: user_identity,
+            user_id: user_id,
         }, "passport/deserializeUser");
 
-        users.user_by_identity(user_identity, {
+        users.user_by_id(user_id, {
             create: false
         }, function (error, user) {
             if (error) {
@@ -766,8 +765,8 @@ var setup_passport = function () {
                 return done(null, null);
             }
 
-            var owner_identity = settings.d.keys.homestar && settings.d.keys.homestar.owner;
-            user.is_owner = user.identity === owner_identity ? true : false;
+            var owner_id = settings.d.keys.homestar && settings.d.keys.homestar.owner;
+            user.is_owner = user.id === owner_id ? true : false;
             user.is_known = (user.groups !== undefined) ? true : false;
 
             done(null, user);

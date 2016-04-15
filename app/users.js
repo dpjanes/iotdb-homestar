@@ -24,30 +24,30 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
-var _ = iotdb.helpers;
-var cfg = iotdb.cfg;
+const iotdb = require('iotdb');
+const _ = iotdb.helpers;
+const cfg = iotdb.cfg;
 
-var settings = require('./settings');
+const settings = require('./settings');
 
-var FSTransport = require('iotdb-transport-fs');
+const FSTransport = require('iotdb-transport-fs');
 
-var logger = iotdb.logger({
+const logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/users',
 });
 
 var transporter;
 var flat_band = "user";
-var owner_user_identity = null;
+var owner_id = null;
 var owner_userd = null;
 
-var user_by_identity;
+var user_by_id;
 
 /**
  *  What people can do, by group
  */
-var permissions = {
+const permissions = {
     "admin": {
         "things": ["read", "write", "meta"],
         "recipes": ["read", "write", "meta"],
@@ -70,13 +70,13 @@ var permissions = {
     },
 };
 
-var open = {};
+const open = {};
 
 /**
  *  For the given groups and store, return
  *  what actions are allowed
  */
-var allowed = function (user, groups, store) {
+const allowed = function (user, groups, store) {
     if (store === undefined) {
         throw new Error("store must have a value");
     }
@@ -126,37 +126,36 @@ var allowed = function (user, groups, store) {
  *  Note that this is just exported directly into
  *  "iotdb.users.owner" so that anyone can access it
  */
-var owner = function () {
+const owner = function () {
     return owner_userd;
 };
 
 /**
  *  There's a slight window where the data won't be fully filled in
  */
-var _setup_owner = function () {
-    owner_user_identity = _.d.get(settings.d, "/keys/homestar/owner");
-    if (!owner_user_identity) {
+const _setup_owner = function () {
+    owner_id = _.d.get(settings.d, "/keys/homestar/owner");
+    if (!owner_id) {
         logger.error({
-            identity: owner_user_identity,
+            id: owner_id,
             cause: "likely you have not get keys from HomeStar.io yet",
         }, "there is no owner defined");
         return;
     }
 
     owner_userd = {
-        identity: owner_user_identity,
-        id: _.id.user_urn(owner_user_identity),
+        id: owner_id,
         is_owner: true,
         _loading: true,
     };
 
-    user_by_identity(owner_user_identity, function (error, d) {
+    user_by_id(owner_id, function (error, d) {
         if (error) {
             logger.error({
-                identity: owner_user_identity,
+                id: owner_id,
                 error: _.error.message(error),
                 cause: "this is highly unexpected",
-            }, "could not retrieve user identity?");
+            }, "could not retrieve user?");
             return;
         }
 
@@ -170,12 +169,12 @@ var _setup_owner = function () {
 /**
  *  Adds details to the user
  */
-var _enhance = function (userd) {
+const _enhance = function (userd) {
     if (!userd) {
         return null;
     }
 
-    if (owner_user_identity && (userd.identity === owner_user_identity)) {
+    if (owner_id && (userd.id === owner_id)) {
         userd.is_owner = true;
     } else {
         userd.is_owner = false;
@@ -206,10 +205,7 @@ var _enhance = function (userd) {
  *  This can be undefined if there's no 
  *  user that has be authenticated
  *
- *  @param {String} authd.user.identity
- *  If there's a user, there an identity
- *  which is a URL, typically but not necessarily
- *  in the form: https://homestar.io/identity/<xxx>
+ *  @param {String} authd.user.id
  *
  *  @param {String} authd.authorize
  *  What the user wants to do. Typically,
@@ -219,7 +215,7 @@ var _enhance = function (userd) {
  *  The second paramater will be "true" if 
  *  it is authorized
  */
-var authorize = function (authd, callback) {
+const authorize = function (authd, callback) {
     var user = _enhance(authd.user);
     var groups = user ? _.ld.list(user, "groups") : [];
     var store = authd.store;
@@ -232,7 +228,7 @@ var authorize = function (authd, callback) {
     console.log("USER", user);
     console.log("ALLOWS", allows);
     console.log("AUTHORIZE", authd.authorize);
-    console.log("OTHER", "user=", user && user.identity, "groups=", groups, "store=", store, "is_allowed=", is_allowed);
+    console.log("OTHER", "user=", user && user.id, "groups=", groups, "store=", store, "is_allowed=", is_allowed);
     console.log("-----");
     */
 
@@ -240,10 +236,7 @@ var authorize = function (authd, callback) {
     return callback(null, is_allowed);
 };
 
-/**
- *  Retrieve a user record by identity (a URL)
- */
-user_by_identity = function (user_identity, paramd, callback) {
+user_by_id = function (user_id, paramd, callback) {
     if (callback === undefined) {
         callback = paramd;
         paramd = {};
@@ -253,14 +246,13 @@ user_by_identity = function (user_identity, paramd, callback) {
         create: true,
     });
 
-    var user_id = _.id.user_urn(user_identity);
     transporter.get({
         id: user_id,
         band: flat_band,
     }, function (error, gd) {
         if (!gd.value && paramd.create) {
             gd.value = {
-                identity: user_identity,
+                id: user_id,
                 created: _.timestamp.make(),
             };
 
@@ -278,32 +270,18 @@ user_by_identity = function (user_identity, paramd, callback) {
 };
 
 /**
- *  Retrieve a user record by user_id (a hash of the Identity URL)
- */
-var user_by_id = function (user_id, callback) {
-    transporter.get({
-        id: user_id,
-        band: flat_band,
-    }, function (error, gd) {
-        callback(error, _enhance(gd.value));
-    });
-};
-
-/**
  *  Save a user record
  */
-var update = function (user, done) {
+const update = function (user, done) {
     if (!_.isObject(user)) {
         throw new Error("expecting an object");
     }
-    if (!user.identity) {
-        throw new Error("expecting user.identity");
+    if (!user.id) {
+        throw new Error("expecting user.id");
     }
 
-    var user_id = _.id.user_urn(user.identity);
-
     transporter.put({
-        id: user_id,
+        id: user.id,
         band: flat_band,
         value: user,
     }, function (error, rd) {
@@ -317,7 +295,7 @@ var update = function (user, done) {
  *  Callback will be called with user records,
  *  and null when all done.
  */
-var users = function (callback) {
+const users = function (callback) {
     var pending = 1;
 
     var _increment = function () {
@@ -363,7 +341,7 @@ var users = function (callback) {
 /**
  *  Users are stored in ".iotdb/users"
  */
-var setup = function () {
+const setup = function () {
     transporter = new FSTransport.Transport({
         prefix: settings.d.folders.users,
         flat_band: flat_band,
@@ -380,7 +358,6 @@ iotdb.users.authorize = authorize;
 
 exports.setup = setup;
 exports.update = update;
-exports.user_by_identity = user_by_identity;
 exports.user_by_id = user_by_id;
 exports.users = users;
 exports.allowed = allowed;
