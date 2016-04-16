@@ -415,7 +415,7 @@ var _transport_mqtt = function (app, iotdb_transporter) {
         client_id: client_id,
     });
     iotdb_transport.bind(iotdb_transporter, mqtt_transporter, {
-        bands: ["meta", "istate", "ostate", ],
+        bands: ["meta", "istate", "ostate", "connection", ],
         user: owner,
     });
 };
@@ -430,8 +430,8 @@ var _transport_express = function (app, iotdb_transporter) {
         key_things: "thing",
     }, app);
     iotdb_transport.bind(iotdb_transporter, express_transporter, {
-        bands: ["meta", "istate", "ostate", "model", ],
-        updated: ["meta", "ostate", ],
+        bands: ["meta", "istate", "ostate", "model", "connection", ],
+        updated: ["meta", "ostate", "connection", ],
         user: owner,
     });
 };
