@@ -162,7 +162,8 @@ var setup = function (app, make_dynamic) {
                 require_login: false,
                 status: 500,
                 locals: {
-                    error: "HomeStar.io is not available right now - try again later",
+                    error: _.error.message(error),
+                    // error: "HomeStar.io is not available right now - try again later",
                 },
                 content_type: "text/html",
             })(request, response);
