@@ -171,7 +171,14 @@ var _set = function (key, value) {
     d[lastkey] = value;
 };
 
+var _is_setup;
+
 var setup = function (av) {
+    if (_is_setup) {
+        return;
+    }
+    _is_setup = true;
+
     var key;
     var iot = iotdb.iot();
     var d = iotdb.keystore().get("/homestar/runner");

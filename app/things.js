@@ -493,26 +493,8 @@ var _transport_metadata = function (app, iotdb_transporter) {
     iotdb_transporter.list(_back_copy);
 };
 
-/**
- *  The Transporter will brodcast all istate/meta
- *  changes to Things to MQTT path 
- *  the same as the REST API
- */
-var setup = function (app) {
-
-    var iot = iotdb.iot();
-    var things = iot.things(); // NOT 'connect'
-
-    /*
-    things.on("thing", function(thing) {
-        console.log("THING-ID", thing.thing_id());
-        if (thing.thing_id() === 'urn:iotdb:thing:Nest:A8U2EcjZj7E5Zty2zWKIa34FvE9u2uVE') {
-            process.exit(0)
-        }
-    });
-    */
-
-    exports.iotdb_transporter = new IOTDBTransport({
+var _make_iotdb_transporter = function(app) {
+    return new IOTDBTransport({
         user: iotdb.users.owner(),
         authorize: function (authd, callback) {
             authd = _.defaults({}, authd);
@@ -520,11 +502,19 @@ var setup = function (app) {
 
             iotdb.users.authorize(authd, callback);
         },
-    }, things);
+    }, iotdb.things());
+};
+
+/**
+ *  The Transporter will brodcast all istate/meta
+ *  changes to Things to MQTT path 
+ *  the same as the REST API
+ */
+var setup = function (app) {
+    exports.iotdb_transporter = _make_iotdb_transporter();
 
     _transport_mqtt(app, exports.iotdb_transporter);
     _transport_express(app, exports.iotdb_transporter);
-    // _transport_metadata(app, exports.iotdb_transporter);
 };
 
 /**
@@ -535,7 +525,4 @@ exports.setup = setup;
 exports.thing_by_id = _thing_by_id;
 exports.things = things;
 exports.iotdb_transporter = null;
-exports.make_iotdb_transporter = function() {
-    // XXX WRONG - MAKE NEW ONES
-    return exports.iotdb_transporter;
-};
+exports.make_iotdb_transporter = _make_iotdb_transporter;
