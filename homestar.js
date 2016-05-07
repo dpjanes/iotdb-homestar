@@ -30,14 +30,16 @@
  *
  *  This is by no means complete
  */
-var locals = function() {
-    var settings = require("./app/settings");
+const locals = function() {
+    const settings = require("./app/settings");
     settings.setup();
 
-    var users = require("./app/users");
-    var things = require("./app/things");
+    const users = require("./app/users");
+    const things = require("./app/things");
 
-    var locals = {
+    const iotdb = require("iotdb");
+
+    const locals = {
         homestar: {
             things: {
                 thing_by_id: things.thing_by_id,
