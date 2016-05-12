@@ -26,7 +26,6 @@ var iotdb = require('iotdb');
 var _ = iotdb.helpers;
 var cfg = iotdb.cfg;
 
-var url_join = require('url-join');
 var path = require('path');
 var util = require('util');
 var jwt = require('jsonwebtoken');
@@ -185,7 +184,7 @@ var get_api = function (request, response) {
 
     d["_mqtt"] = util.format("tcp://%s:%s%s",
         settings.d.mqttd.host, settings.d.mqttd.port,
-        url_join(settings.d.mqttd.prefix, "api", "#"));
+        _.net.url.join(settings.d.mqttd.prefix, "api", "#"));
 
     return response
         .set('Content-Type', 'application/json')

@@ -825,7 +825,7 @@ setup_express_dynamic(app);
 setup_express_static(app);
 api.setup(app);
 auth.setup(app, make_dynamic);
-require('./digits').setup(app);
+// require('./digits').setup(app);
 
 interactors.setup_app(app);
 var run = function () {
