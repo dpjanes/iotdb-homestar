@@ -180,42 +180,32 @@ var setup = function (av) {
     _is_setup = true;
 
     var key;
-    var iot = iotdb.iot();
     var d = iotdb.keystore().get("/homestar/runner");
     if (d) {
-        _.d.smart_extend(settings.d, d);
+        settings.d = _.d.compose.deep(d, settings.d);
     }
 
-    /* command line arguments - homestar/runner prefix not needed (or desired) */
+    // command line arguments - homestar/runner prefix not needed (or desired) 
     if (av !== undefined) {
-        for (var ai in av) {
-            var a = av[ai];
-            var amatches = a.match(/^([^=]*)=(.*)/);
-            if (amatches) {
-                _set(amatches[1], amatches[2]);
-            }
-        }
+        av
+            .map(a => a.match(/^([^=]*)=(.*)/))
+            .filter(match => match)
+            .forEach(match => _set(match[1], match[2]))
     }
 
-    /* all secrets must be set  - note that this is done automatically by $ homestar setup */
-    var sd = settings.d.secrets;
-    for (key in sd) {
-        var value = sd[key];
-        if (!value) {
+    // all secrets must be set  - note that this is done automatically by $ homestar setup 
+    _.pairs(settings.d.secrets)
+        .filter(kv => _.isNull(kv[1]))
+        .forEach(kv => {
             logger.error({
                 method: "setup",
                 cause: "admin hasn't completed setup",
-                fix: "$ homestar set secrets/" + key + " 0 --uuid",
+                fix: "$ homestar set secrets/" + kv[0] + " 0 --uuid",
             }, "missing secret");
-            // fs.writeFileSync("xxx.json", JSON.stringify(settings.d, null, 2));
-            // throw new Error("something");
+            process.exit(1);
+        });
 
-            // require('sleep').sleep(5);
-            // process.exit(1);
-        }
-    }
-
-    /* Homestar.io */
+    // Homestar.io 
     if (!settings.d.keys.homestar.key || !settings.d.keys.homestar.secret || !settings.d.keys.homestar.bearer) {
         logger.error({
             method: "setup",
@@ -287,6 +277,8 @@ var setup = function (av) {
             }, "IoTQL not found (not required, but nice to have)");
         }
     }
+
+    exports.d = settings.d;
 };
 
 /*

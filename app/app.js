@@ -238,7 +238,7 @@ var _template_cookbooks = function () {
 };
 
 var _template_settings = function () {
-    var sd = _.d.smart_extend({}, settings.d);
+    var sd = _.d.clone.deep(settings.d);
     delete sd["secrets"];
     delete sd["keys"];
 
@@ -777,7 +777,7 @@ var iot = iotdb.iot();
 iot.on("thing", function (thing) {
     logger.info({
         thing: thing.thing_id(),
-        meta: thing.meta().state(),
+        meta: thing.band("meta").state(),
     }, "found new thing");
 });
 
