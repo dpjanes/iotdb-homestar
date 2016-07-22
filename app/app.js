@@ -605,12 +605,9 @@ var setup_express_configure = function (app) {
  *  Built-in pages
  */
 var setup_express_dynamic = function (app) {
-    for (var fi in settings.d.webserver.folders.dynamic) {
-        var folder = settings.d.webserver.folders.dynamic[fi];
-        folder = cfg.cfg_expand(settings.envd, folder);
-
-        _setup_express_dynamic_folder(app, folder);
-    }
+    settings.d.webserver.folders.dynamic
+        .map(folder => _.cfg.expand(folder, settings.envd))
+        .forEach(folder => _setup_express_dynamic_folder(app, folder));
 };
 
 var _setup_express_dynamic_folder = function (app, folder) {
@@ -664,12 +661,11 @@ var _setup_express_dynamic_folder = function (app, folder) {
 /**
  */
 var setup_express_static = function (app) {
-    for (var fi in settings.d.webserver.folders.static) {
-        var folder = settings.d.webserver.folders.static[fi];
-        var expanded = cfg.cfg_expand(settings.envd, folder);
-
-        app.use('/static', express.static(expanded));
-    }
+    settings.d.webserver.folders.static
+        .map(folder => _.cfg.expand(folder, settings.envd))
+        .forEach(folder => {
+            app.use('/static', express.static(folder));
+        });
 };
 
 /**
@@ -888,12 +884,14 @@ var run = function () {
         iotql_db.user = iotdb.users.owner();
     }
 
+    /*
     iotdb.load_recipes({
         cookbooks_path: "cookbooks",
         iotql: settings.d.iotql,
         db: iotql_db,
     });
     recipe.setup(app);
+    */
     /*
     recipe.init_recipes(); // delete me soon
     process.exit();
