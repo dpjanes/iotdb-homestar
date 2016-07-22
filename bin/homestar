@@ -27,57 +27,55 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
-var _ = iotdb.helpers;
-var cfg = iotdb.cfg;
+const iotdb = require('iotdb');
+const _ = iotdb._;
 
-var minimist = require('minimist');
-var fs = require('fs');
-var path = require('path');
+const minimist = require('minimist');
+const fs = require('fs');
+const path = require('path');
 
-var bunyan = require('bunyan');
-var logger = bunyan.createLogger({
+const logger = iotdb.logger({
     name: 'homestar',
     module: 'homestar',
 });
 
 /* for minimist */
-var boolean = [
+let boolean = [
     "global",
 ];
-var defaults = {};
+const defaults = {};
 
-var commandd = {
+const commandd = {
 };
 
 /*
  *  Load commands from the 'cmd' directory
  */
-var setup_commands = function() {
-    var filenames = [];
+const setup_commands = function() {
+    let filenames = [];
 
     // imported from modules
-    var ms = iotdb.modules().modules();
+    const ms = iotdb.modules().modules();
     ms.map(function(module) {
         filenames = _.union(
             filenames, 
-            cfg.cfg_find(null, path.join(module.module_folder, "commands"), /[.]js$/)
+            _.cfg.find(path.join(module.module_folder, "commands"), /[.]js$/)
         );
     });
 
     // relative to node_modules/homestar
     filenames = _.union(
         filenames, 
-        cfg.cfg_find(null, path.join(process.cwd(), "node_modules", "homestar", "bin", "commands"), /[.]js$/)
+        _.cfg.find(path.join(process.cwd(), "node_modules", "homestar", "bin", "commands"), /[.]js$/)
     );
 
     // native to HomeStar (in ./commands)
     filenames = _.union(
         filenames, 
-        cfg.cfg_find(null, path.join(__dirname, "commands"), /[.]js$/)
+        _.cfg.find(path.join(__dirname, "commands"), /[.]js$/)
     );
 
-    cfg.cfg_load_js(filenames, function (paramd) {
+    _.cfg.load.js(filenames, function (paramd) {
         if (paramd.error) {
             logger.error({
                 method: "setup_commands",
@@ -91,15 +89,15 @@ var setup_commands = function() {
             return;
         }
 
-        var module = paramd.doc;
+        const module = paramd.doc;
 
         if (commandd[module.command]) {
             return;
         }
 
-        var needs = [ "command", "summary", "run" ];
-        for (var ni in needs) {
-            var need = needs[ni];
+        const needs = [ "command", "summary", "run" ];
+        for (const ni in needs) {
+            const need = needs[ni];
             if (module[need]) {
                 continue;
             }
@@ -131,21 +129,21 @@ var setup_commands = function() {
     });
 };
 
-var help = function() {
+const help = function() {
     console.log("usage: homestar <command> [optional arguments]");
     console.log("");
     console.log("valid commands are:");
     console.log("");
 
-    var cs = [];
-    for (var c in commandd) {
+    const cs = [];
+    for (const c in commandd) {
         cs.push(c);
     }
     cs.sort();
 
-    for (var ci in cs) {
-        var c = cs[ci];
-        var command = commandd[c];
+    for (const ci in cs) {
+        const c = cs[ci];
+        const command = commandd[c];
         console.log("  %s: %s", c, command.summary || "");
     };
 
@@ -154,8 +152,8 @@ var help = function() {
     console.log("");
 };
 
-var help_on = function(name) {
-    var command = commandd[name];
+const help_on = function(name) {
+    const command = commandd[name];
     if (!command) {
         console.log("homestar: unknown command '%s'", name);
         console.log();
@@ -167,7 +165,7 @@ var help_on = function(name) {
     
 };
 
-var iotdb_initd = {
+const iotdb_initd = {
     envd: {
         IOTDB_PROJECT: process.cwd()
     },
@@ -179,8 +177,8 @@ var iotdb_initd = {
     iotdb_thing_create: false
 };
 
-var run_cli = function()  {
-    var ad = require('minimist')(process.argv.slice(2), {
+const run_cli = function()  {
+    const ad = require('minimist')(process.argv.slice(2), {
         boolean: boolean,
         default: defaults,
     });
@@ -203,7 +201,7 @@ var run_cli = function()  {
         }
         process.exit(0);
     } else {
-        var command = commandd[ad._[0]];
+        const command = commandd[ad._[0]];
         if (!command) {
             console.log("homestar: unknown command '%s'", ad._[0]);
             console.log("");

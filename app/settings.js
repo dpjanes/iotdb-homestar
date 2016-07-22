@@ -24,7 +24,7 @@
 
 var iotdb = require('iotdb');
 var timers = require('iotdb-timers');
-var _ = iotdb.helpers;
+var _ = iotdb._;
 
 var os = require('os');
 var open = require('open');

@@ -25,7 +25,7 @@
 "use strict";
 
 const iotdb = require('iotdb');
-const _ = iotdb.helpers;
+const _ = iotdb._;
 const cfg = iotdb.cfg;
 
 const settings = require('./settings');

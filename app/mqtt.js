@@ -15,7 +15,7 @@
 "use strict";
 
 var iotdb = require('iotdb');
-var _ = iotdb.helpers;
+var _ = iotdb._;
 
 var mqtt = require('mqtt');
 var mows = require('mows');
