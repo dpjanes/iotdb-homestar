@@ -22,17 +22,16 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
+const iotdb = require('iotdb');
 var _ = iotdb._;
-var cfg = iotdb.cfg;
 
-var path = require('path');
-var util = require('util');
-var jwt = require('jsonwebtoken');
-var unirest = require('unirest');
+const path = require('path');
+const util = require('util');
+const jwt = require('jsonwebtoken');
+const unirest = require('unirest');
 
-var settings = require('./settings');
-var users = require('./users');
+const settings = require('./settings');
+const users = require('./users');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -42,7 +41,7 @@ var logger = iotdb.logger({
 var tud = {};
 
 /*
-var authenticate_bearer = function (required) {
+const authenticate_bearer = function (required) {
     return function (request, response, next) {
         if (request.user) {
             return next();

@@ -14,14 +14,14 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
+const iotdb = require('iotdb');
 var _ = iotdb._;
 
-var mqtt = require('mqtt');
-var mows = require('mows');
+const mqtt = require('mqtt');
+const mows = require('mows');
 
-var settings = require('./settings');
-var auth = require('./auth');
+const settings = require('./settings');
+const auth = require('./auth');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',

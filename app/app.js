@@ -22,39 +22,39 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
+const iotdb = require('iotdb');
 var _ = iotdb._;
 var cfg = iotdb.cfg;
 
 // _.logger.silent();
 
-var express = require('express');
-var express_session = require('express-session');
-var express_cookie_parser = require('cookie-parser');
-var express_body_parser = require('body-parser');
-var express_session_file_store = require('session-file-store')(express_session);
+const express = require('express');
+const express_session = require('express-session');
+const express_cookie_parser = require('cookie-parser');
+const express_body_parser = require('body-parser');
+const express_session_file_store = require('session-file-store')(express_session);
 
-var swig = require('swig');
+const swig = require('swig');
 
-var passport = require('passport');
-var passport_twitter = require('passport-twitter').Strategy;
+const passport = require('passport');
+const passport_twitter = require('passport-twitter').Strategy;
 
-var os = require('os');
-var open = require('open');
-var path = require('path');
-var util = require('util');
-var fs = require('fs');
-var url = require('url');
+const os = require('os');
+const open = require('open');
+const path = require('path');
+const util = require('util');
+const fs = require('fs');
+const url = require('url');
 
-var mqtt = require('./mqtt');
-var recipe = require('./recipe');
-var settings = require('./settings');
-var homestar = require('./homestar');
-var things = require('./things');
-var interactors = require('./interactors');
-var users = require('./users');
-var api = require('./api');
-var auth = require('./auth');
+const mqtt = require('./mqtt');
+const recipe = require('./recipe');
+const settings = require('./settings');
+const homestar = require('./homestar');
+const things = require('./things');
+const interactors = require('./interactors');
+const users = require('./users');
+const api = require('./api');
+const auth = require('./auth');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -173,7 +173,7 @@ var _template_things = function () {
 
 var _template_upnp = function () {
     var ds = [];
-    var devices = require('iotdb-upnp').devices();
+    const devices = require('iotdb-upnp').devices();
     for (var di in devices) {
         var device = devices[di];
         var d = {};

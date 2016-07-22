@@ -22,23 +22,23 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
-var iotdb_transport = require('iotdb-transport');
+const iotdb = require('iotdb');
+const iotdb_transport = require('iotdb-transport');
 var _ = iotdb._;
 
-var iotdb_recipe = require('iotdb-recipes');
-var settings = require('./settings');
-var interactors = require('./interactors');
-var auth = require('./auth');
-var users = require('./users');
+const iotdb_recipe = require('iotdb-recipes');
+const settings = require('./settings');
+const interactors = require('./interactors');
+const auth = require('./auth');
+const users = require('./users');
 
-var RecipeTransport = require('iotdb-recipes').Transport;
-var MQTTTransport = require('iotdb-transport-mqtt').Transport;
-var ExpressTransport = require('iotdb-transport-express').Transport;
+const RecipeTransport = require('iotdb-recipes').Transport;
+const MQTTTransport = require('iotdb-transport-mqtt').Transport;
+const ExpressTransport = require('iotdb-transport-express').Transport;
 
-var events = require('events');
-var util = require('util');
-var path = require('path');
+const events = require('events');
+const util = require('util');
+const path = require('path');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',

@@ -22,15 +22,15 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
-var timers = require('iotdb-timers');
+const iotdb = require('iotdb');
+const timers = require('iotdb-timers');
 var _ = iotdb._;
 
-var os = require('os');
-var open = require('open');
-var path = require('path');
-var util = require('util');
-var fs = require('fs');
+const os = require('os');
+const open = require('open');
+const path = require('path');
+const util = require('util');
+const fs = require('fs');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',

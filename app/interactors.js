@@ -24,16 +24,16 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
+const iotdb = require('iotdb');
 var _ = iotdb._;
 
-var settings = require('./settings');
+const settings = require('./settings');
 
-var events = require('events');
-var util = require('util');
-var path = require('path');
-var fs = require('fs');
-var express = require('express');
+const events = require('events');
+const util = require('util');
+const path = require('path');
+const fs = require('fs');
+const express = require('express');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -102,7 +102,7 @@ var _add_interactor = function (interactor_key, interactor_path) {
         if (src_file === "interactor.js") {
             /* not included */
             try {
-                var module = require(src_path);
+                const module = require(src_path);
                 module.path = interactor_path;
                 module.name = interactor_key;
 

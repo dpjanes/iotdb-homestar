@@ -25,18 +25,18 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
+const iotdb = require('iotdb');
 var _ = iotdb._;
 
-var swig = require('swig');
+const swig = require('swig');
 
-var passport = require('passport');
+const passport = require('passport');
 
-var path = require('path');
-var util = require('util');
-var uuid = require('uuid');
+const path = require('path');
+const util = require('util');
+const uuid = require('uuid');
 
-var settings = require('./settings');
+const settings = require('./settings');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
