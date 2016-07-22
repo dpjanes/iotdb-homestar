@@ -24,13 +24,12 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
-var _ = iotdb.helpers;
-var cfg = iotdb.cfg;
-var settings = require("../../app/settings");
+const iotdb = require('iotdb');
+const _ = iotdb._;
+const settings = require("../../app/settings");
 
-var fs = require('fs');
-var uuid = require('uuid');
+const fs = require('fs');
+const uuid = require('uuid');
 
 exports.command = "set";
 exports.boolean = [ "list", "boolean", "number", "integer", "uuid" ];
@@ -59,20 +58,20 @@ exports.run = function (ad) {
         process.exit(1);
     }
 
-    var key = ad._[1];
+    let key = ad._[1];
     if (key.indexOf('/') === 0) {
         key = key.substring(1);
     } else {
         key = "homestar/runner/" + key;
     }
 
-    var value;
+    let value;
     if (ad.list) {
         value = ad._.slice(2);
     } else if (ad.boolean) {
-        var v = ad._[2].toLowerCase();
-        var truey = [ "true", "t", "yes", "y", "1" ];
-        var falsey = [ "false", "f", "no", "no", "0", "" ];
+        const v = ad._[2].toLowerCase();
+        const truey = [ "true", "t", "yes", "y", "1" ];
+        const falsey = [ "false", "f", "no", "no", "0", "" ];
         if (truey.indexOf(v) > -1) {
             value = true;
         } else if (falsey.indexOf(v) > -1) {
@@ -88,31 +87,12 @@ exports.run = function (ad) {
         value = ad._[2];
     }
 
-    var keystored = {};
-    var filename = ".iotdb/keystore.json";
+    let keystored = {};
+    const filename = ".iotdb/keystore.json";
 
-    cfg.cfg_load_json([ filename ], function(paramd) {
-        for (var key in paramd.doc) {
-            keystored[key] = paramd.doc[key];
-        }
-    });
+    _.cfg.load.json([ filename ], docd => keystored = _.d.compose.smart(keystored, docd.doc));
 
-    var d = keystored;
-    var subkeys = key.split('/');
-    var lastkey = subkeys[subkeys.length - 1];
-
-    for (var ski = 0; ski < subkeys.length - 1; ski++) {
-        var subkey = subkeys[ski];
-        var subd = d[subkey];
-        if (!_.isObject(subd)) {
-            subd = {};
-            d[subkey] = subd;
-        }
-
-        d = subd;
-    }
-
-    d[lastkey] = value;
+    _.d.set(keystored, key, value);
 
     fs.writeFile(filename, JSON.stringify(keystored, null, 2));
     console.log("homestar: added key/value to keystore",
