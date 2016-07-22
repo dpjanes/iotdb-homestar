@@ -25,7 +25,6 @@
 var iotdb = require('iotdb');
 var iotdb_transport = require('iotdb-transport');
 var _ = iotdb._;
-var cfg = iotdb.cfg;
 
 var path = require('path');
 

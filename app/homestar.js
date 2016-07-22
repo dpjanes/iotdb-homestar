@@ -26,7 +26,6 @@
 
 var iotdb = require('iotdb');
 var _ = iotdb._;
-var cfg = iotdb.cfg;
 
 var unirest = require('unirest');
 

@@ -207,7 +207,11 @@ var setup = function (av) {
                 cause: "admin hasn't completed setup",
                 fix: "$ homestar set secrets/" + key + " 0 --uuid",
             }, "missing secret");
-            process.exit(1);
+            // fs.writeFileSync("xxx.json", JSON.stringify(settings.d, null, 2));
+            // throw new Error("something");
+
+            // require('sleep').sleep(5);
+            // process.exit(1);
         }
     }
 
