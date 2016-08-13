@@ -103,7 +103,7 @@ var _structure_thing = function (thing) {
     var cid;
     var cat;
 
-    var meta = thing.meta();
+    var meta = thing.state("meta");
     var thing_name = meta.get('schema:name') || thing.name;
 
     /*
@@ -210,7 +210,7 @@ var structured = function () {
     var tts = [];
     for (ti = 0; ti < things.length; ti++) {
         thing = things[ti];
-        var meta = thing.meta();
+        var meta = thing.state("meta");
         var thing_name = meta.get('schema:name') || thing.name;
         if (thing_name === undefined) {
             continue;
@@ -271,7 +271,7 @@ var thing_thing = function (thing) {
 
     return {
         "@id": base,
-        "schema:name": thing.meta().get("schema:name"),
+        "schema:name": thing.state("meta")["schema:name"],
         "istate": base + "/ibase",
         "ostate": base + "/obase",
         "model": base + "/model",
@@ -322,9 +322,9 @@ var thing_model = function (thing) {
     };
     md["@id"] = "/api/things/" + thing.thing_id() + "/model";
 
-    var meta = thing.meta();
+    var meta = thing.state("meta");
     md._id = thing.thing_id();
-    md._name = meta.get("schema:name");
+    md._name = meta["schema:name"];
 
     var ads = _.ld.list(md, "iot:attribute", []);
     for (var adi in ads) {
@@ -367,37 +367,32 @@ var thing_model = function (thing) {
 /*
  */
 var things = function () {
-    var tds = [];
-    var things = iotdb.iot().things();
+    return iotdb
+        .things()
+        .map(thing => {
+            const td = {};
+            const tmodel = thing_model(thing);
 
-    for (var ti = 0; ti < things.length; ti++) {
-        var thing = things[ti];
-        var td = {};
-        var tmodel = thing_model(thing);
-
-        td["_id"] = tmodel._id;
-        td["_name"] = tmodel._name;
-        td["_sort"] = tmodel._name + "@@" + tmodel._id;
-        td["_section"] = "things";
-        td["model"] = tmodel;
-        td["istate"] = thing_istate(thing);
-        td["ostate"] = thing_ostate(thing);
-        td["meta"] = thing_meta(thing);
-
-        tds.push(td);
-    }
-
-    tds.sort(function (a, b) {
-        if (a._sort < b._sort) {
-            return -1;
-        } else if (a._sort > b._sort) {
-            return 1;
-        } else {
-            return 0;
-        }
-    });
-
-    return tds;
+            td["_id"] = tmodel._id;
+            td["_name"] = tmodel._name;
+            td["_sort"] = tmodel._name + "@@" + tmodel._id;
+            td["_section"] = "things";
+            td["model"] = tmodel;
+            td["istate"] = thing_istate(thing);
+            td["ostate"] = thing_ostate(thing);
+            td["meta"] = thing_meta(thing);
+            
+            return td;
+        })
+        .sort((a, b) =>{
+            if (a._sort < b._sort) {
+                return -1;
+            } else if (a._sort > b._sort) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
 };
 
 /**
