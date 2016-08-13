@@ -23,8 +23,7 @@
 "use strict";
 
 const iotdb = require('iotdb');
-const iotdb_transport = require('iotdb-transport');
-var _ = iotdb._;
+const _ = iotdb._;
 
 const path = require('path');
 
@@ -34,10 +33,15 @@ const interactors = require('./interactors');
 const auth = require('./auth');
 const users = require('./users');
 
-const MQTTTransport = require('iotdb-transport-mqtt').Transport;
-const ExpressTransport = require('iotdb-transport-express').Transport;
-const IOTDBTransport = require('iotdb-transport-iotdb').Transport;
-const FSTransport = require('iotdb-transport-fs').Transport;
+// const MQTTTransport = require('iotdb-transport-mqtt').Transport;
+// const ExpressTransport = require('iotdb-transport-express').Transport;
+// const IOTDBTransport = require('iotdb-transport-iotdb').Transport;
+// const FSTransport = require('iotdb-transport-fs').Transport;
+//
+const mqtt_transport = require('iotdb-transport-mqtt');
+const express_transport = require('iotdb-transport-express');
+const iotdb_transport = require('iotdb-transport-iotdb');
+const fs_transport = require('iotdb-transport-fs');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -240,7 +244,7 @@ var _make_thing = function (f) {
     return function (request, response) {
         logger.info({
             method: "_make_thing",
-            recipe_id: request.params.thing_id,
+            thing_id: request.params.thing_id,
             body: request.body,
         }, "called");
 
@@ -400,6 +404,8 @@ var things = function () {
  *  MQTT messages - notifications, only on ISTATE, OSTATE and META 
  */
 var _transport_mqtt = function (app, iotdb_transporter) {
+    return;
+
     var client_id;
     var owner = iotdb.users.owner();
     if (owner) {
@@ -422,6 +428,13 @@ var _transport_mqtt = function (app, iotdb_transporter) {
  *  Express interface - get & put. Put only on META and OSTATE
  */
 var _transport_express = function (app, iotdb_transporter) {
+    const express_transporter = express_transport.make({
+        prefix: _.net.url.join("/", "api", "things"),
+    }, app)
+
+    express_transporter.use(iotdb_transporter)
+//
+    /*
     var owner = iotdb.users.owner();
     var express_transporter = new ExpressTransport({
         prefix: _.net.url.join("/", "api", "things"),
@@ -432,6 +445,7 @@ var _transport_express = function (app, iotdb_transporter) {
         updated: ["meta", "ostate", "connection", ],
         user: owner,
     });
+    */
 };
 
 /**
@@ -439,6 +453,8 @@ var _transport_express = function (app, iotdb_transporter) {
  *  This probably needs work for dealing with @timestamp
  */
 var _transport_metadata = function (app, iotdb_transporter) {
+    return; // AUG13
+
     var metadata_transporter = new FSTransport({
         prefix: ".iotdb/things",
         user: iotdb.users.owner(),
@@ -492,6 +508,10 @@ var _transport_metadata = function (app, iotdb_transporter) {
 };
 
 var _make_iotdb_transporter = function(app) {
+    return iotdb_transport.make({});
+
+    /*
+
     return new IOTDBTransport({
         user: iotdb.users.owner(),
         authorize: function (authd, callback) {
@@ -501,6 +521,7 @@ var _make_iotdb_transporter = function(app) {
             iotdb.users.authorize(authd, callback);
         },
     }, iotdb.things());
+    */
 };
 
 /**

@@ -47,7 +47,6 @@ const fs = require('fs');
 const url = require('url');
 
 const mqtt = require('./mqtt');
-const recipe = require('./recipe');
 const settings = require('./settings');
 const homestar = require('./homestar');
 const things = require('./things');
@@ -203,39 +202,6 @@ var _template_upnp = function () {
     };
 };
 
-var _template_cookbook = function () {
-    var _assign_group = function (rd) {
-        if (rd._thing_group) {
-            rd._group = rd._thing_group;
-        } else if (rd._thing_name) {
-            rd._group = rd._thing_name;
-        } else if (rd.group) {
-            rd._group = rd.group;
-        } else {
-            rd._group = "Ungrouped";
-        }
-    };
-
-    var rds = [];
-    var recipes = recipe.recipes();
-    for (var ri in recipes) {
-        var rd = _.clone(recipes[ri]);
-        rd._context = undefined;
-        rd._valued = undefined;
-        rd.watch = undefined;
-
-        _assign_group(rd);
-        interactors.assign_interactor_to_attribute(rd);
-
-        rds.push(rd);
-    }
-
-    return rds;
-};
-
-var _template_cookbooks = function () {
-    return recipe.cookbooks();
-};
 
 var _template_settings = function () {
     var sd = _.d.clone.deep(settings.d);
@@ -372,8 +338,6 @@ var make_dynamic = function (paramd) {
         var locals = {
             things: _template_things,
             upnp: _template_upnp,
-            cookbook: _template_cookbook,
-            cookbooks: _template_cookbooks,
             settings: _template_settings,
             configures: _configures,
             urls: settings.d.urls,
@@ -453,10 +417,6 @@ var setup_extensions = function () {
         things: {
             thing_by_id: things.thing_by_id,
             make_transporter: things.make_iotdb_transporter,
-        },
-        recipes: {
-            recipe_by_id: recipe.recipe_by_id,
-            make_transporter: recipe.make_recipe_transporter,
         },
         data: {
             facets: function () {
@@ -718,8 +678,9 @@ var setup_passport = function () {
                     username: profile.username,
                 };
 
-                /* extend with additional info from the database */
-                users.user_by_id(user.id, {
+                // extend with additional info from the database 
+                users.user_by_id({
+                    user_id: user.id,
                     create: true
                 }, function (error, userd) {
                     if (error) {
@@ -860,9 +821,7 @@ var run = function () {
         });
     }
 
-    /*
-     *  Other services
-     */
+    // other services
     mqtt.setup();
     users.setup();
     things.setup(app);
@@ -870,35 +829,7 @@ var run = function () {
 
     iotdb.connect();
 
-    /*
-     *  Load the Cookbook
-     */
-    var iotql = null;
-    var iotql_db = null;
 
-    if (settings.d.iotql) {
-        iotql = require('iotql');
-        iotql_db = new iotql.DB(things.iotdb_transporter, recipe.make_recipe_transporter({
-            open: true
-        }));
-        iotql_db.user = iotdb.users.owner();
-    }
-
-    /*
-    iotdb.load_recipes({
-        cookbooks_path: "cookbooks",
-        iotql: settings.d.iotql,
-        db: iotql_db,
-    });
-    recipe.setup(app);
-    */
-    /*
-    recipe.init_recipes(); // delete me soon
-    process.exit();
-    */
-
-    /**
-     */
     var profiled = {};
     profiled.pid = process.pid;
     profiled.ip = _.net.ipv4();

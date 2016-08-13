@@ -43,21 +43,6 @@ var logger = iotdb.logger({
     module: 'app/auth',
 });
 
-/**
- *  Edit the permissions of a recipe - i.e. who can use it.
- *  We actually do all the editing on HomeStar
- */
-var webserver_auth_cookbook = function (request, response) {
-    logger.info({
-        method: "webserver_auth_cookbook",
-        metadata_id: request.params.metadata_id,
-    }, "called");
-
-    response.redirect(
-        util.format("%s/cookbooks/%s?from=%s", settings.d.homestar.url, request.params.metadata_id, request.headers.referer)
-    );
-};
-
 var webserver_auth_thing = function (request, response) {
     logger.info({
         method: "webserver_auth_thing",
@@ -136,7 +121,6 @@ var redeem_token_mqtt = function (client_id) {
 /**
  */
 var setup = function (app, make_dynamic) {
-    app.get('/auth/cookbooks/:metadata_id', webserver_auth_cookbook);
     app.get('/auth/things/:metadata_id', webserver_auth_thing);
 
     /*

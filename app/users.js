@@ -27,9 +27,11 @@
 const iotdb = require('iotdb');
 const _ = iotdb._;
 
+const assert = require("assert");
 const settings = require('./settings');
 
-const FSTransport = require('iotdb-transport-fs');
+const fs_transport = require('iotdb-transport-fs');
+const errors = require('iotdb-errors');
 
 const logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -41,7 +43,46 @@ var flat_band = "user";
 var owner_id = null;
 var owner_userd = null;
 
-var user_by_id;
+const user_by_id = (paramd, done) => {
+    assert(_.is.Dictionary(paramd));
+    assert(_.is.String(paramd.user_id));
+
+    paramd = _.defaults(paramd, {
+        create: true,
+    });
+
+    transporter.get({
+        id: paramd.user_id,
+        band: flat_band,
+        silent: false,
+    })
+        .subscribe(
+            gd => {
+                return done(null, _enhance(gd.value));
+            },
+            error => {
+                if (!(error instanceof errors.NotFound)) {
+                    return done(error);
+                }
+
+                if (!paramd.create) {
+                    return done(null, null);
+                }
+
+                transporter
+                    .put({
+                        id: paramd.user_id,
+                        band: flat_band,
+                        value: gd.value
+                    })
+                    .subscribe(
+                        pd => done(null, _enhance(pd.value)),
+                        error => done(error)
+                    );
+            }
+        );
+};
+
 
 /**
  *  What people can do, by group
@@ -49,22 +90,18 @@ var user_by_id;
 const permissions = {
     "admin": {
         "things": ["read", "write", "meta"],
-        "recipes": ["read", "write", "meta"],
         "users": ["read", "write"],
     },
     "family": {
         "things": ["read", "write", ],
-        "recipes": ["read", "write", ],
         "users": [],
     },
     "friend": {
         "things": ["read", ],
-        "recipes": ["read", "write", ],
         "users": [],
     },
     "stranger": {
         "things": ["read", ],
-        "recipes": ["read", ],
         "users": [],
     },
 };
@@ -148,7 +185,10 @@ const _setup_owner = function () {
         _loading: true,
     };
 
-    user_by_id(owner_id, function (error, d) {
+    user_by_id({
+        user_id: owner_id,
+        create: false,
+    }, function (error, d) {
         if (error) {
             logger.error({
                 id: owner_id,
@@ -192,7 +232,7 @@ const _enhance = function (userd) {
  *  This is called authorize actions against IDs
  *
  *  @param {String} authd.store
- *  One of "things", "recipes" or "users"
+ *  One of "things", or "users"
  *
  *  @param {String} authd.id
  *  The ID of something to be authorzed
@@ -235,39 +275,6 @@ const authorize = function (authd, callback) {
     return callback(null, is_allowed);
 };
 
-user_by_id = function (user_id, paramd, callback) {
-    if (callback === undefined) {
-        callback = paramd;
-        paramd = {};
-    }
-
-    paramd = _.defaults(paramd, {
-        create: true,
-    });
-
-    transporter.get({
-        id: user_id,
-        band: flat_band,
-    }, function (error, gd) {
-        if (!gd.value && paramd.create) {
-            gd.value = {
-                id: user_id,
-                created: _.timestamp.make(),
-            };
-
-            transporter.put({
-                id: user_id,
-                band: flat_band,
-                value: gd.value
-            }, function (error) {
-                callback(error, _enhance(gd.value));
-            });
-        } else {
-            callback(error, _enhance(gd.value));
-        }
-    });
-};
-
 /**
  *  Save a user record
  */
@@ -283,9 +290,11 @@ const update = function (user, done) {
         id: user.id,
         band: flat_band,
         value: user,
-    }, function (error, rd) {
-        done(error, user);
-    });
+    })
+        .subscribe(
+            pd => done(null, pd),
+            erorr => done(error)
+        );
 };
 
 /**
@@ -295,53 +304,20 @@ const update = function (user, done) {
  *  and null when all done.
  */
 const users = function (callback) {
-    var pending = 1;
-
-    var _increment = function () {
-        pending++;
-    };
-
-    var _decrement = function () {
-        if (--pending === 0) {
-            callback(null, null);
-            callback = _.noop;
-        }
-    };
-
-    transporter.list(function (error, ld) {
-        if (error) {
-            callback(error, null);
-            callback = _.noop;
-            return;
-        }
-
-        if (!ld) {
-            _decrement();
-            return;
-        }
-
-        _increment();
-
-        transporter.get({
-            id: ld.id,
-            band: flat_band,
-        }, function (error, gd) {
-            if (error) {
-                callback(error, _enhance(gd.value));
-            } else if (gd.value) {
-                callback(null, _enhance(gd.value));
-            }
-
-            _decrement();
-        });
-    });
+    transporter
+        .list({})
+        .subscribe(
+            ld => callback(null, _enhance(ld.value)),
+            error => callback(error),
+            () => callback(null, null)
+        );
 };
 
 /**
  *  Users are stored in ".iotdb/users"
  */
 const setup = function () {
-    transporter = new FSTransport.Transport({
+    transporter = fs_transport.make({
         prefix: settings.d.folders.users,
         flat_band: flat_band,
     });

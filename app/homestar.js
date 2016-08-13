@@ -30,7 +30,6 @@ var _ = iotdb._;
 const unirest = require('unirest');
 
 const settings = require('./settings');
-const recipe = require('./recipe');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',

@@ -147,7 +147,6 @@ var get_auth = function (request, response) {
     var rd = {
         "permissions": {
             "things": users.allowed(user, groups, "things"),
-            "recipes": users.allowed(user, groups, "recipes"),
             "users": users.allowed(user, groups, "users"),
         },
         "access": {
@@ -167,8 +166,7 @@ var get_auth = function (request, response) {
 */
 
 /**
- *  Root of API. Things and Recipes
- *  are magically served elsewhere using Transporters
+ *  Root of API. 
  */
 var get_api = function (request, response) {
     var d = {
@@ -176,7 +174,6 @@ var get_api = function (request, response) {
         "@id": "/api",
         "@timestamp": _.timestamp.make(),
         "things": "/api/things",
-        "recipes": "/api/recipes",
     };
     _.extend(d, _.ld.compact(iotdb.controller_meta()));
     d["iot:controller.runner"] = settings.d.keys.homestar.key;
