@@ -712,9 +712,10 @@ var setup_passport = function () {
             user_id: user_id,
         }, "passport/deserializeUser");
 
-        users.user_by_id(user_id, {
+        users.user_by_id({
+            user_id: user_id,
             create: false
-        }, function (error, user) {
+        }, (error, user) => {
             if (error) {
                 return done(error, null);
             } else if (!user) {
