@@ -71,6 +71,8 @@ var js = {
 
         poll: function() {
             console.log("+", "js.longpoll.poll", "called");
+            var see_error = false;
+
             $.ajax({
                 type : 'GET',
                 url: "/api/things/.longpoll",
@@ -80,16 +82,37 @@ var js = {
                 xhrFields: {
                     withCredentials: true
                 },
+                timeout: 30 * 1000,
                 error : function(xhr, status, error) {
                     console.log("#", "js.longpoll.poll/error", status, error);
-                    setTimeout(function() { js.longpoll.poll(); }, 5 * 1000);
+                    if (error === "timeout") {
+                        setTimeout(function() { 
+                            js.longpoll.poll(); 
+                        }, 250);
+                    } else {
+                        js.notify.disconnected();
+                        see_error = true;
+
+                        setTimeout(function() { 
+                            js.longpoll.poll(); 
+                        }, 5 * 1000);
+                    }
                 },
                 success : function(data, status, xhr) {
                     console.log("+", "js.longpoll.poll/sucess", data);
+                    js.notify.connected();
                     js.longpoll.dispatch(data);
-                    setTimeout(function() { js.longpoll.poll(); }, 250);
-                },
+                    setTimeout(function() { 
+                        js.longpoll.poll(); 
+                    }, 250);
+                }
             });
+
+            setTimeout(function() {
+                if (!see_error) {
+                    js.notify.connected();
+                }
+            }, 6 * 1000);
         },
 
         dispatch: function(d) {
@@ -293,6 +316,59 @@ var js = {
                 on_update: _on_update
             };
         },
+
+        end: 0
+    },
+
+    notify: {
+        is_connected: false,
+        notify_lost: null,
+
+        connected : function() {
+            if (js.notify.is_connected) {
+                return;
+            }
+
+            if (js.notify.notify_lost) {
+                js.notify.notify_lost.close();
+                js.notify.notify_lost = null;
+            }
+
+            $.notify({
+                message: 'Connection Restored'
+            }, {
+                delay: 3000,
+                placement: {
+                    align: 'left'
+                }
+            });
+
+            js.notify.is_connected = true;
+        },
+
+        disconnected : function(responseObject) {
+            if (!js.notify.is_connected) {
+                return;
+            }
+
+            if (js.notify.notify_lost) {
+                js.notify.notify_lost.close();
+                js.notify.notify_lost = null;
+            }
+
+            js.notify.notify_lost = $.notify({
+                title: 'Connection Error',
+                message: 'Connect to server seems to be interrupted - possible network error?',
+            }, {
+                type: 'danger',
+                delay: 0,
+                placement: {
+                    align: 'left'
+                }
+            });
+
+            js.notify.is_connected = false
+        }, 
 
         end: 0
     },
