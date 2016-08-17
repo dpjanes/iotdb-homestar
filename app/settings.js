@@ -44,14 +44,6 @@ var settings = {
             sessions: ".iotdb/sessions",
             users: ".iotdb/users",
         },
-        mqttd: {
-            local: true,
-            verbose: true,
-            prefix: null,
-            host: null,
-            port: 11800,
-            websocket: 11801
-        },
         homestar: {
             url: "https://homestar.io",
             ping: true,
@@ -211,11 +203,6 @@ var setup = function (av) {
             cause: "HomeStar.io API keys not added",
             fix: "get a keys from https://homestar.io/runners/",
         }, "HomeStar.io API keys not added - you should do this");
-    }
-
-    /* MQTT */
-    if (!settings.d.mqttd.prefix) {
-        settings.d.mqttd.prefix = util.format("/runners/%s/", settings.d.secrets.host);
     }
 
     /* Location for Timers */

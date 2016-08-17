@@ -46,7 +46,6 @@ const util = require('util');
 const fs = require('fs');
 const url = require('url');
 
-const mqtt = require('./mqtt');
 const settings = require('./settings');
 const homestar = require('./homestar');
 const things = require('./things');
@@ -822,7 +821,6 @@ var run = function () {
     }
 
     // other services
-    mqtt.setup();
     users.setup();
     things.setup(app);
     homestar.setup();
@@ -838,11 +836,6 @@ var run = function () {
         scheme: settings.d.webserver.scheme,
         host: settings.d.webserver.host,
         port: settings.d.webserver.port,
-    };
-    profiled.mqttd = {
-        host: settings.d.mqttd.host,
-        port: settings.d.mqttd.port,
-        websocket: settings.d.mqttd.websocket,
     };
     profiled.controller = _.ld.compact(iotdb.controller_meta());
 

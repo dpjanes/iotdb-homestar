@@ -27,18 +27,11 @@ const _ = iotdb._;
 
 const path = require('path');
 
-const mqtt = require('./mqtt');
 const settings = require('./settings');
 const interactors = require('./interactors');
 const auth = require('./auth');
 const users = require('./users');
 
-// const MQTTTransport = require('iotdb-transport-mqtt').Transport;
-// const ExpressTransport = require('iotdb-transport-express').Transport;
-// const IOTDBTransport = require('iotdb-transport-iotdb').Transport;
-// const FSTransport = require('iotdb-transport-fs').Transport;
-//
-const mqtt_transport = require('iotdb-transport-mqtt');
 const express_transport = require('iotdb-transport-express');
 const iotdb_transport = require('iotdb-transport-iotdb');
 
@@ -395,30 +388,6 @@ var things = function () {
 };
 
 /**
- *  MQTT messages - notifications, only on ISTATE, OSTATE and META 
- */
-var _transport_mqtt = function (app, iotdb_transporter) {
-    return;
-
-    var client_id;
-    var owner = iotdb.users.owner();
-    if (owner) {
-        client_id = auth.make_token_mqtt(owner);
-    }
-
-    var mqtt_transporter = new MQTTTransport({
-        prefix: _.net.url.join(settings.d.mqttd.prefix, "api", "things"),
-        host: settings.d.mqttd.host,
-        port: settings.d.mqttd.port,
-        client_id: client_id,
-    });
-    iotdb_transport.bind(iotdb_transporter, mqtt_transporter, {
-        bands: ["meta", "istate", "ostate", "connection", ],
-        user: owner,
-    });
-};
-
-/**
  *  Express interface - get & put. Put only on META and OSTATE
  */
 var _transport_express = function (app, iotdb_transporter) {
@@ -521,7 +490,6 @@ var _make_iotdb_transporter = function(app) {
 var setup = function (app) {
     exports.iotdb_transporter = _make_iotdb_transporter();
 
-    _transport_mqtt(app, exports.iotdb_transporter);
     _transport_express(app, exports.iotdb_transporter);
 };
 

@@ -54,70 +54,6 @@ var webserver_auth_thing = function (request, response) {
     );
 };
 
-var mqtt_tokend = {};
-
-/**
- */
-var make_token_mqtt = function (user) {
-    if (!user) {
-        return "anon-" + uuid.v4();
-    }
-
-    var client_id = "homestar-" + uuid.v4();
-    mqtt_tokend[client_id] = {
-        client_id: client_id,
-        when: (new Date()).getTime(),
-        user: user,
-    };
-
-    return client_id;
-};
-
-/**
- *  This will return a token that can be used as a MQTT
- *  Client ID. 
- */
-var get_token_mqtt = function (request, response) {
-    var client_id = make_token_mqtt(request.user);
-
-    return response
-        .set('Content-Type', 'application/json')
-        .send(JSON.stringify({
-            client_id: client_id
-        }, null, 2));
-};
-
-/**
- */
-var redeem_token_mqtt = function (client_id) {
-    var now = (new Date()).getTime();
-    var removes = [];
-    var user = null;
-
-    // can't be a user
-    if (client_id.indexOf("homestar-") !== 0) {
-        return user;
-    }
-
-    // find user, ignoring expired results
-    for (var key in mqtt_tokend) {
-        var id = mqtt_tokend[key];
-        if ((now - id.when) > 60 * 1000) {
-            removes.push(key);
-        } else if (id.client_id === client_id) {
-            removes.push(key);
-            user = id.user;
-        }
-    }
-
-    // remove expired results
-    for (var ri in removes) {
-        delete mqtt_tokend[removes[ri]];
-    }
-
-    return user;
-};
-
 /**
  */
 var setup = function (app, make_dynamic) {
@@ -158,13 +94,9 @@ var setup = function (app, make_dynamic) {
             failureRedirect: '/'
         })
     );
-    // app.get('/auth/mqtt-token', get_token_mqtt);
-    app.put('/auth/mqtt-token', get_token_mqtt);
 };
 
 /**
  *  API
  */
 exports.setup = setup;
-exports.redeem_token_mqtt = redeem_token_mqtt;
-exports.make_token_mqtt = make_token_mqtt;
