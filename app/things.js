@@ -41,7 +41,6 @@ const users = require('./users');
 const mqtt_transport = require('iotdb-transport-mqtt');
 const express_transport = require('iotdb-transport-express');
 const iotdb_transport = require('iotdb-transport-iotdb');
-const fs_transport = require('iotdb-transport-fs');
 
 var logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -423,24 +422,19 @@ var _transport_mqtt = function (app, iotdb_transporter) {
  *  Express interface - get & put. Put only on META and OSTATE
  */
 var _transport_express = function (app, iotdb_transporter) {
+    // must be first
+    const longpoll_transporter = express_transport.longpoll.make({
+        prefix: _.net.url.join("/", "api", "things"),
+    }, app)
+
+    longpoll_transporter.use(iotdb_transporter)
+
+    // must be second
     const express_transporter = express_transport.make({
         prefix: _.net.url.join("/", "api", "things"),
     }, app)
 
     express_transporter.use(iotdb_transporter)
-//
-    /*
-    var owner = iotdb.users.owner();
-    var express_transporter = new ExpressTransport({
-        prefix: _.net.url.join("/", "api", "things"),
-        key_things: "thing",
-    }, app);
-    iotdb_transport.bind(iotdb_transporter, express_transporter, {
-        bands: ["meta", "istate", "ostate", "model", "connection", ],
-        updated: ["meta", "ostate", "connection", ],
-        user: owner,
-    });
-    */
 };
 
 /**
