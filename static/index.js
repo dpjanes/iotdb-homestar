@@ -21,38 +21,40 @@ var js = {
 
     interactors: {
         on_load: function() {
-            for (var interactor_name in js.interactors) {
-                var interactor_js = js.interactors[interactor_name];
-                if (interactor_js.on_load) {
-                    try {
-                        interactor_js.on_load();
-                    } catch (x) {
-                        console.log("js.interactors.on_load", "unexpected exception", interactor_name, x);
-                    }
+            _.mapObject(js.interactors, function(interactor_js, interactor_name) {
+                if (!interactor_js.on_load) {
+                    return;
                 }
-            }
+
+                try {
+                    interactor_js.on_load();
+                } catch (x) {
+                    console.log("js.interactors.on_load", "unexpected exception", interactor_name, x);
+                }
+            });
         },
 
         update: function(id, value) {
-            for (var interactor_name in js.interactors) {
-                var interactor_js = js.interactors[interactor_name];
-                if (interactor_js.update) {
-                    var rd = rdd[id];
-                    if (rd.interactor !== interactor_js.name) {
-                        continue
-                    }
-
-                    try {
-                        interactor_js.update(id, rd.state, {
-                            interactor: rd.interactor,
-                            out: rd.out,
-                            in: rd.in
-                        });
-                    } catch (x) {
-                        console.log("js.interactors.update", "unexpected exception", interactor_name, x);
-                    }
+            _.mapObject(js.interactors, function(interactor_js, interactor_name) {
+                if (!interactor_js.update) {
+                    return;
                 }
-            }
+
+                    var rd = rdd[id];
+                if (rd.interactor !== interactor_js.name) {
+                    return;
+                }
+
+                try {
+                    interactor_js.update(id, rd.state, {
+                        interactor: rd.interactor,
+                        out: rd.out,
+                        in: rd.in
+                    });
+                } catch (x) {
+                    console.log("js.interactors.update", "unexpected exception", interactor_name, x);
+                }
+            });
         },
 
         end: 0
@@ -107,164 +109,6 @@ var js = {
                     console.log(id, band, ud);
                 });
         },
-
-        end: 0
-    },
-
-    mqtt: {
-        connected: null,
-        notify_lost: null,
-
-        topic_prefix: "",
-        // host: settingsd.mqttd.host,
-        // port: settingsd.mqttd.port,
-        // websocket: settingsd.mqttd.websocket,
-
-        client_when: 0,
-        client: null,
-
-        on_load: function() {
-            js.mqtt.init();
-        },
-
-        init: function() {
-            $.ajax({
-                type : 'PUT',
-                url: "/auth/mqtt-token",
-                contentType: "application/json",
-                dataType : 'json',
-                error : function(xhr, status, error) {
-                    console.log("# /auth/mqtt-token", error);
-                    js.mqtt.client_when = new Date().getTime();
-                    js.mqtt.reconnect();
-                },
-                success : function(data, status, xhr) {
-                    console.log("+ /auth/mqtt-token", "success", data.client_id);
-                    js.mqtt.connect(data.client_id);
-                },
-            });
-        },
-
-        connect: function(client_id) {
-            js.mqtt.topic_prefix = settingsd.mqttd.prefix.replace(/[\/]*$/, '') 
-            js.mqtt.client = new Messaging.Client(
-                js.mqtt.host, 
-                js.mqtt.websocket,
-                client_id
-            );
-            js.mqtt.client.onConnectionLost = js.mqtt.onConnectionLost;
-            js.mqtt.client.onMessageArrived = js.mqtt.onMessageArrived;
-
-            var connectd = {
-                timeout: 3,
-                keepAliveInterval: 60,
-                cleanSession: true,
-                useSSL: false,
-
-                onSuccess:js.mqtt.onConnect,
-                onFailure:js.mqtt.onFailure
-            }
-
-            console.log("- js.mqtt.init", "calling websocket connect", 
-                js.mqtt.host, 
-                js.mqtt.websocket)
-            js.mqtt.client_when = new Date().getTime();
-            js.mqtt.client.connect(connectd);
-        },
-
-        reconnect : function() {
-            /*
-             *  Don't rush reconnects
-             */
-            var delta = new Date().getTime() - js.mqtt.client_when;
-            var min = ( 10 * 1000 ) - delta;
-            if (min > 0) {
-                console.log("- js.mqtt.reconnect", "will reconnect", "when=", min);
-                setTimeout(js.mqtt.init, min);
-            } else {
-                console.log("- js.mqtt.reconnect", "will reconnect now");
-                js.mqtt.init();
-            }
-        },
-
-        onFailure : function(reason) {
-            console.log("# js.mqtt.onFailure", reason);
-            js.mqtt.reconnect();
-        },
-
-        onConnect : function() {
-            var topic = js.mqtt.topic_prefix + "/api/#";
-            console.log("- js.mqtt.onConnect", topic);
-            js.mqtt.client.subscribe(topic);
-
-            if (js.mqtt.connected === false) {
-                if (js.mqtt.notify_lost) {
-                    js.mqtt.notify_lost.close();
-                    js.mqtt.notify_lost = null;
-                }
-
-                $.notify({
-                    message: 'Connection Restored'
-                }, {
-                    delay: 3000,
-                    placement: {
-                        align: 'left'
-                    }
-                });
-            }
-
-            js.mqtt.connected = true;
-        },
-
-        onConnectionLost : function(responseObject) {
-            console.log("# js.mqtt.onConnectionLost", responseObject);
-            if (responseObject.errorCode !== 0) {
-                console.log("# js.mqtt.onConnectionLost", responseObject.errorMessage);
-            }
-            js.mqtt.reconnect();
-
-            if (js.mqtt.connected) {
-                if (js.mqtt.notify_lost) {
-                    js.mqtt.notify_lost.close();
-                    js.mqtt.notify_lost = null;
-                }
-
-                js.mqtt.connected = false
-                js.mqtt.notify_lost = $.notify({
-                    title: 'Connection Error',
-                    message: 'Connect to server seems to be interrupted - possible network error?',
-                }, {
-                    type: 'danger',
-                    delay: 0,
-                    placement: {
-                        align: 'left'
-                    }
-                });
-            }
-        },
-
-        onMessageArrived : function(message) {
-            var topic_local = message.destinationName.substring(js.mqtt.topic_prefix.length);
-            console.log("- js.mqtt.onMessageArrived", 
-                "payload=", message.payloadString, 
-                "topic=", message.destinationName,
-                "local=", topic_local
-            );
-
-            var parts = topic_local.match(/\/api\/(recipes|things)\/(urn:[^\/]+)\/(istate|ostate|meta|model|status)/);
-            if (!parts) {
-                console.log("?no match?");
-                return;
-            }
-
-            var payload = JSON.parse(message.payloadString);
-            var what = parts[1];
-            var thing_id = parts[2];
-            var band = parts[3];
-
-            console.log("+ mqtt", what, thing_id, band);
-            js.transport.updated(thing_id, band, payload);
-        },	
 
         end: 0
     },
