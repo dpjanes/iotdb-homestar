@@ -12,7 +12,7 @@ var js = {
         js.interactors.on_load();
         js.general.on_load();
         js.transport.on_load();
-        js.mqtt.on_load();
+        js.longpoll.on_load();
 
         $('[data-toggle="popover"]').popover({
             html: true
@@ -58,14 +58,67 @@ var js = {
         end: 0
     },
 
+    longpoll: {
+        on_load: function() {
+            js.longpoll.init();
+        },
+
+        init: function() {
+            js.longpoll.poll();
+        },
+
+        poll: function() {
+            console.log("+", "js.longpoll.poll", "called");
+            $.ajax({
+                type : 'GET',
+                url: "/api/things/.longpoll",
+                contentType: "application/json",
+                dataType : 'json',
+                crossDomain: true,
+                xhrFields: {
+                    withCredentials: true
+                },
+                error : function(xhr, status, error) {
+                    console.log("#", "js.longpoll.poll/error", status, error);
+                    setTimeout(function() { js.longpoll.poll(); }, 5 * 1000);
+                },
+                success : function(data, status, xhr) {
+                    console.log("+", "js.longpoll.poll/sucess", data);
+                    js.longpoll.dispatch(data);
+                    setTimeout(function() { js.longpoll.poll(); }, 250);
+                },
+            });
+        },
+
+        dispatch: function(d) {
+            _.keys(d)
+                .forEach(function(url) {
+                    var ud = d[url];
+                    var parts = url.split("/");
+                    if ((parts.length !== 5) || (parts[0] !== "") || (parts[1] !== "api") || (parts[2] != "things")) {
+                        console.log("#", "js.longpoll.dipatch", "unexpected url", url);
+                        return;
+                    }
+
+                    var id = parts[3];
+                    var band = parts[4];
+
+                    js.transport.updated(id, band, ud);
+                    console.log(id, band, ud);
+                });
+        },
+
+        end: 0
+    },
+
     mqtt: {
         connected: null,
         notify_lost: null,
 
         topic_prefix: "",
-        host: settingsd.mqttd.host,
-        port: settingsd.mqttd.port,
-        websocket: settingsd.mqttd.websocket,
+        // host: settingsd.mqttd.host,
+        // port: settingsd.mqttd.port,
+        // websocket: settingsd.mqttd.websocket,
 
         client_when: 0,
         client: null,
