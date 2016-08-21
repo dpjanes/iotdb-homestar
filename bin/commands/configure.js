@@ -25,8 +25,7 @@
 "use strict";
 
 var iotdb = require('iotdb');
-var _ = iotdb.helpers;
-var cfg = iotdb.cfg;
+var _ = iotdb._;
 var settings = require("../../app/settings");
 
 var express = require('express');
@@ -58,12 +57,14 @@ exports.run = function (ad) {
 
     var name = ad._[1];
 
-    var Bridge = iotdb.modules().bridge(name)
-    if (Bridge === undefined) {
+    try {
+        iotdb.use(name);
+    } catch (x) {
+    };
+
+    const Bridge = iotdb.modules().bridge(name)
+    if (!Bridge) {
         console.log("# no bridge named %s", name);
-        process.exit(1);
-    } else if (Bridge === undefined) {
-        console.log("# module %s does not export a Bridge", name);
         process.exit(1);
     }
     var app = express();
@@ -78,27 +79,24 @@ exports.run = function (ad) {
     app.swig = swig;
     app.use(bodyParser.urlencoded({ extended: false }))
 
-    var bridge = null;
-    var server = app.listen(9998);
+    const server = app.listen(9998);
     server.on('listening', function() {
-        var port = server.address().port
-        var ip = _.net.ipv4();
+        const port = server.address().port
+        const ip = _.net.ipv4();
 
         app.html_root = util.format("http://%s:%s", ip, port);
 
-        if (!bridge) {
-            bridge = new Bridge();
-            if (bridge.configure) {
-                bridge.configure(app);
-            }
-
-            for (var fi in settings.d.webserver.folders.static) {
-                var folder = settings.d.webserver.folders.static[fi];
-                app.use('/', 
-                    express.static(cfg.cfg_expand(settings.envd, folder))
-                );
-            }
+        const bridge = new Bridge();
+        if (bridge.configure) {
+            bridge.configure(app);
         }
+
+        settings.d.webserver.folders.static
+            .forEach(folder => {
+                const path = _.cfg.expand(folder, settings.envd);
+                console.log("PATH", path, folder)
+                app.use('/', express.static(path));
+            })
 
         open(app.html_root);
 
