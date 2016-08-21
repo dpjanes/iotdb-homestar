@@ -61,6 +61,8 @@ var js = {
     },
 
     longpoll: {
+        id: Math.random(),
+
         on_load: function() {
             js.longpoll.init();
         },
@@ -75,7 +77,7 @@ var js = {
 
             $.ajax({
                 type : 'GET',
-                url: "/api/things/.longpoll",
+                url: "/api/things/.longpoll?random=" + js.longpoll.id,
                 contentType: "application/json",
                 dataType : 'json',
                 crossDomain: true,
@@ -321,7 +323,7 @@ var js = {
     },
 
     notify: {
-        is_connected: false,
+        is_connected: true,
         notify_lost: null,
 
         connected : function() {
@@ -329,7 +331,7 @@ var js = {
                 return;
             }
 
-            if (js.notify.notify_lost) {
+            if (!js.notify.notify_lost) {
                 js.notify.notify_lost.close();
                 js.notify.notify_lost = null;
             }

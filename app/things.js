@@ -35,7 +35,7 @@ const users = require('./users');
 const express_transport = require('iotdb-transport-express');
 const iotdb_transport = require('iotdb-transport-iotdb');
 
-var logger = iotdb.logger({
+const logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/things',
 });
@@ -43,7 +43,7 @@ var logger = iotdb.logger({
 /**
  *  Returns a Thing by thing_id
  */
-var _thing_by_id = function (thing_id) {
+const _thing_by_id = function (thing_id) {
     var iot = iotdb.iot();
     var things = iot.things();
     for (var ti = 0; ti < things.length; ti++) {
@@ -57,7 +57,7 @@ var _thing_by_id = function (thing_id) {
     return null;
 };
 
-var scrub_id = function (v) {
+const scrub_id = function (v) {
     if (!v) {
         return "";
     } else {
@@ -65,7 +65,7 @@ var scrub_id = function (v) {
     }
 };
 
-var structured = {};
+let structured = {};
 
 /**
  *  Clean up the structure. You can do this whenever
@@ -73,7 +73,7 @@ var structured = {};
  *  _structure_thing. Specifically, you'll want to
  *  clear structures when the metadata changes.
  */
-var _clear_structure = function (thing) {
+const _clear_structure = function (thing) {
     if (thing === undefined) {
         structured = {};
     } else {
@@ -86,7 +86,7 @@ var _clear_structure = function (thing) {
  *  - compact everything
  *  - find out if control or reading attibute
  */
-var _structure_thing = function (thing) {
+const _structure_thing = function (thing) {
     var s = structured[thing.thing_id()];
     if (s) {
         return s;
@@ -193,7 +193,7 @@ var _structure_thing = function (thing) {
 };
 
 
-var structured = function () {
+structured = function () {
     var things = iotdb.iot().things();
     var thing;
     var ti;
@@ -232,7 +232,7 @@ var structured = function () {
     return cats;
 };
 
-var _make_thing = function (f) {
+const _make_thing = function (f) {
     return function (request, response) {
         logger.info({
             method: "_make_thing",
@@ -258,7 +258,7 @@ var _make_thing = function (f) {
 
 /**
  */
-var thing_thing = function (thing) {
+const thing_thing = function (thing) {
     var base = "/api/things/" + thing.thing_id();
 
     return {
@@ -273,7 +273,7 @@ var thing_thing = function (thing) {
 
 /**
  */
-var thing_istate = function (thing) {
+const thing_istate = function (thing) {
     return _.extend(
         thing.state("istate"), {
             "@id": "/api/things/" + thing.thing_id() + "/istate",
@@ -283,7 +283,7 @@ var thing_istate = function (thing) {
 
 /**
  */
-var thing_ostate = function (thing) {
+const thing_ostate = function (thing) {
     return _.extend(
         thing.state("ostate"), {
             "@id": "/api/things/" + thing.thing_id() + "/ostate",
@@ -293,7 +293,7 @@ var thing_ostate = function (thing) {
 
 /**
  */
-var thing_meta = function (thing) {
+const thing_meta = function (thing) {
     return _.ld.compact(
         thing.state("meta"), {
             "@id": "/api/things/" + thing.thing_id() + "/meta",
@@ -303,7 +303,7 @@ var thing_meta = function (thing) {
 
 /**
  */
-var thing_model = function (thing) {
+const thing_model = function (thing) {
     var md = thing.state("model");
 
     md["@context"] = {
@@ -358,7 +358,7 @@ var thing_model = function (thing) {
 
 /*
  */
-var things = function () {
+const things = function () {
     return iotdb
         .things()
         .map(thing => {
@@ -390,13 +390,29 @@ var things = function () {
 /**
  *  Express interface - get & put. Put only on META and OSTATE
  */
-var _transport_express = function (app, iotdb_transporter) {
+const _transport_express = function (app, iotdb_transporter) {
     // must be first
     const longpoll_transporter = express_transport.longpoll.make({
         prefix: _.net.url.join("/", "api", "things"),
     }, app)
 
     longpoll_transporter.use(iotdb_transporter)
+    /*
+    , {
+        can_read: d => {
+            return true;
+        },
+        can_write: d => {
+            if (d.band === "meta") {
+                return true;
+            } else if (d.band === "ostate") {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    })
+    */
 
     // must be second
     const express_transporter = express_transport.make({
@@ -410,7 +426,7 @@ var _transport_express = function (app, iotdb_transporter) {
  *  This handles persisting metadata
  *  This probably needs work for dealing with @timestamp
  */
-var _transport_metadata = function (app, iotdb_transporter) {
+const _transport_metadata = function (app, iotdb_transporter) {
     return; // AUG13
 
     var metadata_transporter = new FSTransport({
@@ -465,29 +481,14 @@ var _transport_metadata = function (app, iotdb_transporter) {
     iotdb_transporter.list(_back_copy);
 };
 
-var _make_iotdb_transporter = function(app) {
-    return iotdb_transport.make({});
-
-    /*
-
-    return new IOTDBTransport({
-        user: iotdb.users.owner(),
-        authorize: function (authd, callback) {
-            authd = _.defaults({}, authd);
-            authd.store = "things";
-
-            iotdb.users.authorize(authd, callback);
-        },
-    }, iotdb.things());
-    */
-};
+const _make_iotdb_transporter = () => iotdb_transport.make({});
 
 /**
  *  The Transporter will brodcast all istate/meta
  *  changes to Things to MQTT path 
  *  the same as the REST API
  */
-var setup = function (app) {
+const setup = function (app) {
     exports.iotdb_transporter = _make_iotdb_transporter();
 
     _transport_express(app, exports.iotdb_transporter);
