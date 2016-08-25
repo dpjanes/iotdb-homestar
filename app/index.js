@@ -1,5 +1,5 @@
 /*
- *  app.js
+ *  index.js
  *
  *  David Janes
  *  IOTDB.org

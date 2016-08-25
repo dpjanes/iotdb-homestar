@@ -25,13 +25,13 @@
 "use strict";
 
 const iotdb = require('iotdb');
-var _ = iotdb._;
+const _ = iotdb._;
 
 const unirest = require('unirest');
 
 const settings = require('./settings');
 
-var logger = iotdb.logger({
+const logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/homestar',
 });
@@ -94,7 +94,7 @@ var profile = function () {
                     body: result.body,
                 }, "profile");
 
-                const app = require("./app");
+                const app = require("./index");
                 app.extensions_apply("on_profile", function(worker, locals) {
                     worker(locals, result.body);
                 });
