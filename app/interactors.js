@@ -25,7 +25,7 @@
 "use strict";
 
 const iotdb = require('iotdb');
-var _ = iotdb._;
+const _ = iotdb._;
 
 const settings = require('./settings');
 
@@ -35,18 +35,18 @@ const path = require('path');
 const fs = require('fs');
 const express = require('express');
 
-var logger = iotdb.logger({
+const logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/interactors',
 });
 
-var htmlsd = {};
-var htmld = {};
-var moduled = {};
+const htmlsd = {};
+const htmld = {};
+const moduled = {};
 
 /**
  */
-var assign_interactor_to_attribute = function (attributed) {
+const assign_interactor_to_attribute = function (attributed) {
     var bestd = null;
 
     for (var interactor_key in moduled) {
@@ -80,14 +80,14 @@ var assign_interactor_to_attribute = function (attributed) {
 /**
  *  Setup static routes for ExpressJS
  */
-var setup_app = function (app) {
+const setup_app = function (app) {
     for (var interactor_key in moduled) {
         var module = moduled[interactor_key];
         app.use('/static/interactors/' + module.name, express.static(module.path));
     }
 };
 
-var _add_interactor = function (interactor_key, interactor_path) {
+const _add_interactor = function (interactor_key, interactor_path) {
     var files = fs.readdirSync(interactor_path);
     for (var fi in files) {
         var src_file = files[fi];
@@ -143,12 +143,12 @@ var _add_interactor = function (interactor_key, interactor_path) {
     }
 };
 
-var _interactord = {};
+const _interactord = {};
 
 /**
  *  These come with iotdb-homestar. 
  */
-var _setup_builtin_interactors = function () {
+const _setup_builtin_interactors = function () {
     var interactor_root = path.join(__dirname, "../interactors");
     var interactor_folders = fs.readdirSync(interactor_root);
     for (var ifi in interactor_folders) {
@@ -172,11 +172,11 @@ var _setup_builtin_interactors = function () {
 /**
  *  These are loaded by the user via "homestar install"
  */
-var _setup_module_interactors = function () {};
+const _setup_module_interactors = function () {};
 
 /**
  */
-var setup = function () {
+const setup = function () {
     _setup_builtin_interactors();
     _setup_module_interactors();
 

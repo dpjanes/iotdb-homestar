@@ -45,7 +45,7 @@ var API_PROFILE;
 /**
  *  Ping the server that I'm alive
  */
-var ping = function () {
+const ping = function () {
     unirest
         .put(API_PING)
         .headers({
@@ -80,7 +80,7 @@ var ping = function () {
 /*
  *  Fetch owner's profile, as determined by Bearer token
  */
-var profile = function () {
+const profile = function () {
     unirest
         .get(API_PROFILE)
         .headers({
@@ -108,7 +108,7 @@ var profile = function () {
         });
 };
 
-var setup = function () {
+const setup = function () {
     if (!settings.d.keys.homestar.bearer) {
         logger.error({
             method: "setup",

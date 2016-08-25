@@ -24,7 +24,7 @@
 
 const iotdb = require('iotdb');
 const timers = require('iotdb-timers');
-var _ = iotdb._;
+const _ = iotdb._;
 
 const os = require('os');
 const open = require('open');
@@ -32,12 +32,12 @@ const path = require('path');
 const util = require('util');
 const fs = require('fs');
 
-var logger = iotdb.logger({
+const logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/settings',
 });
 
-var settings = {
+const settings = {
     d: {
         ip: "127.0.0.1",
         folders: {
@@ -120,7 +120,7 @@ var settings = {
     }
 };
 
-var _set = function (key, value) {
+const _set = function (key, value) {
     var d = settings.d;
     var subkeys = key.split('/');
     var lastkey = subkeys[subkeys.length - 1];
@@ -164,7 +164,7 @@ var _set = function (key, value) {
 
 var _is_setup;
 
-var setup = function (av) {
+const setup = function (av) {
     if (_is_setup) {
         return;
     }

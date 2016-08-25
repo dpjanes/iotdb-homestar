@@ -26,7 +26,7 @@
 "use strict";
 
 const iotdb = require('iotdb');
-var _ = iotdb._;
+const _ = iotdb._;
 
 const swig = require('swig');
 
@@ -38,12 +38,12 @@ const uuid = require('uuid');
 
 const settings = require('./settings');
 
-var logger = iotdb.logger({
+const logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/auth',
 });
 
-var webserver_auth_thing = function (request, response) {
+const webserver_auth_thing = function (request, response) {
     logger.info({
         method: "webserver_auth_thing",
         metadata_id: request.params.metadata_id
@@ -56,7 +56,7 @@ var webserver_auth_thing = function (request, response) {
 
 /**
  */
-var setup = function (app, make_dynamic) {
+const setup = function (app, make_dynamic) {
     app.get('/auth/things/:metadata_id', webserver_auth_thing);
 
     /*

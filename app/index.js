@@ -23,8 +23,7 @@
 "use strict";
 
 const iotdb = require('iotdb');
-var _ = iotdb._;
-var cfg = iotdb.cfg;
+const _ = iotdb._;
 
 // _.logger.silent();
 
@@ -54,16 +53,14 @@ const users = require('./users');
 const api = require('./api');
 const auth = require('./auth');
 
-var logger = iotdb.logger({
+const logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/app',
 });
 
 var _extension_locals;
-var _setup_express_dynamic_folder;
-var swig_outer;
 
-var _configures = [];
+const _configures = [];
 
 /*
  *  Filter to make printing JSON easy
@@ -76,7 +73,7 @@ swig.setFilter('scrub', function (input) {
  *  Custom loader
  *  Base on https://raw.githubusercontent.com/paularmstrong/swig/v1.4.2/lib/loaders/filesystem.js
  */
-var swig_loader = function () {
+const swig_loader = function () {
     var encoding = 'utf8';
     var basepath = path.join(__dirname, "..", "dynamic");
     var loader = {
@@ -126,7 +123,7 @@ swig.setDefaults({
 
 exports.app = null;
 
-var setup_express = function (app) {
+const setup_express = function (app) {
     app.use(express_body_parser.json());
     app.use(express_cookie_parser());
     app.use(express_body_parser());
@@ -165,11 +162,11 @@ var setup_express = function (app) {
     }
 };
 
-var _template_things = function () {
+const _template_things = function () {
     return things.things();
 };
 
-var _template_upnp = function () {
+const _template_upnp = function () {
     var ds = [];
     const devices = require('iotdb-upnp').devices();
     for (var di in devices) {
@@ -202,7 +199,7 @@ var _template_upnp = function () {
 };
 
 
-var _template_settings = function () {
+const _template_settings = function () {
     var sd = _.d.clone.deep(settings.d);
     delete sd["secrets"];
     delete sd["keys"];
@@ -210,7 +207,7 @@ var _template_settings = function () {
     return sd;
 };
 
-var _scrub_url = function (v) {
+const _scrub_url = function (v) {
     if (!v) {
         return v;
     }
@@ -223,7 +220,7 @@ var _scrub_url = function (v) {
     return u.hostname + u.path.replace(/\/+$/, '');
 };
 
-var _format_metadata = function (thingd) {
+const _format_metadata = function (thingd) {
     var metad = thingd.meta;
     var lines = [];
     var v;
@@ -291,7 +288,7 @@ var _format_metadata = function (thingd) {
  *  Dynamic pages - we decide at runtime
  *  what these are based on our paths
  */
-var make_dynamic = function (paramd) {
+const make_dynamic = function (paramd) {
     return function (request, response) {
         paramd = _.defaults(paramd, {
             mount: null,
@@ -400,7 +397,7 @@ var make_dynamic = function (paramd) {
 var _extension_locals = {};
 var _extensions = [];
 
-var setup_extensions = function () {
+const setup_extensions = function () {
     /*
      *  Ways you can interact with HomeStar
      */
@@ -497,7 +494,7 @@ var setup_extensions = function () {
     });
 };
 
-var extensions_apply = function(key, callback) {
+const extensions_apply = function(key, callback) {
     _extensions.map(function(extension) {
         var worker = extension.homestar[key];
         if (!worker) {
@@ -509,7 +506,7 @@ var extensions_apply = function(key, callback) {
 };
 
 
-var extensions_setup_app = function (app) {
+const extensions_setup_app = function (app) {
     extensions_apply("setup_app", function(worker, extension_locals) {
         worker(extension_locals, app);
     });
@@ -528,7 +525,7 @@ var extensions_setup_app = function (app) {
 /**
  *  Setup configuration pages
  */
-var setup_express_configure = function (app) {
+const setup_express_configure = function (app) {
     var modules = iotdb.modules().modules();
     for (var mi in modules) {
         var module = modules[mi];
@@ -563,13 +560,13 @@ var setup_express_configure = function (app) {
 /**
  *  Built-in pages
  */
-var setup_express_dynamic = function (app) {
+const setup_express_dynamic = function (app) {
     settings.d.webserver.folders.dynamic
         .map(folder => _.cfg.expand(folder, settings.envd))
         .forEach(folder => _setup_express_dynamic_folder(app, folder));
 };
 
-var _setup_express_dynamic_folder = function (app, folder) {
+const _setup_express_dynamic_folder = function (app, folder) {
     var _make_redirect = function (path) {
         return function (request, response) {
             return response.redirect("/" + (path ? path : ""));
@@ -619,7 +616,7 @@ var _setup_express_dynamic_folder = function (app, folder) {
 
 /**
  */
-var setup_express_static = function (app) {
+const setup_express_static = function (app) {
     settings.d.webserver.folders.static
         .map(folder => _.cfg.expand(folder, settings.envd))
         .forEach(folder => {
@@ -631,7 +628,7 @@ var setup_express_static = function (app) {
  *  We use 'twitter' auth but it's actually HomeStar
  *  talking the same protocol
  */
-var setup_passport = function () {
+const setup_passport = function () {
     var iot = iotdb.iot();
 
     var server_url = settings.d.homestar.url;
@@ -731,17 +728,6 @@ var setup_passport = function () {
     });
 };
 
-/*
- *  Start IOTDB
- */
-var iot = iotdb.iot();
-iot.on("thing", function (thing) {
-    logger.info({
-        thing: thing.thing_id(),
-        meta: thing.band("meta").state(),
-    }, "found new thing");
-});
-
 /**
  *  Settings
  */
@@ -756,7 +742,7 @@ setup_extensions();
 /**
  *  Special Swig renderer
  */
-var swig_outer = new swig.Swig({
+const swig_outer = new swig.Swig({
     varControls: ['[[{', '}]]'],
     tagControls: ['[[%', '%]]'],
     cmtControls: ['[[#', '#]]'],
@@ -772,7 +758,7 @@ var swig_outer = new swig.Swig({
 
 setup_passport();
 
-var app = express();
+const app = express();
 exports.app = app;
 
 setup_express(app);
@@ -785,7 +771,7 @@ auth.setup(app, make_dynamic);
 // require('./digits').setup(app);
 
 interactors.setup_app(app);
-var run = function () {
+const run = function () {
     /*
      *  Run the web server
      */
