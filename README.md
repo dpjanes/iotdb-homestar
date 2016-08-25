@@ -53,7 +53,7 @@ or
 	thing.set(":on", false);
 	
 <i>Aside: <code>":on"</code> is a shorthand for "the universal concept of turning a Thing on or off". You can see the formal definition here:
-[iot-attribute:on](https://iotdb.org/pub/iot-attribute.html#on)</i>.
+[iot-purpose:on](https://iotdb.org/pub/iot-purpose.html#on)</i>.
 
 Here's another example, of doing the _same_ action to different Things:
 
