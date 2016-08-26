@@ -25,110 +25,92 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
-var _ = iotdb._;
-var cfg = iotdb.cfg;
-var settings = require("../../app/settings");
-var install = require("./install")
+const iotdb = require('iotdb');
+const _ = iotdb._;
 
-var fs = require('fs');
-var uuid = require('uuid');
-var unirest = require("unirest")
+const settings = require("../../app/settings");
+const install = require("./install")
+
+const fs = require('fs');
+const os = require('os');
+const unirest = require("unirest")
 
 exports.command = "setup";
-exports.summary = "setup your local Home☆Star Runner";
+exports.summary = "setup your local Home☆Star installation";
+exports.boolean = [ "verbose", ];
 
 exports.help = function () {
     console.log("usage: homestar setup");
     console.log("");
-    console.log("Setup your local Home☆Star Runner");
-    console.log("Run this only once!");
+    console.log("Setup your local Home☆Star installation");
 };
 
-var _set = function(d, key, value) {
-    if (value === undefined) {
-        return;
-    }
-
-    var subkeys = key.split('/');
-    var lastkey = subkeys[subkeys.length - 1];
-
-    for (var ski = 0; ski < subkeys.length - 1; ski++) {
-        var subkey = subkeys[ski];
-        var subd = d[subkey];
-        if (!_.isObject(subd)) {
-            subd = {};
-            d[subkey] = subd;
-        }
-
-        d = subd;
-    }
-
-    if (d[lastkey] === undefined) {
-        d[lastkey] = value;
-        console.log("change: %s → %s", lastkey, value);
-        return true;
-    }
-};
-
-exports.run = function (ad) {
-    /* required folders */
+exports.run = ad => {
+    // required folders 
     try {
         fs.mkdirSync(".iotdb");
-    } catch (err) {
-
-    }
-    try {
-        fs.mkdirSync(settings.d.cookbooks_path);
-    } catch (err) {
-    }
-
-    /* load keystore */
-    var keystored = {};
-    var filename = ".iotdb/keystore.json";
-
-    cfg.cfg_load_json([ filename ], function(paramd) {
-        for (var key in paramd.doc) {
-            keystored[key] = paramd.doc[key];
+        console.log("+", "created .iotdb folder");
+    } catch (error) {
+        if (ad.verbose) {
+            console.log("#", ".iotdb folder", _.error.message(error));
         }
-    });
+    }
 
-    /* secrets */
-    var is_changed = false;
-    is_changed |= _set(keystored, "homestar/runner/secrets/host", uuid.v4());
-    is_changed |= _set(keystored, "homestar/runner/secrets/session", uuid.v4());
-    is_changed |= _set(keystored, "machine_id", uuid.v4());
+    try {
+        fs.mkdirSync("boot");
+        console.log("+", "created boot folder");
+    } catch (error) {
+        if (ad.verbose) {
+            console.log("#", "boot folder", _.error.message(error));
+        }
+    }
 
-    /* location */
-    unirest
-        .get("http://ip-api.com/json")
-        .end(function (result) {
-            if (result.body && (result.body.status === "success")) {
-                is_changed |= _set(keystored, "homestar/runner/location/latitude", result.body.lat);
-                is_changed |= _set(keystored, "homestar/runner/location/longitude", result.body.lon);
-                is_changed |= _set(keystored, "homestar/runner/location/locality", result.body.city);
-                is_changed |= _set(keystored, "homestar/runner/location/country", result.body.countryCode || result.body.county);
-                is_changed |= _set(keystored, "homestar/runner/location/region", result.body.region || result.body.regionName);
-                is_changed |= _set(keystored, "homestar/runner/location/timezone", result.body.timezone);
-                is_changed |= _set(keystored, "homestar/runner/location/postal_code", result.body.zip);
-            }
+    const boot_src = os.path.join(__dirname, "data/boot.js");
+    const boot_dst = "boot/index.js";
 
-            if (is_changed) {
-                fs.writeFile(filename, JSON.stringify(keystored, null, 2));
-            }
+    try {
+        const boot_stat = fs.statSync(boot_dst);
+        console.log("+", "boot exists, skipping", boot_dst);
+    }
+    catch {
+        boot_document = fs.readfileSync(boot_src, "utf-8");
+        fs.writefileSync(boot_dst, boot_document);
+    }
 
-            install.install("iotdb", function() {
-                install.install("homestar", function() {
-                    install.install("iotdb-timers", function() {
-                        install.install("iotdb-recipes", function() {
-                            console.log("+ finished!");
-                            install.install("iotdb-upnp", function() {
-                                console.log("+ finished!");
-                            });
-                        });
+    // load keystore 
+    let keystored = {};
+    const filename = ".iotdb/keystore.json";
+
+    _.cfg.load.json([ filename ], docd => keystored = _.d.compose.deep(keystored, docd.doc));
+
+    // secrets 
+    [ "homestar/runner/secrets/host", "homestar/runner/secrets/session", "machine_id" ]
+        .filter(key => !_.d.get(keystored, key))
+        .forEach(key => _.d.set(keystored, key, _.id.uuid.v4()));
+
+    // location 
+    _.net.external.geo((error, addressd) => {
+        if (addressd) {
+            _.d.set(keystored, "homestar/runner/location/latitude", addressd.lat);
+            _.d.set(keystored, "homestar/runner/location/longitude", addressd.lon);
+            _.d.set(keystored, "homestar/runner/location/locality", addressd.city);
+            _.d.set(keystored, "homestar/runner/location/country", addressd.countryCode || addressd.county);
+            _.d.set(keystored, "homestar/runner/location/region", addressd.region || addressd.regionName);
+            _.d.set(keystored, "homestar/runner/location/timezone", addressd.timezone);
+            _.d.set(keystored, "homestar/runner/location/postal_code", addressd.zip);
+        }
+
+        fs.writeFile(filename, JSON.stringify(keystored, null, 2));
+        console.log("+", "updated", filename);
+
+        install.install("iotdb", function() {
+            install.install("homestar", function() {
+                install.install("iotdb-timers", function() {
+                    install.install("iotdb-upnp", function() {
+                        console.log("+ finished!");
                     });
                 });
             });
+        });
     });
 };
-

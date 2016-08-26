@@ -333,23 +333,6 @@ const thing_model = function (thing) {
 
         delete ad["iot:role"];
 
-        /*
-        var roles = _.ld.list(ad, 'iot:role');
-        if (!roles) {
-            ad._control = true;
-            ad._reading = true;
-        } else {
-            for (var ri in roles) {
-                var role = roles[ri];
-                if (role === 'iot-purpose:role-control') {
-                    ad._control = true;
-                } else if (role === 'iot-purpose:role-reading') {
-                    ad._reading = true;
-                }
-            }
-        }
-        */
-
         interactors.assign_interactor_to_attribute(ad);
     }
 

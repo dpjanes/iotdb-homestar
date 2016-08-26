@@ -26,7 +26,6 @@
 
 var iotdb = require('iotdb');
 var _ = iotdb._;
-var cfg = iotdb.cfg;
 var settings = require("../../app/settings");
 
 var util = require('util');
@@ -218,14 +217,16 @@ var _install = function (name, callback) {
 var _save_module = function (module_name, module_folder) {
     var module_path = path.resolve(module_folder);
 
-    iotdb.keystore().save("/modules", function(current) {
-        if (!_.isObject(current)) {
-            current = {};
-        }
+    // load current keystore
+    let keystored = {};
+    const filename = ".iotdb/keystore.json";
+    _.cfg.load.json([ filename ], docd => keystored = _.d.compose.deep(keystored, docd.doc));
 
-        current[module_name] = module_path;
-        return current;
-    });
+    // change it
+    _.d.set(keystored, "/modules/" + module_name, module_path)
+
+    // save it
+    fs.writeFile(filename, JSON.stringify(keystored, null, 2));
 
     console.log("- installed homestar module!");
     console.log("  name:", module_name);
@@ -340,7 +341,7 @@ var _rmdirSync = function(dir) {
 
 var _load_json = function(filename) {
     var d = {};
-    cfg.cfg_load_json([ filename ], function(paramd) {
+    _.cfg.load.json([ filename ], function(paramd) {
         for (var key in paramd.doc) {
             d[key] = paramd.doc[key];
         }

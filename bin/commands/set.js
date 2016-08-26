@@ -90,7 +90,7 @@ exports.run = function (ad) {
     let keystored = {};
     const filename = ".iotdb/keystore.json";
 
-    _.cfg.load.json([ filename ], docd => keystored = _.d.compose.smart(keystored, docd.doc));
+    _.cfg.load.json([ filename ], docd => keystored = _.d.compose.deep(keystored, docd.doc));
 
     _.d.set(keystored, key, value);
 

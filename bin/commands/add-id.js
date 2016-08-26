@@ -27,7 +27,6 @@
 
 var iotdb = require('iotdb');
 var _ = iotdb._;
-var cfg = iotdb.cfg;
 var settings = require("../../app/settings");
 
 var child_process = require('child_process')
@@ -93,7 +92,7 @@ exports.run = function (ad) {
         cookbooks_path: settings.d.cookbooks_path,
     };
 
-    var filenames = cfg.cfg_find(iotdb.iot().envd, initd.cookbooks_path, /[.]js$/);
+    var filenames = _.cfg.find(initd.cookbooks_path, /[.]js$/, iotdb.iot().envd);
 
     for (var fi in filenames) {
         edit_add_cookbook_ids(filenames[fi]);
