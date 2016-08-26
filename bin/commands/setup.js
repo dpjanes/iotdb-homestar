@@ -32,7 +32,7 @@ const settings = require("../../app/settings");
 const install = require("./install")
 
 const fs = require('fs');
-const os = require('os');
+const path = require('path');
 const unirest = require("unirest")
 
 exports.command = "setup";
@@ -65,16 +65,17 @@ exports.run = ad => {
         }
     }
 
-    const boot_src = os.path.join(__dirname, "data/boot.js");
+    const boot_src = path.join(__dirname, "data/boot.js");
     const boot_dst = "boot/index.js";
 
     try {
         const boot_stat = fs.statSync(boot_dst);
         console.log("+", "boot exists, skipping", boot_dst);
     }
-    catch {
-        boot_document = fs.readfileSync(boot_src, "utf-8");
-        fs.writefileSync(boot_dst, boot_document);
+    catch (x) {
+        const boot_document = fs.readFileSync(boot_src, "utf-8");
+        fs.writeFileSync(boot_dst, boot_document);
+        console.log("+", "wrote boot", boot_dst);
     }
 
     // load keystore 
