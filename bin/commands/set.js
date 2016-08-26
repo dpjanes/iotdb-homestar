@@ -26,10 +26,8 @@
 
 const iotdb = require('iotdb');
 const _ = iotdb._;
-const settings = require("../../app/settings");
 
 const fs = require('fs');
-const uuid = require('uuid');
 
 exports.command = "set";
 exports.boolean = [ "list", "boolean", "number", "integer", "uuid" ];
@@ -82,7 +80,7 @@ exports.run = function (ad) {
     } else if (ad.integer) {
         value = parseInt(ad._[2]);
     } else if (ad.uuid) {
-        value = uuid.v4();
+        value = _.id.uuid.v4();
     } else {
         value = ad._[2];
     }

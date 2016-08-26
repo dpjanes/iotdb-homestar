@@ -24,17 +24,8 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
-var _ = iotdb._;
-var settings = require("../../app/settings");
-
-var util = require('util');
-var path = require('path');
-var os = require('os');
-var fs = require('fs');
-var child_process = require('child_process');
-
-var folder = "node_modules";
+const iotdb = require('iotdb');
+const _ = iotdb._;
 
 exports.command = "update";
 exports.summary = "update installed packages";

@@ -34,7 +34,6 @@ const passport = require('passport');
 
 const path = require('path');
 const util = require('util');
-const uuid = require('uuid');
 
 const settings = require('./settings');
 

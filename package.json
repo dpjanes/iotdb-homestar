@@ -7,45 +7,37 @@
         "url": "https://github.com/dpjanes/iotdb-homestar/issues"
     }, 
     "dependencies": {
-        "body-parser": "~1.15.1", 
-        "bunyan": "~1.8.1", 
-        "connect-fs": "~0.1.1", 
-        "cookie-parser": "~1.4.1", 
-        "express": "~4.13.4", 
-        "express-session": "~1.13.0", 
-        "iotdb": ">=0.14.0", 
-        "iotdb-metadata-fs": "~0.0.4", 
-        "iotdb-recipes": "~0.0.12", 
+        "assert": "~1.4.1", 
+        "body-parser": "~1.15.2", 
+        "child_process": "~1.0.2", 
+        "cookie-parser": "~1.4.3", 
+        "express": "~4.14.0", 
+        "express-session": "~1.14.1", 
+        "iotdb": ">=3.0.0", 
+        "iotdb-errors": "~3.0.2", 
         "iotdb-timers": "~0.0.17", 
-        "iotdb-transport": "~0.0.34", 
-        "iotdb-transport-express": "~0.0.27", 
-        "iotdb-transport-fs": "~0.0.24", 
-        "iotdb-transport-iotdb": "~0.0.21", 
-        "iotdb-transport-mqtt": "~0.0.25", 
-        "jsonwebtoken": "~6.2.0", 
-        "minimist": "~1.2.0", 
-        "mows": "~0.0.6", 
-        "mqtt": "~1.10.0", 
+        "iotdb-transport-express": "~3.0.1", 
+        "iotdb-transport-iotdb": "~3.0.1", 
+        "iotdb-upnp": "~0.0.14", 
+        "iotql": "~0.0.37", 
         "open": "~0.0.5", 
         "passport": "~0.3.2", 
         "passport-twitter": "~1.0.4", 
-        "prompt": "~1.0.0", 
-        "session-file-store": "~0.2.0", 
+        "session-file-store": "~0.2.1", 
         "swig": "~1.4.2", 
-        "unirest": "~0.5.0", 
-        "uuid": "~2.0.2"
+        "unirest": "~0.5.1"
     }, 
     "description": "Home\u2606Star Runner", 
     "devDependencies": {
         "grunt": "~1.0.1", 
         "grunt-contrib-jshint": "~1.0.0", 
         "grunt-contrib-nodeunit": "~1.0.0", 
-        "grunt-contrib-uglify": "~1.0.1", 
+        "grunt-contrib-uglify": "~2.0.0", 
         "grunt-contrib-watch": "~1.0.0", 
-        "grunt-jsbeautifier": "~0.2.12", 
-        "jshint-stylish": "~2.2.0", 
-        "load-grunt-tasks": "~3.5.0", 
-        "request": "~2.72.0"
+        "grunt-jsbeautifier": "~0.2.13", 
+        "jshint-stylish": "~2.2.1", 
+        "load-grunt-tasks": "~3.5.2", 
+        "request": "~2.74.0"
     }, 
     "homepage": "https://homestar.io", 
     "license": "Apache-2.0", 
@@ -59,5 +51,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "0.3.9"
+    "version": "3.0.0"
 }
