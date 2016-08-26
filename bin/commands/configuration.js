@@ -24,13 +24,11 @@
 
 "use strict";
 
-var iotdb = require('iotdb');
-var _ = iotdb._;
-var settings = require("../../app/settings");
+const iotdb = require('iotdb');
+const _ = iotdb._;
 
-var child_process = require('child_process')
-var path = require('path')
-var fs = require('fs')
+const path = require('path')
+const fs = require('fs')
 
 exports.command = "configuration";
 exports.summary = "list stuff about configuration";
@@ -49,9 +47,9 @@ exports.help = function () {
 };
 
 exports.run = function (ad) {
-    var self = this;
+    const self = this;
 
-    var keystore = iotdb.keystore();
+    const keystore = iotdb.keystore();
     console.log("== Keystore");
     console.log("");
     console.log(JSON.stringify(keystore.d, undefined, 2).replace(/^/mg, "  "));
@@ -62,6 +60,7 @@ exports.run = function (ad) {
     console.log("Home☆Star location:", path.join(__dirname, "..", ".."));
     console.log("");
 
+    /*
     console.log("== Installed Modules");
     console.log("");
 
@@ -130,6 +129,7 @@ exports.run = function (ad) {
     }
 
     console.log("");
+    */
 
-    process.exit(0)
+    setTimeout(() => process.exit(0), 500);
 };
