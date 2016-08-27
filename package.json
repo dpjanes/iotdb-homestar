@@ -17,9 +17,11 @@
         "iotdb-errors": "~3.0.2", 
         "iotdb-timers": "~0.0.17", 
         "iotdb-transport-express": "~3.0.1", 
+        "iotdb-transport-fs": "~3.0.1", 
         "iotdb-transport-iotdb": "~3.0.1", 
         "iotdb-upnp": "~0.0.14", 
         "iotql": "~0.0.37", 
+        "minimist": "~1.2.0", 
         "open": "~0.0.5", 
         "passport": "~0.3.2", 
         "passport-twitter": "~1.0.4", 
@@ -51,5 +53,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "3.0.1"
+    "version": "3.0.2"
 }
