@@ -26,6 +26,7 @@ const iotdb = require('iotdb');
 const _ = iotdb._;
 
 const path = require('path');
+const fs = require('fs');
 
 const settings = require('./settings');
 const interactors = require('./interactors');
@@ -472,6 +473,19 @@ const _make_iotdb_transporter = () => iotdb_transport.make({});
  *  the same as the REST API
  */
 const setup = function (app) {
+    const boot_folder = path.join(process.cwd(), "boot");
+    fs.stat(boot_folder, (error, stbuf) => {
+        if (error) {
+            logger.error({
+                boot_folder: boot_folder,
+                error: _.error.message(error),
+            }, "boot folder not found");
+            return;
+        }
+
+        require(boot_folder);
+    });
+
     exports.iotdb_transporter = _make_iotdb_transporter();
 
     _transport_express(app, exports.iotdb_transporter);

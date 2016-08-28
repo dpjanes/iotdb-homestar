@@ -44,10 +44,10 @@ exports.help = function () {
 
 exports.run = function (ad) {
     var node_path = process.execPath;
-    var app_path = path.join("node_modules", "homestar", "app", "app.js");
+    var app_path = path.join("node_modules", "homestar", "app", "index.js");
     if (fs.stat(app_path, function(error) {
         if (error) {
-            app_path = path.join("app", "app.js");
+            app_path = path.join("app", "index.js");
         }
 
         var argv = [ app_path ].concat(process.argv.slice(3));

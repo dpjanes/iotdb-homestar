@@ -36,14 +36,6 @@ exports.summary = "list stuff about configuration";
 exports.help = function () {
     console.log("usage: homestar configuration");
     console.log("");
-    console.log("Add IDs to your Cookbook");
-    console.log("");
-    console.log("This will go through all your recipies in cookbook/*.js");
-    console.log("and add IDs to any homestar.cookbook() declarations");
-    console.log("that don't have them.");
-    console.log("");
-    console.log("This will allow Homestar to add permissions so they");
-    console.log("Can be shared with other Homestar users");
 };
 
 exports.run = function (ad) {
