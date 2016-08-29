@@ -67,8 +67,8 @@ exports.run = function (ad) {
     const self = this;
 
     const xd = iotdb.modules().bridges()
-        .filter(bridge => bridge.bridge_name)
-        .map(bridge => bridge.bridge_name);
+        .filter(bridge => bridge.module_name)
+        .map(bridge => bridge.module_name);
 
     _.flatten(
         _paths()
@@ -109,7 +109,10 @@ exports.run = function (ad) {
             } catch (x) {
             }
 
-            console.log("*", m.module_name, "(version: " + version + "; folder:", m.module_folder + ")");
+            console.log("*", m.module_name, "(version: " + version + 
+                "; folder:", m.module_folder + 
+                "; in-keystore: " + ( xd.indexOf(m.module_name) > -1 ? "yes" : "no" ) +
+                ")");
         })
 
     setTimeout(() => process.exit(0), 500);

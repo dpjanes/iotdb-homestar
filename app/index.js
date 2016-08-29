@@ -526,35 +526,29 @@ const extensions_setup_app = function (app) {
  *  Setup configuration pages
  */
 const setup_express_configure = function (app) {
-    var modules = iotdb.modules().modules();
-    for (var mi in modules) {
-        var module = modules[mi];
-        if (!module.Bridge) {
-            continue;
-        }
+    iotdb.modules().modules()
+        .filter(module => module.Bridge)
+        .map(module => new module.Bridge())
+        .forEach(bridge => {
+            const path = "/configure/" + bridge.module_name;
 
-        var bridge = new module.Bridge();
+            const subapp = express();
 
-        var name = bridge.name();
-        var path = "/configure/" + _.id.to_dash_case(name);
+            subapp.engine('html', swig.renderFile);
+            subapp.swig = swig;
+            subapp.html_root = path;
 
-        var subapp = express();
+            if (!bridge.configure(subapp)) {
+                return;
+            }
 
-        subapp.engine('html', swig.renderFile);
-        subapp.swig = swig;
-        subapp.html_root = path;
+            app.use(path, subapp);
 
-        if (!bridge.configure(subapp)) {
-            continue;
-        }
-
-        app.use(path, subapp);
-
-        _configures.push({
-            name: name,
-            path: path,
+            _configures.push({
+                name: name,
+                path: path,
+            });
         });
-    }
 };
 
 /**
