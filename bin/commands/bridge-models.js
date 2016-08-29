@@ -1,5 +1,5 @@
 /*
- *  bin/commands/models.js
+ *  bin/commands/bridge-models.js
  *
  *  David Janes
  *  IOTDB.org
@@ -28,11 +28,11 @@ const _ = iotdb._;
 const path = require('path')
 const fs = require('fs')
 
-exports.command = "models";
-exports.summary = "list models belonging to a Bridge";
+exports.command = "bridge-models";
+exports.summary = "list Models belonging to a Bridge";
 
 exports.help = function () {
-    console.log("usage: homestar about [bridge-module]");
+    console.log("usage: homestar bridge-models [bridge-module]");
     console.log("");
 };
 
@@ -40,7 +40,7 @@ exports.run = function (ad) {
     const self = this;
 
     if (ad._.length < 2) {
-        console.log("error: 'homestar models' takes the name of a bridge as an argument");
+        console.log("error: 'homestar bridge-models' takes [bridge-module]");
         console.log("");
         exports.help();
         process.exit(1);
@@ -49,15 +49,14 @@ exports.run = function (ad) {
     const module_name = ad._[1];
     iotdb.use(module_name);
 
-    _.flatten(iotdb
-        .modules()
-        .modules()
+    _.flatten(iotdb.modules().modules()
         .filter(module => module.module_name === module_name)
-        .map(module => module.bindings), true)
-        .filter(binding => binding.bridge)
+        .map(module => module.bindings), true
+    )
+        .filter(binding => binding.model)
         .map(binding => binding.model)
-        .map(model => model)
+        .filter(model => model)
         .map(model => _.d.first(model, "iot:model-id"))
-        .map(model_id => model_id)
+        .filter(model_id => model_id)
         .forEach(model_id => console.log("*", model_id));
 };
