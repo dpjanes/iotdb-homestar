@@ -120,26 +120,12 @@ const _structure_thing = function (thing) {
         cat.group = thing_name;
 
         cid = scrub_id(_.ld.first(cat, "@id", ""));
-        /*
-        if (_.ld.list(cat, 'iot:role') === undefined) {
-            cat._out = cid;
-            cat._in = cid;
-        }
-        */
         if (_.ld.first(cat, 'iot:read', false)) {
             cat._in = cid;
         }
         if (_.ld.first(cat, 'iot:write', false)) {
             cat._out = cid;
         }
-        /*
-        if (_.ld.contains(cat, 'iot:role', 'iot-purpose:role-control')) {
-            cat._out = cid;
-        }
-        if (_.ld.contains(cat, 'iot:role', 'iot-purpose:role-reading')) {
-            cat._in = cid;
-        }
-        */
 
         catd[cid] = cat;
     }
@@ -357,7 +343,7 @@ const things = function () {
             td["istate"] = thing_istate(thing);
             td["ostate"] = thing_ostate(thing);
             td["meta"] = thing_meta(thing);
-            
+
             return td;
         })
         .sort((a, b) =>{

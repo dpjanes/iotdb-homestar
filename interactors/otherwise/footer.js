@@ -13,29 +13,14 @@ js.interactors.otherwise = {
 
         var transporter = js.transport.connect(thing_id, "istate");
         transporter.on_update(function(d) {
-            e.find('.interactor-state').text("" + d[attribute_code]);
+            var value = d[attribute_code];
+            if (value) {
+                e.find('.interactor-state').text("" + d[attribute_code]);
+            } else{
+                e.find('.interactor-state').text("");
+            }
         });
     },
-
-    /*
-    update: function(id, state, rd) {
-        var value;
-        if (rd.in) {
-            value = state[rd.in];
-        } else if (rd.out) {
-            value = state[rd.out];
-        }
-
-        if (value === undefined) {
-            return;
-        }
-
-        try {
-            $('li[data-id="' + id + '"] .interactor-state').text("" + value);
-        } catch(x) {
-        }
-    },
-    */
 
     end: 0
 };
