@@ -44,23 +44,6 @@ const logger = iotdb.logger({
     module: 'app/things',
 });
 
-/**
- *  Returns a Thing by thing_id
- */
-const _thing_by_id = function (thing_id) {
-    var iot = iotdb.iot();
-    var things = iot.things();
-    for (var ti = 0; ti < things.length; ti++) {
-        var t = things[ti];
-        if (t.thing_id() === thing_id) {
-            return t;
-        }
-    }
-
-    console.log("# _thing_by_id: thing not found", thing_id);
-    return null;
-};
-
 const scrub_id = function (v) {
     if (!v) {
         return "";
@@ -222,30 +205,6 @@ structured = function () {
     return cats;
 };
 
-const _make_thing = function (f) {
-    return function (request, response) {
-        logger.info({
-            method: "_make_thing",
-            thing_id: request.params.thing_id,
-            body: request.body,
-        }, "called");
-
-        var thing = _thing_by_id(request.params.thing_id);
-        if (!thing) {
-            return response
-                .set('Content-Type', 'application/json')
-                .status(404)
-                .send(JSON.stringify({
-                    error: "thing not found",
-                    thing_id: request.params.thing_id
-                }, null, 2));
-        }
-
-        response.set('Content-Type', 'application/json');
-        response.send(JSON.stringify(f(thing, request, response), null, 2));
-    };
-};
-
 /**
  */
 const thing_thing = function (thing) {
@@ -363,8 +322,11 @@ const things = function () {
 /**
  *  Express interface - get & put. Put only on META and OSTATE
  */
-const _transport_express = function (app, iotdb_transporter) {
-    // security
+const _transport_express = function (app) {
+    // IOTDB
+    const iotdb_transporter = iotdb_transport_iotdb.make({});
+
+    // security on top of IOTDB
     const access_transporter = iotdb_transport.access.make({
         check_write: d => {
             return [ "ostate", "meta" ].indexOf(d.band) === -1 ? new errors.NotAuthorized() : null;
@@ -441,8 +403,6 @@ const _transport_metadata = function (app, iotdb_transporter) {
     iotdb_transporter.list(_back_copy);
 };
 
-const _make_iotdb_transporter = () => iotdb_transport_iotdb.make({});
-
 /**
  *  The Transporter will brodcast all istate/meta
  *  changes to Things to MQTT path 
@@ -462,17 +422,11 @@ const setup = function (app) {
         require(boot_folder);
     });
 
-    exports.iotdb_transporter = _make_iotdb_transporter();
-
-    _transport_express(app, exports.iotdb_transporter);
+    _transport_express(app);
 };
 
 /**
  *  API
  */
 exports.setup = setup;
-
-exports.thing_by_id = _thing_by_id;
 exports.things = things;
-exports.iotdb_transporter = null;
-exports.make_iotdb_transporter = _make_iotdb_transporter;

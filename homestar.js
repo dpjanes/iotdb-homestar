@@ -41,11 +41,6 @@ const locals = function() {
 
     const locals = {
         homestar: {
-            things: {
-                thing_by_id: things.thing_by_id,
-                make_transporter: things.make_iotdb_transporter,
-            },
-
             users: {
                 owner: iotdb.users.owner,
                 update: users.update,

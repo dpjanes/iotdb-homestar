@@ -332,7 +332,7 @@ const make_dynamic = function (paramd) {
          *  and data, see the definition of swig_outer
          */
         var locals = {
-            things: _template_things,
+            things: things.things,
             upnp: _template_upnp,
             settings: _template_settings,
             configures: _configures,
@@ -409,10 +409,6 @@ const setup_extensions = function () {
             update: users.update,
             users: users.users,
             user_by_id: users.user_by_id,
-        },
-        things: {
-            thing_by_id: things.thing_by_id,
-            make_transporter: things.make_iotdb_transporter,
         },
         data: {
             facets: function () {
