@@ -78,31 +78,26 @@ exports.run = ad => {
         console.log("+", "wrote boot", boot_dst);
     }
 
-    // load keystore 
-    let keystored = {};
-    const filename = ".iotdb/keystore.json";
-
-    _.cfg.load.json([ filename ], docd => keystored = _.d.compose.deep(keystored, docd.doc));
-
     // secrets 
+    const settings = iotdb.settings();
+
     [ "homestar/runner/secrets/host", "homestar/runner/secrets/session", "machine_id" ]
-        .filter(key => !_.d.get(keystored, key))
-        .forEach(key => _.d.set(keystored, key, _.id.uuid.v4()));
+        .filter(key => !settings.get(key))
+        .forEach(key => settings.save(key, _.id.uuid.v4()));
 
     // location 
     _.net.external.geo((error, addressd) => {
         if (addressd) {
-            _.d.set(keystored, "homestar/runner/location/latitude", addressd.lat);
-            _.d.set(keystored, "homestar/runner/location/longitude", addressd.lon);
-            _.d.set(keystored, "homestar/runner/location/locality", addressd.city);
-            _.d.set(keystored, "homestar/runner/location/country", addressd.countryCode || addressd.county);
-            _.d.set(keystored, "homestar/runner/location/region", addressd.region || addressd.regionName);
-            _.d.set(keystored, "homestar/runner/location/timezone", addressd.timezone);
-            _.d.set(keystored, "homestar/runner/location/postal_code", addressd.zip);
+            settings.save("homestar/runner/location/latitude", addressd.lat);
+            settings.save("homestar/runner/location/longitude", addressd.lon);
+            settings.save("homestar/runner/location/locality", addressd.city);
+            settings.save("homestar/runner/location/country", addressd.countryCode || addressd.county);
+            settings.save("homestar/runner/location/region", addressd.region || addressd.regionName);
+            settings.save("homestar/runner/location/timezone", addressd.timezone);
+            settings.save("homestar/runner/location/postal_code", addressd.zip);
         }
 
-        fs.writeFile(filename, JSON.stringify(keystored, null, 2));
-        console.log("+", "updated", filename);
+        console.log("+", "updated settings");
 
         install.install("iotdb", function() {
             install.install("homestar", function() {

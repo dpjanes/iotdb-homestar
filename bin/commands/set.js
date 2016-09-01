@@ -85,14 +85,8 @@ exports.run = function (ad) {
         value = ad._[2];
     }
 
-    let keystored = {};
-    const filename = ".iotdb/keystore.json";
+    iotdb.settings().save(key, value);
 
-    _.cfg.load.json([ filename ], docd => keystored = _.d.compose.deep(keystored, docd.doc));
-
-    _.d.set(keystored, key, value);
-
-    fs.writeFile(filename, JSON.stringify(keystored, null, 2));
     console.log("homestar: added key/value to keystore",
         "\n  key", key,
         "\n  value", value

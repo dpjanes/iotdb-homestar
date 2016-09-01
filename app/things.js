@@ -33,8 +33,11 @@ const interactors = require('./interactors');
 const auth = require('./auth');
 const users = require('./users');
 
-const express_transport = require('iotdb-transport-express');
-const iotdb_transport = require('iotdb-transport-iotdb');
+const iotdb_transport_express = require('iotdb-transport-express');
+const iotdb_transport_iotdb = require('iotdb-transport-iotdb');
+const iotdb_transport = require('iotdb-transport');
+
+const errors = require('iotdb-errors');
 
 const logger = iotdb.logger({
     name: 'iotdb-homestar',
@@ -361,35 +364,22 @@ const things = function () {
  *  Express interface - get & put. Put only on META and OSTATE
  */
 const _transport_express = function (app, iotdb_transporter) {
-    // must be first
-    const longpoll_transporter = express_transport.longpoll.make({
-        prefix: _.net.url.join("/", "api", "things"),
-    }, app)
-
-    longpoll_transporter.use(iotdb_transporter)
-    /*
-    , {
-        can_read: d => {
-            return true;
+    // security
+    const access_transporter = iotdb_transport.access.make({
+        check_write: d => {
+            return [ "ostate", "meta" ].indexOf(d.band) === -1 ? new errors.NotAuthorized() : null;
         },
-        can_write: d => {
-            if (d.band === "meta") {
-                return true;
-            } else if (d.band === "ostate") {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    })
-    */
+    }, iotdb_transporter);
+
+    // must be before express
+    const longpoll_transporter = iotdb_transport_express.longpoll.make({
+        prefix: _.net.url.join("/", "api", "things"),
+    }, access_transporter, app);
 
     // must be second
-    const express_transporter = express_transport.make({
+    const express_transporter = iotdb_transport_express.make({
         prefix: _.net.url.join("/", "api", "things"),
-    }, app)
-
-    express_transporter.use(iotdb_transporter)
+    }, access_transporter, app);
 };
 
 /**
@@ -451,7 +441,7 @@ const _transport_metadata = function (app, iotdb_transporter) {
     iotdb_transporter.list(_back_copy);
 };
 
-const _make_iotdb_transporter = () => iotdb_transport.make({});
+const _make_iotdb_transporter = () => iotdb_transport_iotdb.make({});
 
 /**
  *  The Transporter will brodcast all istate/meta
