@@ -33,7 +33,7 @@ var swig = require('swig');
 var open = require('open');
 var util = require('util');
 var path = require('path');
-var bodyParser = require('body-parser')
+var body_parser = require('body-parser')
 
 exports.command = "configure";
 exports.summary = "configure a bridge";
@@ -47,29 +47,10 @@ exports.help = function () {
     console.log("Use 'homestar install' to install new Bridges");
 };
 
-exports.run = function (ad) {
-    if (ad._.length != 2) {
-        console.log("homestar configure takes a single argument");
-        console.log("");
-        exports.help();
-        process.exit(1);
-    }
+const _make_app = (work) => {
+    const app = express();
 
-    var name = ad._[1];
-
-    try {
-        iotdb.use(name);
-    } catch (x) {
-    };
-
-    const Bridge = iotdb.modules().bridge(name)
-    if (!Bridge) {
-        console.log("# no bridge named %s", name);
-        process.exit(1);
-    }
-    var app = express();
-
-    var templates = path.join(__dirname, 'configure');
+    const templates = path.join(__dirname, 'configure');
 
     swig.setDefaults({
         loader: swig.loaders.fs(templates)
@@ -77,7 +58,7 @@ exports.run = function (ad) {
 
     app.engine('html', swig.renderFile);
     app.swig = swig;
-    app.use(bodyParser.urlencoded({ extended: false }))
+    app.use(body_parser.urlencoded({ extended: false }))
 
     const server = app.listen(9998);
     server.on('listening', function() {
@@ -86,25 +67,85 @@ exports.run = function (ad) {
 
         app.html_root = util.format("http://%s:%s", ip, port);
 
-        const bridge = new Bridge();
-        if (bridge.configure) {
-            bridge.configure(app);
+        work(app, (error, is_configurable) => {
+            if (!is_configurable) {
+                console.log("+", "this module does not need to be configured");
+                process.exit(0);
+            }
+
+            settings.d.webserver.folders.static
+                .forEach(folder => {
+                    const path = _.cfg.expand(folder, settings.envd);
+                    app.use('/', express.static(path));
+                })
+
+            open(app.html_root);
+
+            console.log("===============================");
+            console.log("=== Home☆Star Configure");
+            console.log("=== ");
+            console.log("=== Connect at:");
+            console.log("=== " + app.html_root);
+            console.log("===============================");
+        });
+    });
+};
+
+const _configure_bridge = (name, module) => {
+    _make_app((app, done) => {
+        const bridge = new module.Bridge();
+        const is_configurable = bridge.configure(app);
+
+        done(null, is_configurable);
+    });
+};
+
+const _configure_module = (name, module) => {
+    _make_app((app, done) => {
+        module.configure(app);
+        done(null, true);
+    });
+};
+
+const _configure_cli = (name, module) => {
+    module.configure_cli((error, message) => {
+        if (error) {
+            console.log("#", "something went wrong:", _.error.message(error));
+        } else {
+            console.log("+", message);
         }
 
-        settings.d.webserver.folders.static
-            .forEach(folder => {
-                const path = _.cfg.expand(folder, settings.envd);
-                console.log("PATH", path, folder)
-                app.use('/', express.static(path));
-            })
+        setTimeout(() => process.exit(0), 250);
+    });
+};
 
-        open(app.html_root);
+exports.run = function (ad) {
+    if (ad._.length != 2) {
+        console.log("homestar configure takes a single argument");
+        console.log("");
+        exports.help();
+        process.exit(1);
+    }
 
-        console.log("===============================");
-        console.log("=== Home☆Star Configure");
-        console.log("=== ");
-        console.log("=== Connect at:");
-        console.log("=== " + app.html_root);
-        console.log("===============================");
-    })
+    const name = ad._[1];
+
+    try {
+        iotdb.use(name);
+    } catch (x) {
+    }
+
+    const module = iotdb.modules().module(name);
+    if (!module) {
+        console.log("#", "module not found:", name);
+        process.exit(1);
+    } else if (module.Bridge) {
+        return _configure_bridge(name, module);
+    } else if (module.configure) {
+        return _configure_module(name, module);
+    } else if (module.configure_cli) {
+        return _configure_cli(name, module);
+    }
+
+    console.log("+", "this module does not need to be configured");
+    process.exit(0);
 };
