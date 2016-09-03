@@ -9,7 +9,6 @@
     "dependencies": {
         "assert": "~1.4.1", 
         "body-parser": "~1.15.2", 
-        "child_process": "~1.0.2", 
         "cookie-parser": "~1.4.3", 
         "express": "~4.14.0", 
         "express-session": "~1.14.1", 
