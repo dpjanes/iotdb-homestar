@@ -70,6 +70,7 @@ exports.run = function (ad) {
         .filter(bridge => bridge.module_name)
         .map(bridge => bridge.module_name);
 
+    /*
     _.flatten(
         _paths()
             .map(folder => 
@@ -85,6 +86,21 @@ exports.run = function (ad) {
         .forEach(md => {
             try {
                 iotdb.use(md.module_name, require(md.module_path));
+            }
+            catch (x) {
+                console.log(x)
+            }
+        })
+    */
+    _.cfg.modules()
+        .forEach(md => {
+            try {
+                const module = require(md.path);
+                if (!module.Bridge) {
+                    return;
+                }
+
+                iotdb.use(md.name, module);
             }
             catch (x) {
                 console.log(x)

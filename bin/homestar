@@ -52,27 +52,12 @@ const commandd = {
  *  Load commands from the 'cmd' directory
  */
 const setup_commands = function() {
-    let filenames = [];
-
-    // imported from modules
-    const ms = iotdb.modules().modules();
-    ms.map(function(module) {
-        filenames = _.union(
-            filenames, 
-            _.cfg.find(path.join(module.module_folder, "commands"), /[.]js$/)
-        );
-    });
-
-    // relative to node_modules/homestar
-    filenames = _.union(
-        filenames, 
-        _.cfg.find(path.join(process.cwd(), "node_modules", "homestar", "bin", "commands"), /[.]js$/)
-    );
-
-    // native to HomeStar (in ./commands)
-    filenames = _.union(
-        filenames, 
-        _.cfg.find(path.join(__dirname, "commands"), /[.]js$/)
+    const filenames = _.union(
+        _.flatten(iotdb.modules().modules()
+            .map(module => _.cfg.find(path.join(module.module_folder, "commands"), /[.]js$/))),
+        _.cfg.find(path.join(process.cwd(), "node_modules", "homestar", "bin", "commands"), /[.]js$/),
+        _.cfg.find(path.join(__dirname, "commands"), /[.]js$/),
+        _.cfg.modules().map(md => md.path)
     );
 
     _.cfg.load.js(filenames, function (paramd) {
@@ -95,19 +80,7 @@ const setup_commands = function() {
             return;
         }
 
-        const needs = [ "command", "summary", "run" ];
-        for (const ni in needs) {
-            const need = needs[ni];
-            if (module[need]) {
-                continue;
-            }
-
-            logger.error({
-                method: "setup_commands",
-                filename: paramd.filename,
-                error: "no 'exports." + need + "'",
-                cause: "HomeStar error - contact us",
-            }, "error loading command");
+        if (![ "command", "summary", "run" ].find(need => module[need])) {
             return;
         }
 
@@ -125,7 +98,6 @@ const setup_commands = function() {
 
         module.filename = paramd.filename;
         commandd[module.command] = module;
-
     });
 };
 
@@ -135,17 +107,10 @@ const help = function() {
     console.log("valid commands are:");
     console.log("");
 
-    const cs = [];
-    for (const c in commandd) {
-        cs.push(c);
-    }
-    cs.sort();
-
-    for (const ci in cs) {
-        const c = cs[ci];
-        const command = commandd[c];
-        console.log("  %s: %s", c, command.summary || "");
-    };
+    _.keys(commandd)
+        .sort()
+        .map(c => commandd[c])
+        .forEach(command => console.log(`  ${ command.command }: ${ command.summary || "" }`));
 
     console.log("");
     console.log("use 'homestar help <command>' for more info on a particular command");
