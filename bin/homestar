@@ -52,13 +52,32 @@ const commandd = {
  *  Load commands from the 'cmd' directory
  */
 const setup_commands = function() {
+    const filenames = _.cfg.find(
+        _.union(
+            iotdb.modules().modules()
+                .map(module => module.module_folder)
+                .map(folder => path.join(folder, "commands")),
+            [ path.join(process.cwd(), "node_modules", "homestar", "bin", "commands") ],
+            [ path.join(__dirname, "commands") ],
+            _.cfg.modules()
+                .map(md => md.path)
+                .map(folder => path.join(folder, "commands")),
+            []
+        ), /[.]js$/);
+
+    /*
     const filenames = _.union(
-        _.flatten(iotdb.modules().modules()
-            .map(module => _.cfg.find(path.join(module.module_folder, "commands"), /[.]js$/))),
+        iotdb.modules().modules(),
         _.cfg.find(path.join(process.cwd(), "node_modules", "homestar", "bin", "commands"), /[.]js$/),
         _.cfg.find(path.join(__dirname, "commands"), /[.]js$/),
         _.cfg.modules().map(md => md.path)
     );
+
+            // .map(module => _.cfg.find(path.join(module.module_folder, "commands"), /[.]js$/))),
+
+    console.log(filenames)
+    process.exit()
+    */
 
     _.cfg.load.js(filenames, function (paramd) {
         if (paramd.error) {
