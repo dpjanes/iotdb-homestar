@@ -409,19 +409,6 @@ const _transport_metadata = function (app, iotdb_transporter) {
  *  the same as the REST API
  */
 const setup = function (app) {
-    const boot_folder = path.join(process.cwd(), "boot");
-    fs.stat(boot_folder, (error, stbuf) => {
-        if (error) {
-            logger.error({
-                boot_folder: boot_folder,
-                error: _.error.message(error),
-            }, "boot folder not found");
-            return;
-        }
-
-        require(boot_folder);
-    });
-
     _transport_express(app);
 };
 

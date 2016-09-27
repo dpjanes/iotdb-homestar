@@ -357,12 +357,12 @@ const make_dynamic = function (paramd) {
             };
         }
 
-        customize(request, response, locals, function (error, _rendered) {
-            if (_rendered) {
-                if (_.is.String(_rendered)) {
-                    response.redirect(_rendered);
-                }
-
+        customize(request, response, locals, function (error, optional_response) {
+            if (_.is.Dictionary(optional_response)) {
+                locals.d = optional_response;
+            } else if (_.is.String(optional_response)) {
+                return response.redirect(optional_response);
+            } else if (optional_response) {
                 return;
             }
 
@@ -374,8 +374,8 @@ const make_dynamic = function (paramd) {
                 return;
             }
 
-            var page_template = swig_outer.renderFile(paramd.template);
-            var page_content = swig.render(page_template, {
+            const page_template = swig_outer.renderFile(paramd.template);
+            const page_content = swig.render(page_template, {
                 filename: paramd.template,
                 locals: locals,
             });
@@ -409,81 +409,24 @@ const setup_extensions = function () {
             update: users.update,
             users: users.users,
             user_by_id: users.user_by_id,
-        },
-        data: {
-            facets: function () {
-                return [
-                    "iot-facet:appliance",
-                    "iot-facet:climate",
-                    "iot-facet:climate.cooling",
-                    "iot-facet:climate.heating",
-                    "iot-facet:control",
-                    "iot-facet:control.dial",
-                    "iot-facet:control.dimmer",
-                    "iot-facet:control.keyboard",
-                    "iot-facet:control.keypad",
-                    "iot-facet:control.mouse",
-                    "iot-facet:control.switch",
-                    "iot-facet:control.touchpad",
-                    "iot-facet:gateway",
-                    "iot-facet:lighting",
-                    "iot-facet:media",
-                    "iot-facet:security",
-                    "iot-facet:sensor",
-                    "iot-facet:sensor.chemical",
-                    "iot-facet:sensor.chemical.carbon-dioxide",
-                    "iot-facet:sensor.chemical.carbon-monoxide",
-                    "iot-facet:sensor.fire",
-                    "iot-facet:sensor.heat",
-                    "iot-facet:sensor.humidity",
-                    "iot-facet:sensor.humidty",
-                    "iot-facet:sensor.motion",
-                    "iot-facet:sensor.particulates",
-                    "iot-facet:sensor.presence",
-                    "iot-facet:sensor.shatter",
-                    "iot-facet:sensor.sound",
-                    "iot-facet:sensor.spatial",
-                    "iot-facet:sensor.temperature",
-                    "iot-facet:sensor.water",
-                    "iot-facet:toy",
-                    "iot-facet:wearable",
-                ];
-            },
-            zones: function () {
-                return [
-                    "Kitchen", "Living Room", "Basement", "Master Bedroom", "Bedroom", "Den",
-                    "Main Floor", "Second Floor",
-                    "Front Garden", "Back Garden",
-                ];
-            },
-            groups: function () {
-                return [
-                    "Everyone",
-                    "Friends",
-                    "Family",
-                ];
-            },
-            default_access_read: function () {
-                return ["Everyone", ];
-            },
-            default_access_write: function () {
-                return ["Friends", ];
-            },
-            default_groups: function () {
-                return ["Everyone", ];
-            },
-        },
+        }
     };
+
+    console.log("HERE:MODULES - START");
+    console.trace();
+    // process.exit()
 
     var modules = iotdb.modules().modules();
     for (var mi in modules) {
         var extension = modules[mi];
+        console.log("HERE:EXTENSION", extension)
         if (!extension.homestar) {
             continue;
         }
 
         _extensions.push(extension);
     };
+    console.log("HERE:MODULES - END");
 
     extensions_apply("setup", function(worker, extension_locals) {
         worker(extension_locals);
@@ -718,15 +661,14 @@ const setup_passport = function () {
     });
 };
 
-/**
- *  Settings
- */
+// settings - first
 settings.setup(process.argv);
 interactors.setup();
 
-/**
- *  Extensions
- */
+// boot - needed before extension
+require("./boot").setup();
+
+// Extensions
 setup_extensions();
 
 /**
@@ -802,8 +744,7 @@ const run = function () {
     things.setup(app);
     homestar.setup();
 
-    iotdb.connect();
-
+    // iotdb.connect();
 
     var profiled = {};
     profiled.pid = process.pid;
