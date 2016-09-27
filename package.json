@@ -15,9 +15,9 @@
         "iotdb": ">=3.0.0", 
         "iotdb-errors": "~3.0.2", 
         "iotdb-timers": "~0.0.17", 
-        "iotdb-transport-express": "~3.0.4", 
-        "iotdb-transport-fs": "~3.0.2", 
-        "iotdb-transport-iotdb": "~3.0.3", 
+        "iotdb-transport-express": "~3.0.5", 
+        "iotdb-transport-fs": "~3.0.6", 
+        "iotdb-transport-iotdb": "~3.0.5", 
         "iotdb-upnp": "~0.0.14", 
         "iotql": "~3.0.1", 
         "minimist": "~1.2.0", 
@@ -38,7 +38,7 @@
         "grunt-jsbeautifier": "~0.2.13", 
         "jshint-stylish": "~2.2.1", 
         "load-grunt-tasks": "~3.5.2", 
-        "request": "~2.74.0"
+        "request": "~2.75.0"
     }, 
     "homepage": "https://homestar.io", 
     "license": "Apache-2.0", 
@@ -52,5 +52,5 @@
     "scripts": {
         "test": "grunt"
     }, 
-    "version": "3.0.4"
+    "version": "3.0.5"
 }
