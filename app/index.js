@@ -461,11 +461,9 @@ const extensions_setup_app = function (app) {
 const setup_express_configure = function (app) {
     iotdb.modules().modules()
         .filter(module => module.Bridge)
-        .map(module => new module.Bridge())
-        .forEach(bridge => {
-            const path = "/configure/" + bridge.module_name;
-
-            console.log("HERE:XXX", bridge);
+        .forEach(module => {
+            const bridge = new module.Bridge();
+            const path = "/configure/" + module.module_name;
 
             const subapp = express();
 
@@ -480,7 +478,7 @@ const setup_express_configure = function (app) {
             app.use(path, subapp);
 
             _configures.push({
-                name: bridge.module_name,
+                name: module.module_name,
                 path: path,
             });
         });
