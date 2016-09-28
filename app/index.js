@@ -412,21 +412,15 @@ const setup_extensions = function () {
         }
     };
 
-    console.log("HERE:MODULES - START");
-    console.trace();
-    // process.exit()
-
     var modules = iotdb.modules().modules();
     for (var mi in modules) {
         var extension = modules[mi];
-        console.log("HERE:EXTENSION", extension)
         if (!extension.homestar) {
             continue;
         }
 
         _extensions.push(extension);
     };
-    console.log("HERE:MODULES - END");
 
     extensions_apply("setup", function(worker, extension_locals) {
         worker(extension_locals);
@@ -471,6 +465,8 @@ const setup_express_configure = function (app) {
         .forEach(bridge => {
             const path = "/configure/" + bridge.module_name;
 
+            console.log("HERE:XXX", bridge);
+
             const subapp = express();
 
             subapp.engine('html', swig.renderFile);
@@ -484,7 +480,7 @@ const setup_express_configure = function (app) {
             app.use(path, subapp);
 
             _configures.push({
-                name: name,
+                name: bridge.module_name,
                 path: path,
             });
         });

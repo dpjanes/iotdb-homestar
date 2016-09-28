@@ -28,12 +28,20 @@ const _ = iotdb._;
 const path = require('path');
 const fs = require('fs');
 
+const settings = require('./settings');
+
 const logger = iotdb.logger({
     name: 'iotdb-homestar',
     module: 'app/boot',
 });
 
 const setup = () => {
+    if (!settings.d.boot) {
+        logger.warn({
+        }, "boot turned off");
+        return;
+    }
+
     const boot_folder = path.join(process.cwd(), "boot");
 
     let stbuf;

@@ -115,6 +115,7 @@ const settings = {
             postal_code: null,
         },
         browser: true,
+        boot: true,
         name: null,
         iotql: null // will try to detect
     }

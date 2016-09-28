@@ -28,9 +28,7 @@ const _ = iotdb._;
 const path = require('path');
 const fs = require('fs');
 
-const settings = require('./settings');
 const interactors = require('./interactors');
-const auth = require('./auth');
 const users = require('./users');
 
 const iotdb_transport_express = require('iotdb-transport-express');
