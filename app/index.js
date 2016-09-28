@@ -525,10 +525,8 @@ const setup_express_static = function (app) {
  *  talking the same protocol
  */
 const setup_passport = function () {
-    var iot = iotdb.iot();
-
-    var server_url = settings.d.homestar.url;
-    var client_url = settings.d.webserver.url;
+    const server_url = settings.d.homestar.url;
+    const client_url = settings.d.webserver.url;
 
     if (!settings.d.keys.homestar.key || !settings.d.keys.homestar.secret || !settings.d.homestar.url) {
         logger.info({
@@ -562,9 +560,9 @@ const setup_passport = function () {
                 userProfileURL: server_url + '/api/1.0/profile'
             },
             function (token, token_secret, profile, done) {
-                var user_id = profile._json.id;
-                var owner_id = settings.d.keys.homestar && settings.d.keys.homestar.owner;
-                var user = {
+                const user_id = profile._json.id;
+                const owner_id = settings.d.keys.homestar && settings.d.keys.homestar.owner;
+                const user = {
                     id: user_id,
                     is_owner: user_id === owner_id ? true : false,
                     username: profile.username,
@@ -670,7 +668,7 @@ const run = function () {
     /*
      *  Run the web server
      */
-    var wsd = settings.d.webserver;
+    const wsd = settings.d.webserver;
     app.listen(wsd.port, wsd.host, function () {
         logger.info({
             method: "main",
@@ -709,7 +707,7 @@ const run = function () {
 
     // iotdb.connect();
 
-    var profiled = {};
+    const profiled = {};
     profiled.pid = process.pid;
     profiled.ip = _.net.ipv4();
     profiled.cwd = process.cwd();
@@ -735,7 +733,7 @@ const run = function () {
  */
 if (settings.d.profile) {
     try {
-        var doc = JSON.parse(fs.readFileSync(settings.d.profile));
+        const doc = JSON.parse(fs.readFileSync(settings.d.profile));
         if (doc.pid) {
             logger.info({
                 pid: doc.pid,
