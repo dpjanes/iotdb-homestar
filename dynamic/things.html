@@ -8,7 +8,7 @@
     <ul class="list-group">
         {# <pre>{{ thing.meta|json(2)|safe }}</pre> #}
         <li class="list-group-item active iotdb-thing" data-interactor="title" data-id="{{ thing._id }}" id="{{ thing._id }}">
-            <a class="action-group iot-name" data-toggle="popover" title="{{ thing.model['schema:name'] }}" data-content="{{ format_metadata(thing)|safe }}">{{ thing._name }}</a>
+            <a class="action-group iot-name" data-toggle="popover" title="{{ thing.model['schema:name'] }}" data-content="">{{ thing._name }}</a>
             {% if metadata_editor and user.is_owner %}
             <a href="/admin/things/{{ thing._id }}/meta" class="pull-right action-edit-permission">☆</a>
             {% endif %}

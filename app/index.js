@@ -163,10 +163,6 @@ const setup_express = function (app) {
     }
 };
 
-const _template_things = function () {
-    return things.things();
-};
-
 const _template_upnp = function () {
     const _device_sorter = (a, b) => {
         if (a.friendlyName < b.friendlyName) {
@@ -197,60 +193,6 @@ const _template_settings = function () {
     delete sd["keys"];
 
     return sd;
-};
-
-const _scrub_url = function (v) {
-    if (!v) {
-        return v;
-    }
-
-    const u = url.parse(v);
-    if (_.isEmpty(u.protocol)) {
-        return v;
-    }
-
-    return u.hostname + u.path.replace(/\/+$/, '');
-};
-
-const _format_metadata = function (thingd) {
-    var metad = thingd.meta;
-    var lines = [];
-    var v;
-    var vi;
-    var vs;
-
-    vs = _.ld.list(metad, "iot:zone", []);
-    if (vs.length > 1) {
-        lines.push("<b>zones</b>: " + vs.join(","));
-    } else if (vs.length === 1) {
-        lines.push("<b>zone</b>: " + vs.join(","));
-    } else {
-        lines.push("<b>zones</b>: <i>none asssigned</i>");
-    }
-
-    vs = _.ld.list(metad, "iot:facet", []);
-    for (vi in vs) {
-        vs[vi] = vs[vi].replace(/^.*:/, '');
-    }
-    if (vs.length > 1) {
-        lines.push("<b>facets</b>: " + vs.join(","));
-    } else if (vs.length === 1) {
-        lines.push("<b>facets</b>: " + vs.join(","));
-    } else {
-        lines.push("<b>facets</b>: <i>none asssigned</i>");
-    }
-
-    v = _.ld.first(metad, "schema:manufacturer");
-    if (v) {
-        lines.push("<b>manufacturer</b>: " + _scrub_url(v));
-    }
-
-    v = _.ld.first(metad, "schema:model");
-    if (v) {
-        lines.push("<b>model</b>: " + _scrub_url(v));
-    }
-
-    return lines.join("<br>");
 };
 
 /**
@@ -310,20 +252,8 @@ const make_dynamic = _paramd => (request, response) => {
             urls: settings.d.urls,
             user: request.user,
             homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
-            format_metadata: _format_metadata,
             status: paramd.status || null,
         });
-
-    /*
-    _.extend(locals, _extension_locals);
-
-    if (paramd.locals) {
-        _.extend(locals, paramd.locals);
-    }
-    if (paramd.status) {
-        locals.status = paramd.status;
-    }
-    */
 
     const customize = paramd.customize || ((request, response, locals, done) => done(null));
 
@@ -365,9 +295,7 @@ const make_dynamic = _paramd => (request, response) => {
  */
 
 const setup_extensions = function () {
-    /*
-     *  Ways you can interact with HomeStar
-     */
+    // ways modules can interact with HomeStar
     _extension_locals.homestar = {
         make_dynamic: make_dynamic,
         settings: settings.d,
@@ -381,21 +309,7 @@ const setup_extensions = function () {
 
     _extensions = iotdb.modules().modules().filter(extension => extension.homestar);
 
-    /*
-    var modules = iotdb.modules().modules();
-    for (var mi in modules) {
-        var extension = modules[mi];
-        if (!extension.homestar) {
-            continue;
-        }
-
-        _extensions.push(extension);
-    };
-    */
-
-    extensions_apply("setup", function(worker, extension_locals) {
-        worker(extension_locals);
-    });
+    extensions_apply("setup", (worker, extension_locals) => worker(extension_locals));
 };
 
 const extensions_apply = function(key, callback) {
@@ -403,39 +317,12 @@ const extensions_apply = function(key, callback) {
         .map(extension => extension.homestar[key])
         .filter(worker => worker)
         .forEach(worker => callback(worker, _extension_locals));
-
-    /*
-    _extensions.map(function(extension) {
-        var worker = extension.homestar[key];
-        if (!worker) {
-            return;
-        }
-
-        callback(worker, _extension_locals);
-    });
-    */
 };
-
 
 const extensions_setup_app = function (app) {
-    extensions_apply("setup_app", function(worker, extension_locals) {
-        worker(extension_locals, app);
-    });
-    
-    /*
-    extensions_apply("dynamic", function(worker, extension_locals) {
-        _setup_express_dynamic_folder(app, worker);
-    });
-    
-    extensions_apply("static", function(worker, extension_locals) {
-        app.use('/static', express.static(worker));
-    });
-    */
+    extensions_apply("setup_app", (worker, extension_locals) => worker(extension_locals, app));
 };
 
-/**
- *  Setup configuration pages
- */
 const setup_express_configure = function (app) {
     iotdb.modules().modules()
         .filter(module => module.Bridge)
