@@ -58,7 +58,8 @@ const logger = iotdb.logger({
     module: 'app/app',
 });
 
-var _extension_locals;
+let _extension_locals = {};
+let _extensions = [];
 
 const _configures = [];
 
@@ -167,22 +168,7 @@ const _template_things = function () {
 };
 
 const _template_upnp = function () {
-    var ds = [];
-    const devices = require('iotdb-upnp').devices();
-    for (var di in devices) {
-        var device = devices[di];
-        var d = {};
-        for (var key in device) {
-            var value = device[key];
-            if (key.match(/^[^_]/) && (_.isNumber(value) || _.isString(value))) {
-                d[key] = value;
-            }
-        }
-
-        ds.push(d);
-    }
-
-    ds.sort(function (a, b) {
+    const _device_sorter = (a, b) => {
         if (a.friendlyName < b.friendlyName) {
             return -1;
         } else if (a.friendlyName > b.friendlyName) {
@@ -190,17 +176,23 @@ const _template_upnp = function () {
         } else {
             return 0;
         }
-
-    });
+    };
 
     return {
-        devices: ds
+        devices: require('iotdb-upnp')
+            .devices()
+            .map(device => _.object(
+                _.pairs(device)
+                    .filter(kv => kv[0].match(/^[^_]/))
+                    .filter(kv => _.is.Number(kv[1]) || _.is.String(kv[1]))
+                ))
+            .sort(_device_sorter),
     };
 };
 
 
 const _template_settings = function () {
-    var sd = _.d.clone.deep(settings.d);
+    const sd = _.d.clone.deep(settings.d);
     delete sd["secrets"];
     delete sd["keys"];
 
@@ -212,7 +204,7 @@ const _scrub_url = function (v) {
         return v;
     }
 
-    var u = url.parse(v);
+    const u = url.parse(v);
     if (_.isEmpty(u.protocol)) {
         return v;
     }
@@ -226,13 +218,6 @@ const _format_metadata = function (thingd) {
     var v;
     var vi;
     var vs;
-
-    /*
-    v = _.ld.first(metad, "iot:thing");
-    if (v) {
-        lines.push("id: " + v);
-    }
-     */
 
     vs = _.ld.list(metad, "iot:zone", []);
     if (vs.length > 1) {
@@ -266,72 +251,58 @@ const _format_metadata = function (thingd) {
     }
 
     return lines.join("<br>");
-
-    /*
-{
-  "iot:thing": "urn:iotdb:thing:Chromecast:1e1951d1-4b2e-e5fa-ec1b-d66cb2f84e97",
-  "schema:name": "Basement Chromecast",
-  "schema:manufacturer": "Google Inc.",
-  "schema:model": "Eureka Dongle",
-  "iot:facet": [
-    "iot-facet:media"
-  ],
-  "@timestamp": "2015-05-04T20:46:04.535Z",
-  "iot:zone": [
-    "Basement"
-  ]
-}
-    */
 };
 
 /**
  *  Dynamic pages - we decide at runtime
  *  what these are based on our paths
  */
-const make_dynamic = function (paramd) {
-    return function (request, response) {
-        paramd = _.defaults(paramd, {
-            mount: null,
-            content_type: "text/html",
-            require_login: settings.d.webserver.require_login ? true : false,
-        });
+const make_dynamic = _paramd => (request, response) => {
+    const paramd = _.defaults(_paramd, {
+        mount: null,
+        content_type: "text/html",
+        require_login: settings.d.webserver.require_login ? true : false,
+    });
 
-        logger.info({
-            method: "make_dynamic/(page)",
-            template: paramd.template,
-            mount: paramd.mount,
-            user: request.user,
-        }, "called");
+    logger.info({
+        method: "make_dynamic/(page)",
+        template: paramd.template,
+        mount: paramd.mount,
+        user: request.user,
+    }, "called");
 
-        /*
-         *  This is 'require_login' is true, 
-         *  and the user isn't logged in, we redirect
-         *  to the login page. If that's not specified
-         *  basically we don't allow access to the
-         *  server.
-         *
-         *  Typically homestar-access will force these values.
-         */
-        if (paramd.require_login && !request.user) {
-            var url = settings.d.urls.login;
-            if (!url) {
-                return response
-                    .status(403)
-                    .set('Content-Type', 'text/plain')
-                    .send("this page requires login, but no login URL set - maybe 'homestar install homestar-access'?");
-            } else {
-                return response.redirect(url);
-            }
+    /*
+     *  This is 'require_login' is true, 
+     *  and the user isn't logged in, we redirect
+     *  to the login page. If that's not specified
+     *  basically we don't allow access to the
+     *  server.
+     *
+     *  Typically homestar-access will force these values.
+     */
+    if (paramd.require_login && !request.user) {
+        const url = settings.d.urls.login;
+        if (!url) {
+            return response
+                .status(403)
+                .set('Content-Type', 'text/plain')
+                .send("this page requires login, but no login URL set - maybe 'homestar install homestar-access'?");
+        } else {
+            return response.redirect(url);
         }
+    }
 
-        /*
-         *  We use two-phase rendering, to bring in
-         *  all the interactor data
-         *
-         *  The outer renderer uses different tags
-         *  and data, see the definition of swig_outer
-         */
-        var locals = {
+    /*
+     *  We use two-phase rendering, to bring in
+     *  all the interactor data
+     *
+     *  The outer renderer uses different tags
+     *  and data, see the definition of swig_outer
+     */
+    const locals = _.d.compose.shallow(
+        paramd.locals,
+        _extension_locals,
+        {
             things: things.things,
             upnp: _template_upnp,
             settings: _template_settings,
@@ -340,62 +311,58 @@ const make_dynamic = function (paramd) {
             user: request.user,
             homestar_configured: settings.d.keys.homestar.key && settings.d.keys.homestar.secret && settings.d.homestar.url,
             format_metadata: _format_metadata,
-        };
-        _.extend(locals, _extension_locals);
-
-        if (paramd.locals) {
-            _.extend(locals, paramd.locals);
-        }
-        if (paramd.status) {
-            locals.status = paramd.status;
-        }
-
-        var customize = paramd.customize;
-        if (!customize) {
-            customize = function (request, response, locals, done) {
-                done(null);
-            };
-        }
-
-        customize(request, response, locals, function (error, optional_response) {
-            if (_.is.Dictionary(optional_response)) {
-                locals.d = optional_response;
-            } else if (_.is.String(optional_response)) {
-                return response.redirect(optional_response);
-            } else if (optional_response) {
-                return;
-            }
-
-            if (error) {
-                response
-                    .status(404)
-                    .set('Content-Type', "text/plain")
-                    .send(error.message ? error.message : error);
-                return;
-            }
-
-            const page_template = swig_outer.renderFile(paramd.template);
-            const page_content = swig.render(page_template, {
-                filename: paramd.template,
-                locals: locals,
-            });
-
-            if (paramd.status) {
-                response.status(paramd.status);
-            }
-
-            response
-                .set('Content-Type', paramd.content_type)
-                .send(page_content);
+            status: paramd.status || null,
         });
-    };
+
+    /*
+    _.extend(locals, _extension_locals);
+
+    if (paramd.locals) {
+        _.extend(locals, paramd.locals);
+    }
+    if (paramd.status) {
+        locals.status = paramd.status;
+    }
+    */
+
+    const customize = paramd.customize || ((request, response, locals, done) => done(null));
+
+    customize(request, response, locals, function (error, optional_response) {
+        if (_.is.Dictionary(optional_response)) {
+            locals.d = optional_response;
+        } else if (_.is.String(optional_response)) {
+            return response.redirect(optional_response);
+        } else if (optional_response) {
+            return;
+        }
+
+        if (error) {
+            response
+                .status(404)
+                .set('Content-Type', "text/plain")
+                .send(error.message ? error.message : error);
+            return;
+        }
+
+        const page_template = swig_outer.renderFile(paramd.template);
+        const page_content = swig.render(page_template, {
+            filename: paramd.template,
+            locals: locals,
+        });
+
+        if (paramd.status) {
+            response.status(paramd.status);
+        }
+
+        response
+            .set('Content-Type', paramd.content_type)
+            .send(page_content);
+    });
 };
 
 /**
  *  Installed modules can add pages by declaring "homestar"
  */
-var _extension_locals = {};
-var _extensions = [];
 
 const setup_extensions = function () {
     /*
@@ -412,6 +379,9 @@ const setup_extensions = function () {
         }
     };
 
+    _extensions = iotdb.modules().modules().filter(extension => extension.homestar);
+
+    /*
     var modules = iotdb.modules().modules();
     for (var mi in modules) {
         var extension = modules[mi];
@@ -421,6 +391,7 @@ const setup_extensions = function () {
 
         _extensions.push(extension);
     };
+    */
 
     extensions_apply("setup", function(worker, extension_locals) {
         worker(extension_locals);
@@ -428,6 +399,12 @@ const setup_extensions = function () {
 };
 
 const extensions_apply = function(key, callback) {
+    _extensions
+        .map(extension => extension.homestar[key])
+        .filter(worker => worker)
+        .forEach(worker => callback(worker, _extension_locals));
+
+    /*
     _extensions.map(function(extension) {
         var worker = extension.homestar[key];
         if (!worker) {
@@ -436,6 +413,7 @@ const extensions_apply = function(key, callback) {
 
         callback(worker, _extension_locals);
     });
+    */
 };
 
 
@@ -494,51 +472,42 @@ const setup_express_dynamic = function (app) {
 };
 
 const _setup_express_dynamic_folder = function (app, folder) {
-    var _make_redirect = function (path) {
-        return function (request, response) {
-            return response.redirect("/" + (path ? path : ""));
-        };
-    };
+    const _make_redirect = path => (request, response) => response.redirect("/" + (path || ""));
 
-    var files = fs.readdirSync(folder);
-    for (var fi in files) {
-        var file = files[fi];
-        var match = file.match(/^(.*)[.](js|html)$/);
-        if (!match) {
-            continue;
-        }
+    fs.readdirSync(folder)
+        .map(file => file.match(/^(.*)[.](js|html)$/))
+        .filter(file_match => file_match)
+        .forEach(file_match => {
+            const file = file_match[0];
+            const base = file_match[1];
+            const ext = file_match[2];
+            const template = path.join(folder, file);
 
-        var base = match[1];
-        var ext = match[2];
-        var template = path.join(folder, file);
+            if (file === settings.d.webserver.index) {
+                app.get(util.format("/"), make_dynamic({
+                    template: template,
+                    mount: base,
+                    content_type: "text/html",
+                }));
 
-        if (file === settings.d.webserver.index) {
-            app.get(util.format("/"), make_dynamic({
-                template: template,
-                mount: base,
-                content_type: "text/html",
-            }));
+                app.get(util.format("/%s", base), _make_redirect());
+                app.get(util.format("/%s", file), _make_redirect());
+            } else if (ext === "html") {
+                app.get(util.format("/%s", base), make_dynamic({
+                    template: template,
+                    mount: base,
+                    content_type: "text/html",
+                }));
 
-            app.get(util.format("/%s", base), _make_redirect());
-            app.get(util.format("/%s", file), _make_redirect());
-        } else if (ext === "html") {
-            app.get(util.format("/%s", base), make_dynamic({
-                template: template,
-                mount: base,
-                content_type: "text/html",
-            }));
-
-            app.get(util.format("/%s", file), _make_redirect(base));
-        } else if (ext === "js") {
-            app.get(util.format("/%s.%s", base, ext), make_dynamic({
-                template: template,
-                mount: file,
-                content_type: "text/plain",
-            }));
-        }
-    }
-
-    // process.exit(0);
+                app.get(util.format("/%s", file), _make_redirect(base));
+            } else if (ext === "js") {
+                app.get(util.format("/%s.%s", base, ext), make_dynamic({
+                    template: template,
+                    mount: file,
+                    content_type: "text/plain",
+                }));
+            }
+        });
 };
 
 /**
