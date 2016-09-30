@@ -12,6 +12,34 @@
  */
 
 const iotdb = require("iotdb");
+const _ = iotdb._;
+
+/**
+ *  This mutes UPnP messages. You might want to mute more things
+ */
+_.logger.mute({ name: "iotdb-upnp" });
+
+/*
+ *  This lets you edit metadata about your things
+ *  - note that 'homestar-persist' is needed also (below)
+ */
+try {
+    iotdb.use("homestar-metadata");
+}
+catch (x) {
+    console.log("#", "not installed:", "homestar-metadata");
+}
+
+/*
+ *  This stores your thing's state. This is needed
+ *  for homestar-persist, 'homestar things' and 'homestar put'
+ */
+try {
+    iotdb.use("homestar-persist");
+}
+catch (x) {
+    console.log("#", "not installed:", "homestar-persist");
+}
 
 /*
  *  https://github.com/dpjanes/homestar-wemo
@@ -28,6 +56,64 @@ catch (x) {
     console.log("#", "not installed:", "homestar-wemo");
 }
 
+/*
+ *  https://github.com/dpjanes/homestar-hue
+ */
+try {
+    iotdb.use("homestar-hue");
+
+    iotdb.connect('HueLight');
+
+}
+catch (x) {
+    console.log("#", "not installed:", "homestar-hue");
+}
+
+/*
+ *  https://github.com/dpjanes/homestar-lifx
+ */
+try {
+    iotdb.use("homestar-lifx");
+
+    iotdb.connect('LIFXWhite');
+    iotdb.connect('LIFXLight');
+}
+catch (x) {
+    console.log("#", "not installed:", "homestar-lifx");
+}
+
+/*
+ *  https://github.com/dpjanes/homestar-nest
+ */
+try {
+    iotdb.use("homestar-nest");
+
+    iotdb.connect('NestCam');
+    iotdb.connect('NestThermostat');
+    iotdb.connect('NestProtect');
+}
+catch (x) {
+    console.log("#", "not installed:", "homestar-nest");
+}
+
+/*
+ *  https://github.com/dpjanes/homestar-smartthings
+ */
+try {
+    iotdb.use("homestar-smartthings");
+
+    iotdb.connect("SmartThingsBattery");
+    iotdb.connect("SmartThingsContact");
+    iotdb.connect("SmartThingsMotion");
+    iotdb.connect("SmartThingsSwitch");
+    iotdb.connect("SmartThingsTemperature");
+    iotdb.connect("SmartThingsThreeAxis");
+}
+catch (x) {
+    console.log("#", "not installed:", "homestar-smartthings");
+}
+
+/* --- more esoteric ones below here --- */
 /*
  *  https://github.com/dpjanes/homestar-feed
  */
@@ -54,60 +140,7 @@ catch (x) {
     console.log("#", "not installed:", "homestar-johnny-five");
 }
 
-/*
- *  https://github.com/dpjanes/homestar-hue
+/**
+ *  Catch all - connect to everything that can be automatically conncted to
  */
-try {
-    iotdb.use("homestar-hue");
-
-    iot.connect('HueLight');
-
-}
-catch (x) {
-    console.log("#", "not installed:", "homestar-hue");
-}
-
-/*
- *  https://github.com/dpjanes/homestar-lifx
- */
-try {
-    iotdb.use("homestar-lifx");
-
-    iot.connect('LIFXWhite');
-    iot.connect('LIFXLight');
-}
-catch (x) {
-    console.log("#", "not installed:", "homestar-lifx");
-}
-
-/*
- *  https://github.com/dpjanes/homestar-nest
- */
-try {
-    iotdb.use("homestar-nest");
-
-    iotdb.connect('NestCam');
-    iotdb.connect('NestThermostat');
-    iotdb.connect('NestProtect');
-}
-catch (x) {
-    console.log("#", "not installed:", "homestar-nest");
-}
-
-/*
- *  https://github.com/dpjanes/homestar-smartthings
- */
-try {
-    iotdb.use("homestar-smartthings");
-
-    iot.connect("SmartThingsBattery");
-    iot.connect("SmartThingsContact");
-    iot.connect("SmartThingsMotion");
-    iot.connect("SmartThingsSwitch");
-    iot.connect("SmartThingsTemperature");
-    iot.connect("SmartThingsThreeAxis");
-}
-catch (x) {
-    console.log("#", "not installed:", "homestar-smartthings");
-}
-
+iotdb.connect()

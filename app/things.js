@@ -251,7 +251,7 @@ const thing_meta = function (thing) {
 /**
  */
 const thing_model = function (thing) {
-    var md = thing.state("model");
+    const md = thing.state("model");
 
     md["@context"] = {
         "iot": _.ld.namespace["iot"],
@@ -261,27 +261,27 @@ const thing_model = function (thing) {
     };
     md["@id"] = "/api/things/" + thing.thing_id() + "/model";
 
-    var meta = thing.state("meta");
+    const meta = thing.state("meta");
     md._id = thing.thing_id();
     md._name = meta["schema:name"];
 
-    var ads = _.ld.list(md, "iot:attribute", []);
-    for (var adi in ads) {
-        var ad = ads[adi];
-        ad._code = ad["@id"].replace(/^.*#/, '');
-        ad._name = _.ld.first(ad, "schema:name");
+    md["iot:attribute"] = _.ld.list(md, "iot:attribute", [])
+        .map(ad => _.d.clone.shallow(ad))
+        .map(ad => {
+            ad._code = ad["@id"].replace(/^.*#/, '');
+            ad._name = _.ld.first(ad, "schema:name");
 
-        if (_.ld.first(ad, 'iot:write', false)) {
-            ad._out = true;
-        }
-        if (_.ld.first(ad, 'iot:read', false)) {
-            ad._in = true;
-        }
+            if (_.ld.first(ad, 'iot:write', false)) {
+                ad._out = true;
+            }
+            if (_.ld.first(ad, 'iot:read', false)) {
+                ad._in = true;
+            }
 
-        delete ad["iot:role"];
+            _.extend(ad, interactors.interactor(ad) || {});
 
-        interactors.assign_interactor_to_attribute(ad);
-    }
+            return ad;
+        })
 
     return md;
 };

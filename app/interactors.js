@@ -44,49 +44,25 @@ const htmlsd = {};
 const htmld = {};
 const moduled = {};
 
-/**
- */
-const assign_interactor_to_attribute = function (attributed) {
-    var bestd = null;
+// find the best interactor for an attribute
+const interactor = attributed => 
+    _.reduce(
+        _.pairs(moduled)
+            .map(kv => ({ key: kv[0], module: kv[1] }))
+            .filter(d => d.module.attribute)
+            .map(d => _.d.add(d, "interactor", d.module.attribute(attributed)))
+            .filter(d => d.interactor)
+            .map(d => _.d.add(d, "/interactor/_interactor", d.key))
+            .map(d => _.d.add(d, "_q", d.interactor._q || (0.66 + (d.interactor._qd || 0)))),
+        ( b, d ) => (b && (b._q > d._q)) ? b : d,
+    { _q: 0, interactor: null }).interactor;
 
-    for (var interactor_key in moduled) {
-        var module = moduled[interactor_key];
-        if (!module.attribute) {
-            continue;
-        }
+// Setup static routes for ExpressJS
+const setup_app = app => 
+    _.values(moduled)
+        .map(module => app.use('/static/interactors/' + module.name, express.static(module.path)));
 
-        var overlayd = module.attribute(attributed);
-        if (overlayd === undefined) {
-            continue;
-        }
-
-        overlayd._interactor = interactor_key;
-        overlayd._q = overlayd._q || (0.66 + (overlayd._qd || 0));
-
-        if (!bestd) {
-            bestd = overlayd;
-        } else if (overlayd._q > bestd._q) {
-            bestd = overlayd;
-        }
-    }
-
-    if (bestd) {
-        _.extend(attributed, bestd);
-        delete attributed._q;
-        delete attributed._qd;
-    }
-};
-
-/**
- *  Setup static routes for ExpressJS
- */
-const setup_app = function (app) {
-    for (var interactor_key in moduled) {
-        var module = moduled[interactor_key];
-        app.use('/static/interactors/' + module.name, express.static(module.path));
-    }
-};
-
+//
 const _add_interactor = function (interactor_key, interactor_path) {
     var files = fs.readdirSync(interactor_path);
     for (var fi in files) {
@@ -180,15 +156,8 @@ const setup = function () {
     _setup_builtin_interactors();
     _setup_module_interactors();
 
-    for (var interactor_key in _interactord) {
-        var interactor_path = _interactord[interactor_key];
-        _add_interactor(interactor_key, interactor_path);
-    }
-
-    for (var key in htmlsd) {
-        var htmls = htmlsd[key];
-        htmld[key] = htmls.join("\n");
-    }
+    _.mapObject(_interactord, ( interactor_path, interactor_key ) => _add_interactor(interactor_key, interactor_path));
+    _.mapObject(htmlsd, ( htmls, key ) => htmld[key] = htmls.join("\n"))
 };
 
 /**
@@ -198,4 +167,4 @@ exports.setup = setup;
 exports.setup_app = setup_app;
 exports.htmld = htmld;
 exports.interactors = _.keys(_interactord);
-exports.assign_interactor_to_attribute = assign_interactor_to_attribute;
+exports.interactor = interactor;
