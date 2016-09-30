@@ -41,14 +41,22 @@ exports.attribute = function(attributed) {
     }
 
     var _values = [];
+
+    if (attributed["iot:instantaneous"]) {
+        _values.push({
+            name: "-",
+            value: "-",
+        })
+    }
+
     for (var vi in values) {
         var value = values[vi];
         var name = value;
 
         var cname = _.ld.compact(name);
-        var cmatch = cname.match(/^iot-purpose:band[.](.*[.])?(.*)/);
+        var cmatch = cname.match(/^iot-purpose:band[.](.*)$/);
         if (cmatch) {
-            name = cmatch[2];
+            name = cmatch[1];
         }
 
         _values.push({

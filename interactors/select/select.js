@@ -11,6 +11,7 @@ js.interactors.select = {
         var e = $(this);
         var thing_id = e.data("thing");
         var attribute_code = e.data("attribute");
+        var instantaneous = e.data("instantaneous");
 
         var e_select = e.find("select");
         e_select.select2();
@@ -36,9 +37,21 @@ js.interactors.select = {
         e_select
             .on("change", function() {
                 var value = e_select.val();
+                if (value === "-") {
+                    return
+                }
 
                 var updated = {};
                 updated[attribute_code] = value;
+
+                if (instantaneous === 1) {
+                    try {
+                        e_select.val("-");
+                        e_select.select2();
+                    } catch(x) {
+                        console.log("#", "interactors.select", x);
+                    }
+                }
 
                 ostate_transporter.patch(updated);
             });

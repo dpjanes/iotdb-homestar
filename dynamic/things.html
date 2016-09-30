@@ -15,7 +15,7 @@
             {# <b>metadata_editor:{{ metadata_editor }}owner: {{user.is_owner }}</b> #}
         </li>
         {% for attribute in thing.model["iot:attribute"] %}
-            <li class="list-group-item interactor" data-interactor="{{ attribute._interactor }}" data-thing="{{ thing._id }}" data-attribute="{{ attribute._code }}" onclick>
+            <li class="list-group-item interactor" data-interactor="{{ attribute._interactor }}" data-thing="{{ thing._id }}" data-attribute="{{ attribute._code }}" {% if attribute["iot:instantaneous"]%} data-instantaneous="1"{% endif %} onclick>
                 [[{ htmld.attribute|safe }]]
             </li>
         {% endfor %}
