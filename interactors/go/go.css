@@ -1,0 +1,3 @@
+li[data-interactor="go"] button.selected {
+    background-color: #666666;
+}

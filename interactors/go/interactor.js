@@ -3,9 +3,9 @@
  *
  *  David Janes
  *  IOTDB.org
- *  2015-03-06
+ *  2016-09-30
  *
- *  Copyright [2013-2015] [David P. Janes]
+ *  Copyright [2013-2016] [David P. Janes]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,7 +32,17 @@ exports.attribute = function(attributed) {
         return;
     }
 
+    if (!attributed._out) {
+        return;
+    }
+
     return {
         _q: 0.25,
+        _values: [
+            {
+                name: "Go",
+                value: 0,
+            }
+        ]
     };
 };
