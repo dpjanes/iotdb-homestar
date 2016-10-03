@@ -14,7 +14,7 @@ js.interactors.otherwise = {
         var transporter = js.transport.connect(thing_id, "istate");
         transporter.on_update(function(d) {
             var value = d[attribute_code];
-            if (value) {
+            if (value !== undefined) {
                 e.find('.interactor-state').text("" + d[attribute_code]);
             } else{
                 e.find('.interactor-state').text("");

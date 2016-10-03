@@ -343,65 +343,6 @@ const _transport_express = function (app) {
 };
 
 /**
- *  This handles persisting metadata
- *  This probably needs work for dealing with @timestamp
- */
-const _transport_metadata = function (app, iotdb_transporter) {
-    return; // AUG13
-
-    var metadata_transporter = new FSTransport({
-        prefix: ".iotdb/things",
-        user: iotdb.users.owner(),
-    });
-
-    // When things are changed, save their metata
-    iotdb_transporter.updated(function (ud) {
-        if (ud.band !== "meta") {
-            return;
-        }
-
-        ud = _.d.clone.shallow(ud);
-        ud.value = _.d.clone.shallow(ud.value);
-
-        delete ud.value["iot:controller.session-timestamp"];
-        delete ud.value["iot:controller.machine-id"];
-        delete ud.value["iot:thing"];
-        delete ud.value["iot:reachable"];
-
-        metadata_transporter.update(ud);
-    });
-
-    // When things are discovered, load their metadata from the FS
-    var _back_copy = function (error, ld) {
-        if (error) {
-            return;
-        }
-        if (!ld) {
-            return;
-        }
-        if (!ld.id) {
-            return;
-        }
-
-        metadata_transporter.get({
-            id: ld.id,
-            band: "meta",
-        }, function (error, gd) {
-            if (error) {
-                return;
-            }
-
-            if (gd.value) {
-                iotdb_transporter.update(gd, _.noop);
-            }
-        });
-    };
-
-    iotdb_transporter.added(_back_copy);
-    iotdb_transporter.list(_back_copy);
-};
-
-/**
  *  The Transporter will brodcast all istate/meta
  *  changes to Things to MQTT path 
  *  the same as the REST API
