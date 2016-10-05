@@ -592,8 +592,6 @@ const run = function () {
     things.setup(app);
     homestar.setup();
 
-    // iotdb.connect();
-
     const profiled = {};
     profiled.pid = process.pid;
     profiled.ip = _.net.ipv4();

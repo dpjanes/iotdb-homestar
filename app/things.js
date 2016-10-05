@@ -42,230 +42,21 @@ const logger = iotdb.logger({
     module: 'app/things',
 });
 
-const scrub_id = function (v) {
-    if (!v) {
-        return "";
-    } else {
-        return v.replace(/.*#/, '');
-    }
-};
+const _thing_model = function (thing_id, thingd) {
+    const modeld = _.d.clone.deep(thingd.model || {});
+    
+    modeld._id = thing_id;
+    modeld._name = thingd.meta["schema:name"];
+    modeld["@id"] = `/api/things/${ thing_id }/model`;
 
-let structured = {};
-
-/**
- *  Clean up the structure. You can do this whenever
- *  you want - it will be rebuilt when need in
- *  _structure_thing. Specifically, you'll want to
- *  clear structures when the metadata changes.
- */
-const _clear_structure = function (thing) {
-    if (thing === undefined) {
-        structured = {};
-    } else {
-        structured[thing.thing_id()] = undefined;
-    }
-};
-
-/*
- *  Preprocess attributes
- *  - compact everything
- *  - find out if control or reading attibute
- */
-const _structure_thing = function (thing) {
-    var s = structured[thing.thing_id()];
-    if (s) {
-        return s;
-    }
-
-    var cid;
-    var cat;
-
-    var meta = thing.state("meta");
-    var thing_name = meta.get('schema:name') || thing.name;
-
-    /*
-     *  Do initial pre-processing on attributes
-     */
-    var catd = {};
-    var tats = thing.attributes();
-    for (var tax in tats) {
-        var tat = tats[tax];
-
-        cat = _.ld.compact(tat);
-        cat._code = tat.get_code();
-
-        var name = _.ld.first(cat, 'schema:name');
-        cat['@id'] = "/api/things/" + thing.thing_id() + "/#" + cat._code;
-        cat._name = name || cat._code;
-        cat._thing_id = thing.thing_id();
-        cat._thing_name = thing_name;
-        cat._thing_group = thing_name + "@@" + thing.thing_id();
-        cat._id = thing.thing_id() + "/#" + cat._code;
-        cat.group = thing_name;
-
-        cid = scrub_id(_.ld.first(cat, "@id", ""));
-        if (_.ld.first(cat, 'iot:read', false)) {
-            cat._in = cid;
-        }
-        if (_.ld.first(cat, 'iot:write', false)) {
-            cat._out = cid;
-        }
-
-        catd[cid] = cat;
-    }
-
-    /**
-     *  Group related control/reading attributes together
-     */
-    for (cid in catd) {
-        cat = catd[cid];
-        if (cat._use === undefined) {
-            cat._use = true;
-        }
-
-        var rids = _.ld.list(cat, "iot:related-role", []);
-        for (var rix in rids) {
-            var rid = scrub_id(rids[rix]);
-            var rat = catd[rid];
-            if (rat === undefined) {
-                continue;
-            }
-
-            if (rat._use === undefined) {
-                rat._use = false;
-            }
-            if (cat._out && !rat._out) {
-                rat._out = cat._out;
-            }
-            if (cat._in && !rat._in) {
-                rat._in = cat._in;
-            }
-        }
-
-    }
-
-    var cats = [];
-    for (var ci in catd) {
-        cat = catd[ci];
-        if (!cat._use) {
-            continue;
-        }
-
-        cats.push(cat);
-    }
-
-    s = {
-        thing_id: thing.thing_id(),
-        cats: cats
-    };
-    structured[thing.thing_id()] = s;
-
-    return s;
-};
-
-
-structured = function () {
-    var things = iotdb.iot().things();
-    var thing;
-    var ti;
-
-    // order things by thing_name first
-    var tts = [];
-    for (ti = 0; ti < things.length; ti++) {
-        thing = things[ti];
-        var meta = thing.state("meta");
-        var thing_name = meta.get('schema:name') || thing.name;
-        if (thing_name === undefined) {
-            continue;
-        }
-
-        tts.push([thing_name, thing]);
-    }
-
-    tts.sort();
-
-    // then get all the compressed attributes
-    var cats = [];
-    for (ti in tts) {
-        var tt = tts[ti];
-        thing = tt[1];
-        var state = thing.state();
-        var s = _structure_thing(thing);
-
-        for (var ci in s.cats) {
-            var cat = s.cats[ci];
-            cat.state = state;
-
-            cats.push(cat);
-        }
-    }
-
-    return cats;
-};
-
-/**
- */
-const thing_thing = function (thing) {
-    var base = "/api/things/" + thing.thing_id();
-
-    return {
-        "@id": base,
-        "schema:name": thing.state("meta")["schema:name"],
-        "istate": base + "/ibase",
-        "ostate": base + "/obase",
-        "model": base + "/model",
-        "meta": base + "/meta",
-    };
-};
-
-/**
- */
-const thing_istate = function (thing) {
-    return _.extend(
-        thing.state("istate"), {
-            "@id": "/api/things/" + thing.thing_id() + "/istate",
-        }
-    );
-};
-
-/**
- */
-const thing_ostate = function (thing) {
-    return _.extend(
-        thing.state("ostate"), {
-            "@id": "/api/things/" + thing.thing_id() + "/ostate",
-        }
-    );
-};
-
-/**
- */
-const thing_meta = function (thing) {
-    return _.ld.compact(
-        thing.state("meta"), {
-            "@id": "/api/things/" + thing.thing_id() + "/meta",
-        }
-    );
-};
-
-/**
- */
-const thing_model = function (thing) {
-    const md = thing.state("model");
-
-    md["@context"] = {
+    modeld["@context"] = {
         "iot": _.ld.namespace["iot"],
         "iot-unit": _.ld.namespace["iot-unit"],
         "iot-purpose": _.ld.namespace["iot-purpose"],
         "schema": _.ld.namespace["schema"],
     };
-    md["@id"] = "/api/things/" + thing.thing_id() + "/model";
 
-    const meta = thing.state("meta");
-    md._id = thing.thing_id();
-    md._name = meta["schema:name"];
-
-    md["iot:attribute"] = _.ld.list(md, "iot:attribute", [])
+    modeld["iot:attribute"] = _.ld.list(modeld, "iot:attribute", [])
         .map(ad => _.d.clone.shallow(ad))
         .map(ad => {
             ad._code = ad["@id"].replace(/^.*#/, '');
@@ -283,47 +74,62 @@ const thing_model = function (thing) {
             return ad;
         })
 
-    return md;
+    return modeld;
 };
 
-/*
- */
-const things = function () {
-    return iotdb
-        .things()
-        .map(thing => {
-            const td = {};
-            const tmodel = thing_model(thing);
+const _thing_band = (thing_id, thingd, band) => _.d.add(thingd[band], "@id", `/api/things/${ thing_id }/${ band }`);
 
-            td["_id"] = tmodel._id;
-            td["_name"] = tmodel._name;
-            td["_sort"] = tmodel._name + "@@" + tmodel._id;
-            td["_section"] = "things";
-            td["model"] = tmodel;
-            td["istate"] = thing_istate(thing);
-            td["ostate"] = thing_ostate(thing);
-            td["meta"] = thing_meta(thing);
+const _thingdd = {};
 
-            return td;
+const _update_band = (ud) => {
+    let thingd = _thingdd[ud.id];
+    if (!thingd) {
+        thingd = {};
+        _thingdd[ud.id] = thingd;
+    }
+
+    thingd[ud.band] = ud.value;
+}
+
+const _update_thing = thingd => {
+    _.pairs(thingd)
+        .filter(kv => _.is.Dictionary(kv[1]))
+        .forEach(kv => {
+            _update_band({
+                id: thingd.id,
+                band: kv[0],
+                value: kv[1],
+            })
         })
-        .sort((a, b) =>{
-            if (a._sort < b._sort) {
-                return -1;
-            } else if (a._sort > b._sort) {
-                return 1;
-            } else {
-                return 0;
-            }
-        });
 };
 
-/**
- *  Express interface - get & put. Put only on META and OSTATE
- */
-const _transport_express = function (app) {
-    // IOTDB
-    const iotdb_transporter = iotdb_transport_iotdb.make({});
+const things = () => _.pairs(_thingdd)
+    .filter(kv => kv[1].model)
+    .filter(kv => kv[1].meta)
+    .map(kv => {
+        const thing_id = kv[0];
+        const thingd = kv[1];
+        const thing_name = thingd.meta["schema:name"];
 
+        return {
+            "_id": thing_id,
+            "_name": thing_name,
+            "_sort": thing_name + "@@" + thing_id,
+            "_section": "things",
+            "model": _thing_model(thing_id, thingd),
+            "istate": _thing_band(thing_id, thingd, "istate"),
+            "ostate": _thing_band(thing_id, thingd, "ostate"),
+            "meta": _thing_band(thing_id, thingd, "meta"),
+        };
+    })
+    .sort((a, b) => _.is.unsorted(a._sort, b._sort));
+
+const setup = function (app) {
+    // 99.9% of the time, IOTDB transport
+    const iotdb_transporter = iotdb_transport.create("core");
+    // iotdb_transporter.all().subscribe(bandd => console.log("+", bandd.id));
+
+    // --- API interface
     // security on top of IOTDB
     const access_transporter = iotdb_transport.access.make({
         check_write: d => {
@@ -340,15 +146,18 @@ const _transport_express = function (app) {
     const express_transporter = iotdb_transport_express.make({
         prefix: _.net.url.join("/", "api", "things"),
     }, access_transporter, app);
-};
 
-/**
- *  The Transporter will brodcast all istate/meta
- *  changes to Things to MQTT path 
- *  the same as the REST API
- */
-const setup = function (app) {
-    _transport_express(app);
+    // --- Web Interface
+    iotdb_transporter.all({})
+        .subscribe(thingd => _update_thing(thingd));
+    iotdb_transporter.added({})
+        .subscribe(ad => {
+            iotdb_transporter.one(ad).subscribe(thingd => {
+                _update_thing(thingd);
+            })
+        })
+    iotdb_transporter.updated({})
+        .subscribe(ud => _update_band(ud));
 };
 
 /**

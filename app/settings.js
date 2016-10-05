@@ -117,7 +117,12 @@ const settings = {
         browser: true,
         boot: true,
         name: null,
-        iotql: null // will try to detect
+        iotql: null, // will try to detect
+        transporters: {
+            source: {
+                transporter: "iotdb-transport-iotdb"
+            },
+        },
     }
 };
 
