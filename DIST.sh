@@ -55,6 +55,7 @@ then
             --exclude "yy*" \
             --exclude ".iotdb" \
             --exclude "node_modules" \
+            --exclude "Gruntfile.js" \
             README.md \
             LICENSE.txt \
             package.json \
