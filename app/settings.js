@@ -127,13 +127,13 @@ const settings = {
 };
 
 const _set = function (key, value) {
-    var d = settings.d;
-    var subkeys = key.split('/');
-    var lastkey = subkeys[subkeys.length - 1];
+    let d = settings.d;
+    let subkeys = key.split('/');
+    let lastkey = subkeys[subkeys.length - 1];
 
-    for (var ski = 0; ski < subkeys.length - 1; ski++) {
-        var subkey = subkeys[ski];
-        var subd = d[subkey];
+    for (let ski = 0; ski < subkeys.length - 1; ski++) {
+        let subkey = subkeys[ski];
+        let subd = d[subkey];
         if (!_.isObject(subd)) {
             subd = {};
             d[subkey] = subd;
@@ -142,7 +142,7 @@ const _set = function (key, value) {
         d = subd;
     }
 
-    var ovalue = d[lastkey];
+    const ovalue = d[lastkey];
     if (_.isBoolean(ovalue)) {
         value = parseInt(value) ? true : false;
     } else if (_.is.Integer(ovalue)) {
@@ -168,7 +168,7 @@ const _set = function (key, value) {
     d[lastkey] = value;
 };
 
-var _is_setup;
+let _is_setup;
 
 const setup = function (av) {
     if (_is_setup) {
@@ -176,10 +176,10 @@ const setup = function (av) {
     }
     _is_setup = true;
 
-    var key;
-    var d = iotdb.keystore().get("/homestar/runner");
+    let key;
+    const d = iotdb.keystore().get("/homestar/runner");
     if (d) {
-        settings.d = _.d.compose.deep(d, settings.d);
+        settings.d = _.d.compose.deep(d, settings.d); // , settings.d);
     }
 
     // command line arguments - homestar/runner prefix not needed (or desired) 
@@ -216,7 +216,7 @@ const setup = function (av) {
         timers.setLocation(settings.d.location.latitude, settings.d.location.longitude);
     }
 
-    var ipv4 = _.net.ipv4();
+    const ipv4 = _.net.ipv4();
     if (ipv4) {
         settings.d.ip = ipv4;
     }

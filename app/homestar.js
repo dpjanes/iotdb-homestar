@@ -46,6 +46,7 @@ var API_PROFILE;
  *  Ping the server that I'm alive
  */
 const ping = function () {
+    console.log("BEARER", API_PING, bearer);
     unirest
         .put(API_PING)
         .headers({
